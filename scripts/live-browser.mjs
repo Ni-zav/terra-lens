@@ -47,7 +47,7 @@ try{
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:'+port,{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA DATA LOADED',
+  await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA data loaded',
     null,{timeout:125000});
   assert.match(await page.locator('#metric-slope').textContent(),/\+0\.18 °C/);
   assert.equal((await page.locator('#metric-years').textContent()).trim(),'24');
@@ -73,13 +73,13 @@ try{
   // Re-query a distinct NASA variable, not a fixture.
   await page.locator('#compare').uncheck();
   await page.locator('#analyze').click();
-  await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA DATA LOADED'
+  await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA data loaded'
     && document.getElementById('unit-chip')?.textContent.includes('%'),null,{timeout:125000});
   assert.ok(calls.some(c=>c.parameters==='RH2M'));
   await page.locator('#variable').selectOption('T2M');
   await page.locator('#compare').check();
   await page.locator('#analyze').click();
-  await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA DATA LOADED'
+  await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA data loaded'
     && document.getElementById('unit-chip')?.textContent.includes('°C'),null,{timeout:125000});
   await page.setViewportSize({width:390,height:844});
   const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));

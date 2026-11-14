@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-:root{color-scheme:dark;--mono:'DM Mono',monospace;--head:'Space Grotesk',sans-serif;--body:'DM Sans',sans-serif}
+:root{color-scheme:dark;--mono:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--head:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--body:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:var(--body);-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}button,select,input{font:inherit}button{cursor:pointer}h1,h2,h3,h4,p{margin:0}h1,h2,h3,h4{font-family:var(--head)}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #a1f4fa;outline-offset:2px}
 .skip{position:absolute;top:-60px;left:8px;background:#8ce8ee;color:#072530;padding:8px;z-index:30}.skip:focus{top:8px}

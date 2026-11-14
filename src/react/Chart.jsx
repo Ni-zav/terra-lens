@@ -67,7 +67,7 @@ export function TimeChart({results, monthly, unit, range, setRange}) {
         <button type="button" disabled={!results.length} aria-pressed={range==='10'} onClick={()=>setRange('10')}>10Y</button>
       </div></div>
     <div className="echart" ref={container} role="img" aria-label={`${monthly?'Monthly':'Annual'} NASA POWER chart. Exact values are available with the date slider.`}/>
-    <div className="chart-inspector"><label htmlFor={monthly?'monthly-cursor':'annual-cursor'}>{monthly?'MONTH':'YEAR'}</label>
+    <div className="chart-inspector"><label htmlFor={monthly?'monthly-cursor':'annual-cursor'}>{monthly?'Month':'Year'}</label>
       <input id={monthly?'monthly-cursor':'annual-cursor'} type="range" min="0" max={Math.max(0,model.dates.length-1)} value={position} disabled={!model.dates.length} aria-valuetext={readout} onChange={e=>setCursor(Number(e.target.value))}/>
       <output id={monthly?'monthly-readout':'annual-readout'}>{readout}</output></div>
     <div className="chart-foot">{monthly?'Missing months break the line':'Solid: annual mean · Dashed: full-period OLS fit'} · 10Y changes display only · Ctrl + scroll to zoom</div>
