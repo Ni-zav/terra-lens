@@ -198,7 +198,7 @@ function sizeChartLabels(svg) {
 function renderPlot(id, series, monthly, unit) {
   const svg = $(id);
   const height = monthly ? 270 : 320;
-  const top = 18, bottom = height - 43, left = 64, right = 935;
+  const top = 18, bottom = height - 43, left = 84, right = 910;
   const pointX = point => monthly ? point.year + (point.month - .5) / 12 : point.year;
   const prefix = monthly ? 'monthly' : 'annual';
   const latestYear = Math.max(...series.flatMap(item => (monthly ? item.monthly : item.annual).map(p => p.year)));
@@ -442,11 +442,11 @@ function updateResults(config, series, warnings) {
     $('metric-significance-detail').textContent = 'Incomplete time-series coverage';
   }
   let finding = trend
-    ? main.label + ': ' + signed(trend.slopePerDecade) + ' ' + varInfo.unit + '/decade'
-    : main.label + ': too few complete years for a trend';
+    ? 'A: ' + signed(trend.slopePerDecade) + ' ' + varInfo.unit + '/decade'
+    : 'A: too few complete years for a trend';
   if (series.length > 1 && series[1].trend) {
-    finding += ' · ' + series[1].label + ': ' + signed(series[1].trend.slopePerDecade) + ' ' + varInfo.unit + '/decade';
-    finding += '. The difference is descriptive, not a formal test.';
+    finding += ' · B: ' + signed(series[1].trend.slopePerDecade) + ' ' + varInfo.unit + '/decade';
+    finding += '. Difference is descriptive.';
   } else {
     finding += '.';
   }

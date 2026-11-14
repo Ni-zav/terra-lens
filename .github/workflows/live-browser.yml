@@ -19,7 +19,7 @@ concurrency:
   group: terra-lens-live-evidence-main
   cancel-in-progress: true
 permissions:
-  contents: write
+  contents: read
 jobs:
   browser-real-nasa:
     runs-on: ubuntu-latest
@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          persist-credentials: true
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -43,23 +43,3 @@ jobs:
         with:
           name: terra-lens-live-browser-screenshots
           path: docs/screenshots/
-      - name: Publish screenshots if unchanged main branch
-        if: success() && github.ref == 'refs/heads/main'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          mkdir -p /tmp/terra-nasa-screenshots
-          cp docs/screenshots/* /tmp/terra-nasa-screenshots/
-          git fetch origin main
-          # Do not publish an obsolete UI capture if a newer UI change landed meanwhile.
-          if ! git diff --quiet HEAD origin/main -- index.html src/ styles.css styles/ functions/api/power.js; then
-            echo 'Newer source changed during capture; a newer workflow owns screenshot publication.'
-            exit 0
-          fi
-          # No force push and no history rewriting: build a fresh commit on latest main.
-          git reset --hard origin/main
-          cp /tmp/terra-nasa-screenshots/* docs/screenshots/
-          git add docs/screenshots/
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'docs: publish actual NASA browser evidence screenshots'
-          git push origin HEAD:main

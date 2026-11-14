@@ -50,7 +50,7 @@ try{
     null,{timeout:125000});
   assert.match(await page.locator('#metric-slope').textContent(),/\+0\.18 °C/);
   assert.equal((await page.locator('#metric-years').textContent()).trim(),'24');
-  assert.match(await page.locator('#finding-text').textContent(),/Jakarta:/);
+  assert.match(await page.locator('#finding-text').textContent(),/B:/);
   assert.equal(calls.filter(c=>c.parameters==='T2M').length,2,'Both points must fetch real NASA T2M');
   assert.equal(errors.length,0,errors.join('; '));
   await mkdir(join(ROOT,'docs','screenshots'),{recursive:true});

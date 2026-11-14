@@ -106,15 +106,28 @@ try {
     'Changing the display period must not change the fitted analysis');
   await page.locator('[data-chart="annual"][data-years="all"]').click();
   // Desktop must fit actual controls and each view, not merely hide overflow.
-  for (const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660]]) {
+  for (const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660]]) {
     await page.setViewportSize({width,height});
     for (const name of ['annual','monthly','comparison']) {
       await page.locator('#tab-'+name).click();
       const dimensions=await page.evaluate(() => {
         const selectors=['.controls','.location-column','.results','#analyze','.source-actions',
           '[role="tabpanel"]:not([hidden])'];
+        const inside = [['.insight-card>a','.insight-card'],['.globe-credit','.globe-panel'],
+          ['.source-actions','.sources-card']].map(([child,parent])=>{
+            const c=document.querySelector(child).getBoundingClientRect();
+            const p=document.querySelector(parent).getBoundingClientRect();
+            return {child,bottom:c.bottom,parentBottom:p.bottom};
+          });
+        const svg=document.querySelector('[role="tabpanel"]:not([hidden]) svg');
+        const svgBounds=svg?.getBoundingClientRect();
+        const labelOverflow=svgBounds ? [...svg.querySelectorAll('text')].some(label=>{
+          const r=label.getBoundingClientRect();
+          return r.left<svgBounds.left-1 || r.right>svgBounds.right+1;
+        }) : false;
         return {width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,
           scrollHeight:document.documentElement.scrollHeight,
+          inside,labelOverflow,
           boxes:selectors.map(selector=>{
             const node=document.querySelector(selector), box=node.getBoundingClientRect();
             return {selector,right:box.right,bottom:box.bottom,scroll:node.scrollHeight,client:node.clientHeight};
@@ -126,6 +139,9 @@ try {
         assert.ok(box.right<=width+1 && box.bottom<=height+1 && box.scroll<=box.client+2,
           'Desktop content clipped: '+JSON.stringify({width,height,name,box}));
       }
+      for (const item of dimensions.inside) assert.ok(item.bottom<=item.parentBottom+1,
+        'Desktop panel content overlaps: '+JSON.stringify({width,height,name,item}));
+      assert.equal(dimensions.labelOverflow,false,'A chart label is clipped: '+JSON.stringify({width,height,name}));
     }
   }
   await page.setViewportSize({width:1440,height:900});
