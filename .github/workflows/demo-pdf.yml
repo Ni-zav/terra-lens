@@ -7,6 +7,9 @@ on:
       - 'scripts/build-demo.mjs'
       - '.github/workflows/demo-pdf.yml'
       - 'docs/screenshots/nasa-real-desktop.png'
+concurrency:
+  group: terra-lens-pdf-main
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -41,11 +44,16 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp demo/Terra-Lens_Seven_Slide_Demo.pdf /tmp/terra-seven-slides.pdf
+          git fetch origin main
+          # Never publish slides from an obsolete deck or different underlying screenshot.
+          if ! git diff --quiet HEAD origin/main -- demo/index.html docs/screenshots/nasa-real-desktop.png; then
+            echo 'Demo or NASA screenshots changed during PDF rendering; newer workflow will regenerate.'
+            exit 0
+          fi
+          git reset --hard origin/main
+          cp /tmp/terra-seven-slides.pdf demo/Terra-Lens_Seven_Slide_Demo.pdf
           git add demo/Terra-Lens_Seven_Slide_Demo.pdf
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'docs: publish seven-slide NASA demo PDF with real screenshot'
-          # Other evidence jobs may have advanced main while the PDF was rendering.
-          # Rebase this self-contained binary addition rather than overwrite history.
-          git fetch origin main
-          git rebase origin/main
           git push origin HEAD:main
