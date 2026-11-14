@@ -1,0 +1,33 @@
+name: Independent NASA and SciPy Verification
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/verify-scipy.py'
+      - '.github/workflows/scipy-verify.yml'
+      - 'src/stats.js'
+      - 'src/power.js'
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install independent statistical implementation
+        run: python -m pip install scipy
+      - name: Retrieve real NASA POWER data, cross-validate with SciPy
+        run: python scripts/verify-scipy.py
+      - name: Preserve validation results and NASA API response
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: independent-nasa-scipy-evidence
+          path: |
+            artifacts/scipy-verification.json
+            artifacts/power-*.json
