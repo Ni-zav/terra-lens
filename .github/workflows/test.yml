@@ -1,0 +1,27 @@
+name: Tests
+on:
+  push:
+  pull_request:
+jobs:
+  node-and-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit tests and syntax checks
+        run: npm run check
+      - name: Install browser test tools
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Browser smoke with mock fixture
+        run: node tests/browser.smoke.mjs
+      - name: Upload visual test snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terra-lens-browser-smoke
+          path: artifacts/
+          if-no-files-found: ignore

@@ -1,0 +1,371 @@
+import {annualMeans, linearTrend} from './stats.js';
+import {VARIABLES, LOCATIONS, fetchNASA, requestURL} from './power.js';
+
+const $ = id => document.getElementById(id);
+const COLORS = ['#63e5bc', '#bba9ff'];
+let results = [];
+let activeRequest = null;
+
+const format = (value, digits = 2) => Number.isFinite(value)
+  ? new Intl.NumberFormat('en-US', {maximumFractionDigits: digits}).format(value) : '—';
+const signed = (value, digits = 2) => (value > 0 ? '+' : '') + format(value, digits);
+const pLabel = p => p < 0.0001 ? '< 0.0001' : format(p, 4);
+
+function fillLocationOptions(side, selected) {
+  const select = $('city-' + side);
+  for (const name of Object.keys(LOCATIONS)) {
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = name;
+    select.append(option);
+  }
+  const custom = document.createElement('option');
+  custom.value = 'custom';
+  custom.textContent = 'Custom coordinates';
+  select.append(custom);
+  select.value = selected;
+}
+
+function selectLocation(side) {
+  const name = $('city-' + side).value;
+  if (!Object.hasOwn(LOCATIONS, name)) return;
+  const [lat, lon] = LOCATIONS[name];
+  $('lat-' + side).value = String(lat);
+  $('lon-' + side).value = String(lon);
+  renderCoordinates(readLocationPreview());
+}
+
+function setCompareEnabled() {
+  const enabled = $('compare').checked;
+  $('secondary-location').hidden = !enabled;
+  for (const input of $('secondary-location').querySelectorAll('input,select')) input.disabled = !enabled;
+  renderCoordinates(readLocationPreview());
+}
+
+function readLocationPreview() {
+  const point = side => ({
+    label: $('city-' + side).value === 'custom' ? 'Custom ' + side.toUpperCase() : $('city-' + side).value,
+    lat: Number($('lat-' + side).value),
+    lon: Number($('lon-' + side).value),
+    id: side.toUpperCase()
+  });
+  return [point('a'), ...($('compare').checked ? [point('b')] : [])];
+}
+
+function getOptions() {
+  const variable = $('variable').value;
+  const start = Number($('start').value), end = Number($('end').value);
+  if (!Number.isInteger(start) || !Number.isInteger(end) || end - start < 9) {
+    throw new Error('Choose at least 10 calendar years, with an end year after the start.');
+  }
+  const points = readLocationPreview();
+  for (const point of points) {
+    if ($('lat-' + point.id.toLowerCase()).value.trim() === '' ||
+        $('lon-' + point.id.toLowerCase()).value.trim() === '') {
+      throw new Error('Enter both latitude and longitude for each selected point.');
+    }
+    requestURL({lat: point.lat, lon: point.lon, variable, start, end});
+  }
+  return {variable, start, end, points};
+}
+
+function setStatus(message, kind = '') {
+  const node = $('status');
+  node.textContent = message;
+  node.className = 'status' + (kind ? ' ' + kind : '');
+}
+
+function svgNode(tag, attributes = {}, text) {
+  const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, String(value));
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+
+function clearSvg(svg, description) {
+  svg.replaceChildren();
+  svg.append(svgNode('title', {}, description));
+}
+
+function drawCoordinates(points) {
+  const svg = $('coordinate-chart');
+  clearSvg(svg, 'Latitude and longitude coordinates of selected NASA model points.');
+  const left = 32, right = 589, top = 25, bottom = 235;
+  const x = lon => left + ((lon + 180) / 360) * (right - left);
+  const y = lat => bottom - ((lat + 90) / 180) * (bottom - top);
+  svg.append(svgNode('rect', {x:left, y:top, width:right-left, height:bottom-top, rx:4, fill:'#0a2437',stroke:'#254558'}));
+  for (let lon = -180; lon <= 180; lon += 60) {
+    const px = x(lon);
+    svg.append(svgNode('line', {x1:px,y1:top,x2:px,y2:bottom,stroke:'#315166','stroke-width':1}));
+    svg.append(svgNode('text', {x:px,y:255,'text-anchor':'middle',fill:'#819daa','font-size':11}, String(lon) + '°'));
+  }
+  for (let lat = -90; lat <= 90; lat += 30) {
+    const py = y(lat);
+    svg.append(svgNode('line',{x1:left,y1:py,x2:right,y2:py,stroke:'#315166','stroke-width':1}));
+    if (lat > -90 && lat < 90) svg.append(svgNode('text',{x:27,y:py+4,'text-anchor':'end',fill:'#819daa','font-size':10},String(lat) + '°'));
+  }
+  const badges = $('coordinate-list');
+  badges.replaceChildren();
+  for (const [index, point] of points.entries()) {
+    if (!Number.isFinite(point.lat) || !Number.isFinite(point.lon) ||
+        Math.abs(point.lat) > 90 || Math.abs(point.lon) > 180) continue;
+    const px = x(point.lon), py = y(point.lat), color = COLORS[index];
+    svg.append(svgNode('circle',{cx:px,cy:py,r:12,fill:color,'fill-opacity':.16}));
+    svg.append(svgNode('circle',{cx:px,cy:py,r:5,fill:color,stroke:'#041420','stroke-width':2}));
+    const offset = index === 1 ? -16 : -15;
+    svg.append(svgNode('text',{x:px+11,y:py+offset,fill:color,'font-size':14,'font-weight':700},point.id));
+    const chip = document.createElement('span');
+    chip.className = 'coord-chip';
+    chip.textContent = point.id + ' · ' + format(point.lat, 3) + '°, ' + format(point.lon, 3) + '°';
+    badges.append(chip);
+  }
+}
+
+function renderCoordinates(points) { drawCoordinates(points); }
+
+function renderLegend(container, series) {
+  const parent = $(container);
+  parent.replaceChildren();
+  for (const [index, item] of series.entries()) {
+    const label = document.createElement('span'); label.className = 'legend-item';
+    const dot = document.createElement('span'); dot.className = 'legend-dot';
+    dot.style.background = COLORS[index];
+    const caption = document.createElement('span'); caption.textContent = item.label;
+    label.append(dot, caption); parent.append(label);
+  }
+}
+
+function renderPlot(id, series, monthly, unit) {
+  const svg = $(id);
+  const height = monthly ? 270 : 320;
+  const top = 18, bottom = height - 43, left = 64, right = 935;
+  const pointX = point => monthly ? point.year + (point.month - .5) / 12 : point.year;
+  const groups = series.map(item => ({
+    label: item.label, color: item.color,
+    points: monthly ? item.monthly : item.annual,
+    fit: monthly ? [] : item.trend?.fitted || []
+  }));
+  const all = groups.flatMap(group => group.points.map(p => ({x:pointX(p),y:p.value})));
+  clearSvg(svg, (monthly ? 'Monthly observations' : 'Annual means and trends') + ' from NASA POWER, ' + unit);
+  if (!all.length) {
+    svg.append(svgNode('text',{x:480,y:140,'text-anchor':'middle',fill:'#92acb8'},'No valid observations to display.'));
+    return;
+  }
+  let minX = Math.min(...all.map(p=>p.x)), maxX = Math.max(...all.map(p=>p.x));
+  let minY = Math.min(...all.map(p=>p.y)), maxY = Math.max(...all.map(p=>p.y));
+  if (maxX <= minX) maxX = minX + 1;
+  const range = maxY - minY || Math.max(1, Math.abs(maxY) * .05);
+  minY -= range * .16; maxY += range * .16;
+  const sx = value => left + (value-minX)/(maxX-minX)*(right-left);
+  const sy = value => bottom - (value-minY)/(maxY-minY)*(bottom-top);
+  for (let i=0;i<=4;i++) {
+    const v = minY + (maxY-minY)*i/4, py=sy(v);
+    svg.append(svgNode('line',{x1:left,y1:py,x2:right,y2:py,stroke:'#244357','stroke-width':1}));
+    svg.append(svgNode('text',{x:left-10,y:py+4,'text-anchor':'end',fill:'#799aac','font-size':12},format(v,range<3?2:1)));
+  }
+  for (let i=0;i<=4;i++) {
+    const v=minX+(maxX-minX)*i/4, px=sx(v);
+    svg.append(svgNode('text',{x:px,y:height-14,'text-anchor':'middle',fill:'#799aac','font-size':12},String(Math.round(v))));
+  }
+  svg.append(svgNode('text',{x:left,y:12,fill:'#819cab','font-size':11},unit));
+  for (const group of groups) {
+    if (!group.points.length) continue;
+    const points = group.points.map(p=>({x:pointX(p),y:p.value,...p}));
+    const d = points.map((p,i) => (i===0?'M':'L') + sx(p.x).toFixed(2) + ',' + sy(p.y).toFixed(2)).join(' ');
+    svg.append(svgNode('path',{d,fill:'none',stroke:group.color,'stroke-width':monthly?1.7:2.8,'stroke-linecap':'round','stroke-linejoin':'round'}));
+    if (!monthly) {
+      for (const point of points) {
+        const circle = svgNode('circle',{cx:sx(point.x),cy:sy(point.y),r:3,fill:group.color});
+        circle.append(svgNode('title',{},group.label+' '+point.year+': '+format(point.y,3)+' '+unit));
+        svg.append(circle);
+      }
+    }
+    if (group.fit.length) {
+      const first = group.fit[0], last = group.fit.at(-1);
+      svg.append(svgNode('line',{x1:sx(first.year),y1:sy(first.value),
+        x2:sx(last.year),y2:sy(last.value),stroke:group.color,
+        'stroke-width':2,'stroke-dasharray':'8 6',opacity:.8}));
+    }
+  }
+}
+
+function updateResults(config, series, warnings) {
+  results = series;
+  const main = series[0], varInfo = VARIABLES[config.variable], trend = main.trend;
+  $('data-label').textContent = 'NASA DATA LOADED';
+  $('data-label').classList.add('live');
+  $('result-context').textContent = varInfo.label + ' · ' + config.start + '–' + config.end;
+  $('unit-chip').textContent = varInfo.unit + ' / ' + varInfo.label;
+  $('metric-years').textContent = main.annual.length ? String(main.annual.length) : '0';
+  $('metric-years-detail').textContent = 'Full years · ' + (main.annual[0]?.year ?? '—') + ' to ' + (main.annual.at(-1)?.year ?? '—');
+  if (trend) {
+    $('metric-slope').textContent = signed(trend.slopePerDecade) + ' ' + varInfo.unit;
+    $('metric-slope-detail').textContent = '95% CI: ' + signed(trend.ciLowPerDecade) + ' to ' +
+      signed(trend.ciHighPerDecade) + ' ' + varInfo.unit + '/decade';
+    $('metric-significance').textContent = trend.significant ? 'Significant*' : 'Not significant';
+    $('metric-significance').className = trend.significant ? 'yes' : 'no';
+    $('metric-significance-detail').textContent = 'p ' + pLabel(trend.pValue) + ' · classical OLS test';
+  } else {
+    $('metric-slope').textContent = 'Insufficient data';
+    $('metric-slope-detail').textContent = 'At least 10 complete years required.';
+    $('metric-significance').textContent = 'Not tested';
+    $('metric-significance').className = '';
+    $('metric-significance-detail').textContent = 'Incomplete time-series coverage';
+  }
+  let finding = trend
+    ? 'At ' + main.label + ', the fitted ' + varInfo.label.toLowerCase() + ' slope is ' +
+      signed(trend.slopePerDecade) + ' ' + varInfo.unit + ' per decade (' +
+      trend.start + '–' + trend.end + '). ' +
+      (trend.significant ? 'The classical OLS test crosses the 5% significance threshold.' :
+        'It does not cross the 5% significance threshold.')
+    : 'The selected location has too few complete calendar years for our minimum 10-year analysis.';
+  if (series.length > 1 && series[1].trend) {
+    finding += ' ' + series[1].label + ' has a fitted slope of ' +
+      signed(series[1].trend.slopePerDecade) + ' ' + varInfo.unit + ' per decade.';
+    finding += ' Differences between point slopes are descriptive, not a formal test of their difference.';
+  }
+  finding += ' *The t-test assumes independent residuals; serial correlation and repeated searches can overstate confidence.';
+  $('finding-text').textContent = finding;
+  $('provenance-text').textContent = 'Live NASA POWER monthly point API (meteorological reanalysis), retrieved ' +
+    new Date(main.fetchedAt).toLocaleString('en-US') + '. ' + main.monthly.length +
+    ' valid monthly observations at point A. Inference is exploratory and does not establish causation.';
+  const link = document.createElement('a');
+  link.href = main.url; link.target = '_blank'; link.rel='noopener noreferrer';
+  link.textContent = 'Inspect original NASA API request ↗';
+  $('source-link').replaceChildren(link);
+  $('download').disabled = false;
+  renderLegend('annual-legend', series);
+  renderLegend('monthly-legend', series);
+  renderPlot('annual-chart', series, false, varInfo.unit);
+  renderPlot('monthly-chart', series, true, varInfo.unit);
+  renderCoordinates(config.points);
+  setStatus('Loaded ' + series.length + ' NASA point' + (series.length>1?'s':'') + '. ' +
+    series.reduce((sum,item)=>sum+item.monthly.length,0) + ' valid monthly records. ' +
+    (warnings.length ? warnings.join(' ') : ''),warnings.length ? 'error' : 'success');
+}
+
+async function runAnalysis() {
+  let config;
+  try { config = getOptions(); }
+  catch (error) { setStatus(error.message,'error'); return; }
+  if (activeRequest) activeRequest.abort();
+  activeRequest = new AbortController();
+  const controller = activeRequest;
+  const button = $('analyze');
+  button.disabled = true; button.firstChild.textContent = 'Querying NASA POWER… ';
+  setStatus('Retrieving real monthly records. NASA may take a few moments.');
+  $('data-label').textContent='LOADING'; $('data-label').classList.remove('live');
+  $('download').disabled = true;
+  results = [];
+  try {
+    const tasks = config.points.map(async (point,index) => {
+      const input = {lat:point.lat,lon:point.lon,variable:config.variable,start:config.start,end:config.end};
+      const fetched = await fetchNASA(input,{signal:controller.signal});
+      const annual = annualMeans(fetched.monthly);
+      return {...fetched,...point,color:COLORS[index],annual,
+        trend:linearTrend(annual)};
+    });
+    const settled = await Promise.allSettled(tasks);
+    if (controller.signal.aborted) return;
+    if (settled[0].status === 'rejected') throw settled[0].reason;
+    const series = settled.filter(s=>s.status==='fulfilled').map(s=>s.value);
+    const warnings = settled.flatMap((s,index)=>s.status==='rejected'?
+      ['Point '+config.points[index].id+' could not load: '+s.reason.message]:[]);
+    updateResults(config,series,warnings);
+  } catch (error) {
+    if (controller.signal.aborted) return;
+    $('data-label').textContent='REQUEST FAILED';
+    setStatus('Could not retrieve verified NASA observations: '+error.message,'error');
+    $('finding-text').textContent='No NASA observations loaded. The app will not substitute fabricated or estimated records.';
+  } finally {
+    if (activeRequest===controller) {
+      button.disabled=false;
+      button.firstChild.textContent='Analyze NASA data ';
+      activeRequest=null;
+    }
+  }
+}
+
+function getShareURL() {
+  const url = new URL(location.href);
+  const keys = ['variable','start','end','cityA','cityB','latA','lonA','latB','lonB','compare','auto'];
+  for (const key of keys) url.searchParams.delete(key);
+  const val = id => $(id).value;
+  url.searchParams.set('variable',val('variable'));
+  url.searchParams.set('start',val('start'));
+  url.searchParams.set('end',val('end'));
+  for (const side of ['a','b']) {
+    url.searchParams.set('city'+side.toUpperCase(),val('city-'+side));
+    url.searchParams.set('lat'+side.toUpperCase(),val('lat-'+side));
+    url.searchParams.set('lon'+side.toUpperCase(),val('lon-'+side));
+  }
+  url.searchParams.set('compare',$('compare').checked ? '1':'0');
+  url.searchParams.set('auto','1');
+  return url.toString();
+}
+
+function restoreURL() {
+  const params = new URLSearchParams(location.search);
+  if (Object.hasOwn(VARIABLES,params.get('variable'))) $('variable').value=params.get('variable');
+  for (const id of ['start','end']) if (params.has(id)) $(id).value=params.get(id);
+  for (const side of ['a','b']) {
+    const suffix=side.toUpperCase();
+    const name=params.get('city'+suffix);
+    if (name && (Object.hasOwn(LOCATIONS,name) || name==='custom')) {
+      $('city-'+side).value=name;
+      selectLocation(side);
+    }
+    for (const field of ['lat','lon']) {
+      if (params.has(field+suffix)) $(field+'-'+side).value=params.get(field+suffix);
+    }
+  }
+  if (params.has('compare')) $('compare').checked=params.get('compare')==='1';
+  setCompareEnabled();
+  $('variable-description').textContent = VARIABLES[$('variable').value].description;
+  if (params.get('auto')==='1') runAnalysis();
+}
+
+function exportCSV() {
+  if (!results.length) return;
+  const variable=$('variable').value;
+  const columns=['location','latitude','longitude','variable','year','month','value','unit','source_url','retrieved_at'];
+  const escape = value => '"' + String(value).replaceAll('"','""') + '"';
+  const rows=[columns.join(',')];
+  for (const item of results) for (const data of item.monthly) {
+    rows.push([item.label,item.lat,item.lon,variable,data.year,data.month,data.value,
+      VARIABLES[variable].unit,item.url,item.fetchedAt].map(escape).join(','));
+  }
+  const href=URL.createObjectURL(new Blob([rows.join('\n')+'\n'],{type:'text/csv;charset=utf-8'}));
+  const link=document.createElement('a'); link.href=href; link.download='terra-lens-nasa-power-'+variable+'.csv';
+  document.body.append(link); link.click(); link.remove();
+  setTimeout(()=>URL.revokeObjectURL(href),1500);
+}
+
+fillLocationOptions('a','Yogyakarta');
+fillLocationOptions('b','Jakarta');
+for (const side of ['a','b']) {
+  $('city-'+side).addEventListener('change',()=>selectLocation(side));
+  for (const axis of ['lat','lon']) {
+    $(axis+'-'+side).addEventListener('input',()=>{
+      $('city-'+side).value='custom';
+      renderCoordinates(readLocationPreview());
+    });
+  }
+}
+$('compare').addEventListener('change',setCompareEnabled);
+$('variable').addEventListener('change',()=>{
+  $('variable-description').textContent=VARIABLES[$('variable').value].description;
+});
+$('investigation-form').addEventListener('submit',event=>{event.preventDefault();runAnalysis();});
+$('download').addEventListener('click',exportCSV);
+$('share').addEventListener('click',async()=>{
+  const url=getShareURL();
+  try {
+    await navigator.clipboard.writeText(url);
+    setStatus('Investigation URL copied. Opening the link will run live NASA analysis.','success');
+  } catch {
+    window.prompt('Copy this investigation URL:',url);
+  }
+});
+renderCoordinates(readLocationPreview());
+restoreURL();

@@ -1,0 +1,24 @@
+name: NASA Live Evidence
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/live-evidence.mjs'
+      - '.github/workflows/nasa-evidence.yml'
+jobs:
+  verify-nasa-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch actual NASA POWER data and compute evidence
+        run: node scripts/live-evidence.mjs
+      - name: Save NASA-derived evidence
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: live-nasa-case-study
+          path: artifacts/nasa-evidence.json
