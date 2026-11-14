@@ -283,3 +283,10 @@ h1 em,.method h2 em { color: #8de7ec; }
 .chart-inspector label {font-weight:600;color:#d5e9ed;}
 .chart-inspector input {width:100%;accent-color:#62d6e4;cursor:pointer;}
 .chart-inspector output {grid-column:1/-1;min-height:2em;color:#d5e9ed;font-variant-numeric:tabular-nums;line-height:1.5;}
+.chart-range {display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:14px 0 4px;}
+.chart-range span {font-size:10px;letter-spacing:.08em;color:#8faab8;margin-right:4px;}
+.chart-range button {border:1px solid #365363;border-radius:5px;padding:6px 10px;background:transparent;color:#abc2cc;font-size:12px;cursor:pointer;}
+.chart-range button[aria-pressed=true] {color:#baf7f7;background:#184450;border-color:#3a8c99;}
+.chart-range button:disabled {opacity:.45;cursor:not-allowed;}
+.chart-range button:focus-visible {outline:2px solid #62d6e4;outline-offset:2px;}
+.chart-range small {color:#93acb7;font-size:11px;margin-left:auto;}

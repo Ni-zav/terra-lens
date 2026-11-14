@@ -7,6 +7,7 @@ let results = [];
 let activeRequest = null;
 let globe = null;
 let globeTarget = 'a';
+const chartWindow = {annual:'all', monthly:'all'};
 
 const format = (value, digits = 2) => Number.isFinite(value)
   ? new Intl.NumberFormat('en-US', {maximumFractionDigits: digits}).format(value) : '—';
@@ -189,14 +190,20 @@ function renderPlot(id, series, monthly, unit) {
   const height = monthly ? 270 : 320;
   const top = 18, bottom = height - 43, left = 64, right = 935;
   const pointX = point => monthly ? point.year + (point.month - .5) / 12 : point.year;
+  const prefix = monthly ? 'monthly' : 'annual';
+  const latestYear = Math.max(...series.flatMap(item => (monthly ? item.monthly : item.annual).map(p => p.year)));
+  const firstVisibleYear = chartWindow[prefix] === '10' ? latestYear - 9 : -Infinity;
   const groups = series.map(item => ({
     label: item.label, color: item.color,
-    points: monthly ? item.monthly : item.annual,
-    fit: monthly ? [] : item.trend?.fitted || []
+    points: (monthly ? item.monthly : item.annual).filter(p => p.year >= firstVisibleYear),
+    fit: monthly ? [] : (item.trend?.fitted || []).filter(p => p.year >= firstVisibleYear)
   }));
   const all = groups.flatMap(group => group.points.map(p => ({x:pointX(p),y:p.value})));
   clearSvg(svg, (monthly ? 'Monthly observations' : 'Annual means and trends') + ' from NASA POWER, ' + unit);
   if (!all.length) {
+    $(prefix+'-cursor').disabled=true;
+    $(prefix+'-readout').textContent='No values in this display period.';
+    svg.onpointermove=null;
     svg.append(svgNode('text',{x:480,y:140,'text-anchor':'middle',fill:'#92acb8'},'No valid observations to display.'));
     return;
   }
@@ -256,7 +263,6 @@ function renderPlot(id, series, monthly, unit) {
   }
   // Crosshair and range control expose exact same-date values for pointer,
   // touch and keyboard users. Missing records remain explicitly missing.
-  const prefix = monthly ? 'monthly' : 'annual';
   const slider = $(prefix+'-cursor'), readout = $(prefix+'-readout');
   const dates = [...new Set(groups.flatMap(group => group.points.map(pointX)))].sort((a,b)=>a-b);
   const line=svgNode('line',{y1:top,y2:bottom,stroke:'#d6e9ed','stroke-width':1,
@@ -396,6 +402,12 @@ function renderComparison(series, variable) {
 
 function updateResults(config, series, warnings) {
   results = series;
+  for (const prefix of ['annual','monthly']) {
+    chartWindow[prefix]='all';
+    for (const button of document.querySelectorAll('[data-chart="'+prefix+'"]')) {
+      button.disabled=false; button.setAttribute('aria-pressed',String(button.dataset.years==='all'));
+    }
+  }
   const main = series[0], varInfo = VARIABLES[config.variable], trend = main.trend;
   $('data-label').textContent = 'NASA DATA LOADED';
   $('data-label').classList.add('live');
@@ -452,6 +464,7 @@ function updateResults(config, series, warnings) {
 
 function resetResultsUI() {
   results = [];
+  for (const button of document.querySelectorAll('.chart-range button')) button.disabled=true;
   $('metric-slope').textContent = '—';
   $('metric-slope-detail').textContent = 'Awaiting verified NASA observations';
   $('metric-significance').textContent = '—';
@@ -604,6 +617,16 @@ $('variable').addEventListener('change',()=>{
   $('variable-description').textContent=VARIABLES[$('variable').value].description;
 });
 $('investigation-form').addEventListener('submit',event=>{event.preventDefault();runAnalysis();});
+for (const button of document.querySelectorAll('.chart-range button')) {
+  button.addEventListener('click',()=>{
+    const prefix=button.dataset.chart;
+    if (!results.length) return;
+    chartWindow[prefix]=button.dataset.years;
+    for (const sibling of document.querySelectorAll('[data-chart="'+prefix+'"]'))
+      sibling.setAttribute('aria-pressed',String(sibling===button));
+    renderPlot(prefix+'-chart',results,prefix==='monthly',VARIABLES[results[0].variable].unit);
+  });
+}
 $('download').addEventListener('click',exportCSV);
 $('share').addEventListener('click',async()=>{
   const url=getShareURL();

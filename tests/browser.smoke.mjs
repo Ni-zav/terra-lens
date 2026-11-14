@@ -85,6 +85,13 @@ try {
   assert.match(await page.locator('#annual-readout').textContent(),/2001.*Yogyakarta.*Jakarta/);
   await page.locator('#monthly-cursor').fill('0');
   assert.match(await page.locator('#monthly-readout').textContent(),/2001-01.*Yogyakarta.*Jakarta/);
+  const fullSlope=await page.locator('#metric-slope').textContent();
+  await page.locator('[data-chart="annual"][data-years="10"]').click();
+  await page.locator('#annual-cursor').fill('0');
+  assert.match(await page.locator('#annual-readout').textContent(),/^2015/);
+  assert.equal(await page.locator('#metric-slope').textContent(),fullSlope,
+    'Changing the display period must not change the fitted analysis');
+  await page.locator('[data-chart="annual"][data-years="all"]').click();
   assert.equal(errors.length,0,'Browser errors: '+errors.join('; '));
   await mkdir(join(ROOT,'artifacts'),{recursive:true});
   await page.screenshot({path:join(ROOT,'artifacts','desktop.png'),fullPage:true});

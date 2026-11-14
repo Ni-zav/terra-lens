@@ -87,5 +87,7 @@ it approaches the viewport, and the form remains usable if WebGL is unavailable.
 
 Annual and monthly charts provide a date slider and a crosshair. Values shown
 are actual records at that date; missing records are labeled rather than filled
-or interpolated. Sliders and the scrollable plot regions are keyboard accessible.
+or interpolated. The optional last-ten-years view changes only the display;
+trend statistics continue to use the full requested analysis period. Sliders and
+the scrollable plot regions are keyboard accessible.
 Three.js 0.187.0 is distributed under the MIT license in `vendor/THREE-LICENSE.txt`.
