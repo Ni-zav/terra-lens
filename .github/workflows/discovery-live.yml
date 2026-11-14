@@ -1,0 +1,35 @@
+name: Experimental eight-point NASA science verification
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/discovery.js'
+      - 'src/react/ContrastFinder.jsx'
+      - 'scripts/live-discovery.mjs'
+      - 'scripts/verify-discovery-scipy.py'
+      - '.github/workflows/discovery-live.yml'
+jobs:
+  verified-real-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install independent reference math
+        run: python -m pip install numpy scipy
+      - name: Query eight real NASA POWER samples (no synthetic observations)
+        run: node scripts/live-discovery.mjs
+      - name: Recompute all annual means and slopes in independent SciPy
+        run: python scripts/verify-discovery-scipy.py
+      - name: Preserve real NASA source and calculation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eight-point-nasa-sentinel-evidence
+          path: artifacts/discovery-nasa-evidence.json
+          if-no-files-found: ignore
