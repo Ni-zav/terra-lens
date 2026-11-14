@@ -54,6 +54,11 @@ try{
   assert.equal(await page.locator('.comparison-rows .comparison-point').count(),3);
   assert.equal(await page.locator('[aria-label="Paired difference in trends"]').count(),2);
   assert.equal(await page.locator('#confidence-chart circle').count(),3);
+  const compScroll=await page.evaluate(()=>{
+    const shell=document.querySelector('.chart-shell'),panel=document.querySelector('#comparison-panel');
+    return {shellOverflow:shell.scrollHeight<=shell.clientHeight+1,panelScrollable:panel.clientHeight<=shell.clientHeight};
+  });
+  assert.ok(compScroll.shellOverflow&&compScroll.panelScrollable,'Comparison must scroll inside #comparison-panel without overflowing .chart-shell');
   await page.locator('#compare-c').uncheck();
   await page.locator('#analyze').click();await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
   await page.locator('#tab-annual').click();await page.locator('#tab-annual').focus();await page.keyboard.press('ArrowRight');

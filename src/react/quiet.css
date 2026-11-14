@@ -39,9 +39,16 @@
 @media (min-width:800px) and (min-height:660px) {
   html, body { height:auto; min-height:100%; overflow-x:hidden; overflow-y:auto; }
 }
-/* The paired interval evidence exceeds the chart region on short laptops.
-   Scroll inside the comparison itself instead of clipping the third finding. */
-.comparison-panel { overflow-y:auto; overscroll-behavior:contain; }
+/* Constrain the 02 // SERIES panel and make Compare & test scroll strictly inside its own container */
+.results { overflow: hidden; }
+.chart-views { display: flex; flex-direction: column; overflow: hidden; }
+#panel-comparison { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.comparison-panel { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; }
+.comparison-panel > * { flex-shrink: 0; }
+.comparison-rows { flex: 0 0 auto; min-height: auto; }
+@media (max-width: 799px) {
+  .comparison-panel { max-height: 520px; }
+}
 .source-actions { flex-wrap:wrap; }
 
 /* Source importer forms must never retain intrinsic input widths on phones. */
