@@ -35,7 +35,7 @@ export default function GiovanniEvidence() {
     anchor.href=url;anchor.download='terra-lens-giovanni-import-evidence.json';document.body.append(anchor);anchor.click();anchor.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1500);
   }
-  return <section className="panel" style={{padding:'1.5rem',margin:'1.5rem 0'}} aria-labelledby="giovanni-heading">
+  return <section className="panel giovanni-workspace" style={{padding:'1.5rem',margin:'1.5rem 0'}} aria-labelledby="giovanni-heading">
     <span className="section-kicker">Independent NASA dataset pathway</span>
     <h2 id="giovanni-heading">Analyze a NASA Giovanni monthly export</h2>
     <p className="aside-note">This is an additional local-file workflow, not a replacement for live NASA POWER. Export a <strong>monthly</strong> NASA Giovanni time series and keep the original NASA product ID, DOI, download link and file. The import runs locally; no Earthdata password or file is uploaded to Terra-Lens. We do not assert the file is genuine merely because the parser accepted it.</p>
