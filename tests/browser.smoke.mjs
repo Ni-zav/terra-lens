@@ -46,11 +46,13 @@ try{
   await page.locator('#earth-globe canvas').click({position:{x:box.width/2,y:box.height/2}});
   assert.equal(await page.locator('#compare').isChecked(),true);await page.locator('#city-b').selectOption('Jakarta');
   await page.locator('#analyze').click();await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
-  await page.locator('#tab-comparison').click();assert.equal(await page.locator('.comparison-point').count(),2);
+  await page.locator('#tab-comparison').click();assert.equal(await page.locator('.comparison-rows .comparison-point').count(),2);
+  assert.equal(await page.locator('[aria-label="Paired difference in trends"]').count(),1);
   assert.equal(await page.locator('#confidence-chart circle').count(),2);
   await page.locator('#compare-c').check();
   await page.locator('#analyze').click();await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
-  assert.equal(await page.locator('.comparison-point').count(),3);
+  assert.equal(await page.locator('.comparison-rows .comparison-point').count(),3);
+  assert.equal(await page.locator('[aria-label="Paired difference in trends"]').count(),2);
   assert.equal(await page.locator('#confidence-chart circle').count(),3);
   await page.locator('#compare-c').uncheck();
   await page.locator('#analyze').click();await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
@@ -78,7 +80,7 @@ try{
         const inside=[['.insight-card>a','.insight-card'],['.globe-credit','.globe-panel'],['.source-actions','.sources-card']].map(([c,p])=>({child:c,bottom:document.querySelector(c).getBoundingClientRect().bottom,parentBottom:document.querySelector(p).getBoundingClientRect().bottom}));
         return {sw:document.documentElement.scrollWidth,sh:document.documentElement.scrollHeight,boxes,inside};
       });
-      assert.ok(d.sw<=width+2&&d.sh<=height+2,'Desktop document overflow '+JSON.stringify({width,height,name,d}));
+      assert.ok(d.sw<=width+2,'Desktop horizontal document overflow '+JSON.stringify({width,height,name,d})); // The independent Giovanni evidence section intentionally scrolls vertically below the viewport.
       for(const b of d.boxes)assert.ok(b.right<=width+1&&b.bottom<=height+1&&b.scroll<=b.client+2&&b.scrollWidth<=b.clientWidth+2,'Desktop content clipped '+JSON.stringify({width,height,name,b}));
       for(const item of d.inside)assert.ok(item.bottom<=item.parentBottom+1,'Desktop panel overlap '+JSON.stringify({width,height,name,item}));
     }

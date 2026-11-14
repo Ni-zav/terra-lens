@@ -14,6 +14,7 @@ import time
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+import numpy as np
 from scipy.stats import linregress, t
 
 BASE = "https://power.larc.nasa.gov/api/temporal/monthly/point"
@@ -28,6 +29,56 @@ const trend=linearTrend(annual);
 console.log(JSON.stringify({n:annual.length, slope:trend.slopePerDecade,
   lower:trend.ciLowPerDecade, upper:trend.ciHighPerDecade, p:trend.pValue}));
 """
+
+JS_PAIR = """
+import {readFileSync} from 'node:fs';
+import {parseMonthly} from './src/power.js';
+import {annualMeans} from './src/stats.js';
+import {pairedContrast} from './src/contrast.js';
+const annual = name => annualMeans(parseMonthly(
+  JSON.parse(readFileSync(name, 'utf8')), 'T2M', {start:2001,end:2024}));
+const result=pairedContrast(annual(process.argv[1]),annual(process.argv[2]));
+console.log(JSON.stringify({n:result.n,lag:result.hac.lag,slope:result.hac.slopePerDecade,
+  se:result.hac.sePerDecade,lower:result.hac.ciLowPerDecade,
+  upper:result.hac.ciHighPerDecade,p:result.hac.pValue}));
+"""
+def verify_paired_slope(records, artifacts):
+    left={row["year"]:row["value"] for row in records["results"]["Yogyakarta"]["annual_series"]}
+    right={row["year"]:row["value"] for row in records["results"]["Jakarta"]["annual_series"]}
+    years=np.array(sorted(set(left)&set(right)),dtype=float)
+    values=np.array([right[int(year)]-left[int(year)] for year in years],dtype=float)
+    n=len(years)
+    assert n>=10, "Paired comparison requires at least ten matched years."
+    x=years-years.mean()
+    y=values-values.mean()
+    slope=float(np.dot(x,y)/np.dot(x,x))
+    residual=values-(values.mean()+slope*x)
+    z=x*residual
+    lag=min(n-2,max(1,int(math.floor(4*(n/100)**(2/9)))))
+    variance=float(np.dot(z,z))
+    for k in range(1,lag+1):
+        variance+=2*(1-k/(lag+1))*float(np.dot(z[k:],z[:-k]))
+    se=math.sqrt(max(0,variance*(n/(n-2))/(float(np.dot(x,x))**2)))
+    critical=float(t.ppf(.975,n-2))
+    p=float(2*t.sf(abs(slope/se),n-2)) if se>0 else (1.0 if abs(slope)<1e-12 else 0.0)
+    py={"n":n,"lag":lag,"slope":slope*10,"se":se*10,
+        "lower":(slope-critical*se)*10,"upper":(slope+critical*se)*10,"p":p}
+    js=json.loads(subprocess.run(
+        ["node","--input-type=module","-e",JS_PAIR,
+         str(artifacts/"power-yogyakarta.json"),str(artifacts/"power-jakarta.json")],
+        check=True,capture_output=True,text=True,
+    ).stdout)
+    for metric in py:
+        assert math.isclose(float(py[metric]),float(js[metric]),rel_tol=1e-7,abs_tol=1e-9), (
+            f"Paired contrast {metric}: NumPy/SciPy={py[metric]!r}, JS={js[metric]!r}"
+        )
+    print(f"Paired B−A NASA contrast: n={n}; slope={py['slope']:+.6f} °C/decade; "
+          f"HAC {lag=}, CI [{py['lower']:+.6f},{py['upper']:+.6f}]; p={p:.8g}; PASS")
+    records["paired_B_minus_A"]={
+        "definition":"Jakarta minus Yogyakarta, aligned complete calendar years",
+        "method":"Exploratory Bartlett Newey-West HAC, HC1 scaling, approximate t(n-2)",
+        "numpy_scipy":py,"javascript":js,"caveat":"Same NASA response, independent numerical implementation; not observational accuracy validation or a causal test."
+    }
 
 def download(url):
     last = None
@@ -118,6 +169,7 @@ def main():
         }
         print(f"{name}: {len(rows)} years; SciPy/JS slope={py['slope']:+.6f} °C/decade; "
               f"95% CI [{py['lower']:+.6f}, {py['upper']:+.6f}]; p={py['p']:.8g}; PASS")
+    verify_paired_slope(records, artifacts)
     (artifacts / "scipy-verification.json").write_text(
         json.dumps(records, indent=2) + "\n", encoding="utf-8")
     print("Independent SciPy and JavaScript computations agree on the SAME live NASA responses.")

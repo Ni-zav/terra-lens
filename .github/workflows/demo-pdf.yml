@@ -13,7 +13,7 @@ concurrency:
   group: terra-lens-pdf-main
   cancel-in-progress: true
 permissions:
-  contents: read
+  contents: write
 jobs:
   create-pdf:
     runs-on: ubuntu-latest
@@ -42,6 +42,16 @@ jobs:
           print(f"Demo PDF pages: {count}")
           assert count==7, f"Official demo limit: 7 slides; generated {count}"
           PY
+      - name: Commit regenerated PDF on review branches only
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add demo/Terra-Lens_Seven_Slide_Demo.pdf
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs(demo): sync generated verified seven-slide PDF'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
       - name: Upload verified demo PDF
         uses: actions/upload-artifact@v4
         with:
