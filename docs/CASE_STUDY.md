@@ -33,10 +33,11 @@ These are historical modeled/reanalysis grid-cell estimates, not urban area aver
 - [x] Source requests succeeded from GitHub Actions on 14 Nov 2026.
 - [x] Monthly response parsing and annual aggregation yielded 24 complete calendar years each.
 - [x] Independent nonproduction browser fixture and computation unit tests passed in CI.
-- [ ] A third-party implementation has independently reproduced OLS slope, t-interval and p-value on the *live* NASA records.
-- [ ] Cloudflare Pages deployment tested end-to-end with the live proxy.
-- [ ] Official 2026 challenge **Resources tab** checked for NASA-resource eligibility.
-- [ ] Submitted presentation screenshots generated from verified NASA results rather than test fixtures.
+- [x] Independent SciPy `linregress` slope, t-interval, and p-value independently reproduced on **the same live NASA responses** as the JavaScript implementation. [Passing workflow #43563257853](https://github.com/Ni-zav/terra-lens/actions/runs/43563257853), 14 Nov 2026. The logs show matching trends and confidence intervals to at least six decimal places.
+- [x] Chromium browser tested with the **real** NASA API through the actual Pages Function code running locally, including two points, another variable, 576-row CSV and mobile overflow. [Live NASA browser workflow #43563581913](https://github.com/Ni-zav/terra-lens/actions/runs/43563581913); [actual screenshots](screenshots/README.md).
+- [ ] Cloudflare Pages **deployed** site verified end-to-end. Locally running the Pages Function code is not proof of Cloudflare deployment.
+- [ ] Exact official 2026 challenge **Resources tab** membership checked and any required listed NASA data source actually used. NASA POWER is valid NASA data, but may not appear in that required list.
+- [x] Real-NASA browser screenshots generated. They are not synthetic browser-test fixtures.
 
 ## Reading the evidence
 
