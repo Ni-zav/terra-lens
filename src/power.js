@@ -1,4 +1,5 @@
 /** NASA POWER monthly point adapter. Missing values are excluded, never substituted. */
+import {makeSeries, SUPPORT} from './series.js';
 export const VARIABLES = Object.freeze({
   T2M: { label: 'Air temperature', description: 'Near-surface mean air temperature at 2 meters (monthly mean).', unit: '°C' },
   T2M_MAX: { label: 'Daily maximum temperature', description: 'Monthly average of the daily maximum 2 m temperature; not the single highest day.', unit: '°C' },
@@ -240,4 +241,15 @@ export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
     source: 'NASA POWER / MERRA-2-derived meteorological reanalysis',
     metadata: payload.header || {}, coordinate: payload.geometry?.coordinates
   };
+}
+
+/** Adapter: a fetched NASA POWER response becomes a canonical Series. */
+export function powerSeries(fetched, {id, label, color, lat, lon, variable}) {
+  const info = VARIABLES[variable];
+  return makeSeries({
+    id, label, color, monthly: fetched.monthly, support: SUPPORT.GRID_POINT, geo: {lat, lon},
+    variable: {code: 'POWER:' + variable, label: info.label, unit: info.unit, description: info.description},
+    provenance: {kind: 'nasa-power', source: fetched.source, url: fetched.url, retrievedAt: fetched.fetchedAt,
+      metadata: fetched.metadata, coordinate: fetched.coordinate, authenticated: true}
+  });
 }

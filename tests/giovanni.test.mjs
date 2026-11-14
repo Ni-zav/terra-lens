@@ -19,3 +19,11 @@ test('Giovanni parser rejects unlabelled or empty data, excludes fill values',()
  const r=parseGiovanniMonthlyCSV(header+'2001-01-01,-999\n2001-02-01,281');
  assert.equal(r.monthly.length,1);
 });
+import {giovanniSeries} from '../src/giovanni.js';
+import {SUPPORT} from '../src/series.js';
+test('Giovanni adapter yields an unauthenticated area-average series',()=>{
+ const data=Array.from({length:24},(_,i)=>String(2000+Math.floor(i/12))+'-'+String(i%12+1).padStart(2,'0')+'-01,'+(280+i)+'\n').join('');
+ const s=giovanniSeries(parseGiovanniMonthlyCSV(header+data),{sha256:'abc'});
+ assert.equal(s.id,'G');assert.equal(s.support,SUPPORT.AREA_AVERAGE);assert.equal(s.variable.unit,'K');
+ assert.equal(s.provenance.authenticated,false);assert.deepEqual(s.geo,{lat:45.125,lon:-98.125});
+});

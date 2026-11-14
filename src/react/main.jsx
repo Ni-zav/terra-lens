@@ -1,9 +1,10 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {annualMeans, linearTrend} from '../stats.js';
-import {pairedContrast} from '../contrast.js';
-import {VARIABLES, LOCATIONS, fetchNASA, requestURL, resolveLocationName} from '../power.js';
+import {VARIABLES, LOCATIONS, fetchNASA, requestURL, resolveLocationName, powerSeries} from '../power.js';
+import {analyzeSeries, buildFindings, supportLabel} from '../series.js';
+import {axisPlan} from './chart-model.js';
 const TimeChart=React.lazy(()=>import('./Chart.jsx').then(module=>({default:module.TimeChart})));
+const SeasonalChart=React.lazy(()=>import('./Chart.jsx').then(module=>({default:module.SeasonalChart})));
 const GiovanniEvidence=React.lazy(()=>import('./Giovanni.jsx'));
 import './base.css';
 import '../../styles/workspace.css';
@@ -67,32 +68,36 @@ function makeShare(inputs){
   if(inputs.compareD)url.searchParams.set('compareD','1');
   url.searchParams.set('auto','1');return url.href;
 }
-function csvDownload(results){
-  if(!results.length)return;
-  const columns=['location','latitude','longitude','variable','year','month','value','unit','source_url','retrieved_at'];
-  const quote=v=>'"'+String(v).replaceAll('"','""')+'"';
-  const rows=[columns.join(',')];
-  for(const item of results) for(const p of item.monthly)rows.push([item.label,item.lat,item.lon,item.variable,p.year,p.month,p.value,
-    VARIABLES[item.variable].unit,item.url,item.fetchedAt].map(quote).join(','));
-  const url=URL.createObjectURL(new Blob([rows.join('\n')+'\n'],{type:'text/csv;charset=utf-8'}));
-  const link=document.createElement('a');link.href=url;link.download=`terra-lens-nasa-power-${results[0].variable}.csv`;
+function download(name,type,text){
+  const url=URL.createObjectURL(new Blob([text],{type}));
+  const link=document.createElement('a');link.href=url;link.download=name;
   document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
-function evidenceDownload(results) {
-  if (!results.length) return;
-  const pairing = results.slice(1).map(other => ({reference: results[0].id, comparison: other.id, contrast: pairedContrast(results[0].annual, other.annual)}));
-  const payload = {
-    schema: 'terra-lens-evidence-v1',
-    generatedAt: new Date().toISOString(),
-    provenanceNote: 'Actual NASA POWER responses retrieved at runtime. Statistical estimates are derived, not raw observations.',
-    method: 'Day-weighted full-year monthly means; classical OLS. Paired B-A aligned-year contrast with exploratory Bartlett Newey-West HAC.',
-    limitations: 'Point estimates are not whole-city measurements. HAC uncertainty is approximate; no causation, forecast or correction for multiple exploratory searches.',
-    sources: results.map(r=>({id:r.id,label:r.label,lat:r.lat,lon:r.lon,variable:r.variable,unit:VARIABLES[r.variable].unit,source:r.source,sourceURL:r.url,retrievedAt:r.fetchedAt,metadata:r.metadata,monthly:r.monthly,annual:r.annual,trend:r.trend})),
-    pairedContrasts: pairing
+/** Raw monthly records of every series, one schema regardless of source. */
+function csvDownload(series){
+  if(!series.length)return;
+  const columns=['series','location','latitude','longitude','spatial_support','variable','year','month','value','unit','source_url','retrieved_at'];
+  const quote=v=>'"'+String(v??'').replaceAll('"','""')+'"';
+  const rows=[columns.join(',')];
+  for(const s of series) for(const p of s.monthly)rows.push([s.id,s.label,s.geo?.lat,s.geo?.lon,s.support,s.variable.code,p.year,p.month,p.value,
+    s.variable.unit,s.provenance.url,s.provenance.retrievedAt].map(quote).join(','));
+  download(`terra-lens-${series[0].variable.code.replace(':','-')}.csv`,'text/csv;charset=utf-8',rows.join('\n')+'\n');
+}
+/** Everything shown on screen, from the same derivations, plus provenance. */
+function evidenceDownload(series,findings){
+  if(!series.length)return;
+  const payload={
+    schema:'terra-lens-evidence-v2',
+    generatedAt:new Date().toISOString(),
+    provenanceNote:'Raw monthly values are exactly as retrieved (NASA POWER) or imported (Giovanni). All other numbers are deterministic derivations.',
+    method:'Day-weighted complete-year annual means; classical OLS t-test; Mann–Kendall with Theil–Sen slope; residual lag-1 autocorrelation; paired aligned-year contrast with Bartlett Newey–West HAC for compatible series only.',
+    limitations:'Grid-point estimates are not whole-city measurements. Tests assume independent annual values (HAC is approximate). No causation, forecast or multiple-testing correction.',
+    series:series.map(s=>{const a=analyzeSeries(s);return {id:s.id,label:s.label,variable:s.variable,support:s.support,geo:s.geo,provenance:s.provenance,
+      monthly:s.monthly,annual:a.annual,coverage:a.coverage,ols:a.trend,mannKendall:a.robust,dependence:a.dependence,verdict:a.verdict};}),
+    comparisons:findings.comparisons,
+    findings:findings.lines
   };
-  const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)+'\n'],{type:'application/json;charset=utf-8'}));
-  const link=document.createElement('a');link.href=url;link.download='terra-lens-auditable-evidence.json';
-  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  download('terra-lens-auditable-evidence.json','application/json;charset=utf-8',JSON.stringify(payload,null,2)+'\n');
 }
 function Globe({inputs,onPick}){
   const host=useRef(null),globe=useRef(null),pickRef=useRef(onPick),[target,setTarget]=useState('A'),targetRef=useRef('A');
@@ -145,35 +150,57 @@ function Globe({inputs,onPick}){
     <div ref={host} id="earth-globe" className="earth-globe" aria-label="Interactive Earth globe"/>
     <p className="globe-credit">Historical <a href="https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/" target="_blank" rel="noreferrer">NASA Blue Marble</a> imagery (2001) · Context only, not live data.</p></section>;
 }
-function Confidence({results,unit}){
-  const valid=results.filter(r=>r.trend&&Number.isFinite(r.trend.ciLowPerDecade)&&Number.isFinite(r.trend.ciHighPerDecade));
+function Verdict({verdict}){
+  return <span className={'verdict verdict-'+verdict.level} title={verdict.detail}>{verdict.headline}</span>;
+}
+function Comparison({series,findings}){
+  const plan=axisPlan(series,'values'), unit=plan.unit;
+  const valid=plan.drawn.map(analyzeSeries).filter(a=>a.trend&&a.robust);
   if(!valid.length)return <p className="comparison-empty">At least 10 complete years are needed to estimate a trend.</p>;
-  let min=Math.min(0,...valid.map(r=>r.trend.ciLowPerDecade)),max=Math.max(0,...valid.map(r=>r.trend.ciHighPerDecade));const padding=(max-min||.5)*.13;min-=padding;max+=padding;
-  const x=v=>256+(v-min)/(max-min)*640;
-  return <div className="comparison-panel" id="comparison-panel"><div className="comparison-topline"><div className="pane-title-group"><h3>Classical slope intervals</h3><p>95% intervals for each point independently</p></div></div>
-    <div className="confidence-wrap" tabIndex="0" role="region" aria-label="Classical slope intervals"><svg id="confidence-chart" viewBox="0 0 960 194" role="img" aria-label="Separate classical 95 percent slope confidence intervals">
-    {[0,1,2,3,4].map(i=>{const value=min+(max-min)*i/4;return <g key={i}><line x1={x(value)} y1="38" x2={x(value)} y2="168" stroke="#1e3446"/><text x={x(value)} y="185" fill="#95b0be" textAnchor="middle" fontSize="16" fontFamily="ui-monospace, monospace">{number(value,2)}</text></g>})}
-    <line x1={x(0)} y1="38" x2={x(0)} y2="168" stroke="#8cb4c2" strokeDasharray="4 4"/>
-    {valid.map((r,i)=>{const y=valid.length===1?103:54+i*(100/(valid.length-1)),t=r.trend;return <g key={r.id}><text x="18" y={y+5} fill="#e4f2f5" fontSize={valid.length>2?"16":"18"} fontFamily="ui-monospace, monospace">{r.id} · {r.label}</text><line x1={x(t.ciLowPerDecade)} x2={x(t.ciHighPerDecade)} y1={y} y2={y} stroke={r.color} strokeWidth={valid.length>2?"5":"6"} strokeLinecap="round"/><circle cx={x(t.slopePerDecade)} cy={y} r={valid.length>2?"7":"8"} fill={r.color}><title>{`${r.label}: ${signed(t.slopePerDecade,3)} ${unit}/decade; 95% CI ${signed(t.ciLowPerDecade,3)} to ${signed(t.ciHighPerDecade,3)}`}</title></circle></g>})}
-    <text x="580" y="20" textAnchor="middle" fill="#95b0be" fontSize="15" fontFamily="ui-monospace, monospace">Classical 95% slope intervals · {unit}/decade</text></svg></div>
-    <div className="comparison-rows" id="comparison-rows">{results.map(r=><article className="comparison-point" key={r.id} style={{'--series-color':r.color}}><div className="comparison-location"><span className="comparison-badge">{r.id}</span><strong>{r.label}</strong><small>{number(r.lat,4)}°, {number(r.lon,4)}°</small></div><div className="comparison-numbers">
-      <div className="comparison-stat"><span>Years</span><strong>{r.annual.length}</strong></div><div className="comparison-stat"><span>Linear trend</span><strong>{r.trend?`${signed(r.trend.slopePerDecade,3)} ${unit}/dec`:'Not estimated'}</strong></div><div className="comparison-stat"><span>95% CI</span><strong>{r.trend?`${signed(r.trend.ciLowPerDecade,3)} .. ${signed(r.trend.ciHighPerDecade,3)}`:'—'}</strong></div><div className="comparison-stat"><span>Two-sided p</span><strong>{r.trend?pValue(r.trend.pValue):'—'}</strong></div>
-    </div></article>)}</div><p className="comparison-note">Separate slope tests do not test the contrast. The paired comparison below uses only shared complete years; its HAC interval remains approximate and exploratory.</p>
-    {results.slice(1).map(other=>{const paired=pairedContrast(results[0].annual,other.annual);return <section className="comparison-point paired-contrast" key={'paired-'+other.id} aria-label="Paired difference in trends">
-      <div className="comparison-topline"><div><h3>Paired trend contrast ({other.id} − A)</h3><p>Direct comparison on the same calendar years</p></div></div>
-      {paired ? <><div className="comparison-numbers">
+  const lows=valid.flatMap(a=>[a.trend.ciLowPerDecade,a.robust.senCiLowPerDecade]),highs=valid.flatMap(a=>[a.trend.ciHighPerDecade,a.robust.senCiHighPerDecade]);
+  let min=Math.min(0,...lows),max=Math.max(0,...highs);const padding=(max-min||.5)*.13;min-=padding;max+=padding;
+  const x=v=>256+(v-min)/(max-min)*640, rowGap=valid.length===1?0:Math.min(44,120/(valid.length-1)), top=valid.length===1?96:58;
+  const height=Math.max(194,top+rowGap*(valid.length-1)+70);
+  return <div className="comparison-panel" id="comparison-panel"><div className="comparison-topline"><div className="pane-title-group"><h3>Trend evidence, two independent tests</h3><p>Classical OLS (filled circle, thick bar) and rank-based Theil–Sen / Mann–Kendall (diamond, thin bar) · 95% intervals</p></div></div>
+    <div className="confidence-wrap" tabIndex="0" role="region" aria-label="Slope intervals"><svg id="confidence-chart" viewBox={`0 0 960 ${height}`} role="img" aria-label="Classical and Theil–Sen 95 percent slope intervals for each series">
+    {[0,1,2,3,4].map(i=>{const value=min+(max-min)*i/4;return <g key={i}><line x1={x(value)} y1="38" x2={x(value)} y2={height-26} stroke="#1e3446"/><text x={x(value)} y={height-9} fill="#95b0be" textAnchor="middle" fontSize="16" fontFamily="ui-monospace, monospace">{number(value,2)}</text></g>})}
+    <line x1={x(0)} y1="38" x2={x(0)} y2={height-26} stroke="#8cb4c2" strokeDasharray="4 4"/>
+    {valid.map((a,i)=>{const s=a.series,y=top+i*rowGap,t=a.trend,r=a.robust,d=x(r.senSlopePerDecade);return <g key={s.id}>
+      <text x="18" y={y+5} fill="#e4f2f5" fontSize={valid.length>2?"16":"18"} fontFamily="ui-monospace, monospace">{s.id} · {s.label.length>20?s.label.slice(0,19)+'…':s.label}</text>
+      <line x1={x(t.ciLowPerDecade)} x2={x(t.ciHighPerDecade)} y1={y-4} y2={y-4} stroke={s.color} strokeWidth="6" strokeLinecap="round"/>
+      <circle cx={x(t.slopePerDecade)} cy={y-4} r="7" fill={s.color}><title>{`${s.label} OLS: ${signed(t.slopePerDecade,3)} ${unit}/decade; 95% CI ${signed(t.ciLowPerDecade,3)} to ${signed(t.ciHighPerDecade,3)}`}</title></circle>
+      <line x1={x(r.senCiLowPerDecade)} x2={x(r.senCiHighPerDecade)} y1={y+9} y2={y+9} stroke={s.color} strokeWidth="2" opacity=".8"/>
+      <path d={`M${d} ${y+3} L${d+6} ${y+9} L${d} ${y+15} L${d-6} ${y+9} Z`} fill="#071019" stroke={s.color} strokeWidth="2"><title>{`${s.label} Theil–Sen: ${signed(r.senSlopePerDecade,3)} ${unit}/decade; 95% CI ${signed(r.senCiLowPerDecade,3)} to ${signed(r.senCiHighPerDecade,3)}`}</title></path>
+    </g>})}
+    <text x="580" y="20" textAnchor="middle" fill="#95b0be" fontSize="15" fontFamily="ui-monospace, monospace">95% slope intervals · {unit}/decade</text></svg></div>
+    {plan.excluded.length>0&&<p className="comparison-note">{plan.excluded.map(s=>s.id).join(', ')} not drawn: unit differs from {unit}. See its row below.</p>}
+    <div className="comparison-rows" id="comparison-rows">{series.map(s=>{const a=analyzeSeries(s),u=s.variable.unit;return <article className="comparison-point" key={s.id} style={{'--series-color':s.color}}><div className="comparison-location"><span className="comparison-badge">{s.id}</span><strong>{s.label}</strong><small>{s.geo?`${number(s.geo.lat,4)}°, ${number(s.geo.lon,4)}° · `:''}{supportLabel(s.support)}</small><Verdict verdict={a.verdict}/></div><div className="comparison-numbers">
+      <div className="comparison-stat"><span>OLS trend</span><strong>{a.trend?`${signed(a.trend.slopePerDecade,3)} ${u}/dec`:'Not estimated'}</strong></div>
+      <div className="comparison-stat"><span>OLS 95% CI</span><strong>{a.trend?`${signed(a.trend.ciLowPerDecade,3)} .. ${signed(a.trend.ciHighPerDecade,3)}`:'—'}</strong></div>
+      <div className="comparison-stat"><span>OLS t-test p</span><strong>{a.trend?pValue(a.trend.pValue):'—'}</strong></div>
+      <div className="comparison-stat"><span>Complete years</span><strong>{a.coverage.completeYears}{a.coverage.missingMonths?` · ${a.coverage.missingMonths} gaps`:''}</strong></div>
+      <div className="comparison-stat"><span>Theil–Sen trend</span><strong>{a.robust?`${signed(a.robust.senSlopePerDecade,3)} ${u}/dec`:'—'}</strong></div>
+      <div className="comparison-stat"><span>Sen 95% CI</span><strong>{a.robust?`${signed(a.robust.senCiLowPerDecade,3)} .. ${signed(a.robust.senCiHighPerDecade,3)}`:'—'}</strong></div>
+      <div className="comparison-stat"><span>Mann–Kendall p</span><strong>{a.robust?pValue(a.robust.pValue):'—'}</strong></div>
+      <div className="comparison-stat"><span>Residual lag-1 r</span><strong className={a.dependence?.flagged?'flag':''}>{a.dependence?.r1!=null?number(a.dependence.r1,2)+(a.dependence.flagged?' ⚠':''):'—'}</strong></div>
+    </div></article>})}</div><p className="comparison-note">Separate slope tests do not test a difference between series. Paired contrasts below use only shared complete years and compatible series; their HAC interval remains approximate and exploratory. ⚠ marks residual autocorrelation beyond ±1.96/√n, where both p-values may be optimistic.</p>
+    {findings.comparisons.map(cmp=>{const paired=cmp.contrast,other=series.find(s=>s.id===cmp.otherId),u=series[0].variable.unit;return <section className="comparison-point paired-contrast" key={'paired-'+cmp.otherId} aria-label="Paired difference in trends">
+      <div className="comparison-topline"><div><h3>Paired trend contrast ({cmp.otherId} − {cmp.referenceId})</h3><p>{cmp.paired?'Direct comparison on the same calendar years':'Not computed for incompatible series'}</p></div></div>
+      {!cmp.paired?<p className="comparison-note">No paired test: {cmp.reasons.join('; ')}. Use Monthly → Anomaly to compare the shape of {other.label} with {series[0].label}.</p>
+      :paired ? <><div className="comparison-numbers">
         <div className="comparison-stat"><span>Paired complete years</span><strong>{paired.n} ({paired.years[0]}–{paired.years.at(-1)})</strong></div>
-        <div className="comparison-stat"><span>Difference in fitted slopes</span><strong>{signed(paired.classical.slopePerDecade,3)} {unit}/decade</strong></div>
-        <div className="comparison-stat"><span>Approximate HAC 95% interval</span><strong>{signed(paired.hac.ciLowPerDecade,3)} to {signed(paired.hac.ciHighPerDecade,3)} {unit}/decade</strong></div>
+        <div className="comparison-stat"><span>Difference in fitted slopes</span><strong>{signed(paired.classical.slopePerDecade,3)} {u}/decade</strong></div>
+        <div className="comparison-stat"><span>Approximate HAC 95% interval</span><strong>{signed(paired.hac.ciLowPerDecade,3)} to {signed(paired.hac.ciHighPerDecade,3)} {u}/decade</strong></div>
         <div className="comparison-stat"><span>Approximate HAC two-sided p</span><strong>{pValue(paired.hac.pValue)}</strong></div>
-      </div><p className="comparison-note">Bartlett Newey–West, lag {paired.hac.lag}; n−2 t reference. Durbin–Watson: {number(paired.hac.durbinWatson)}. Excluded unmatched annual records: A {paired.excludedYearsA.length}, {other.id} {paired.excludedYearsB.length}. This checks association in two model grid-point series, not causation or a whole-region difference. Residual dependence, uncertainty in the NASA inputs and exploratory multiple testing remain limitations.</p></>
+      </div><p className="comparison-note">Bartlett Newey–West, lag {paired.hac.lag}; n−2 t reference. Durbin–Watson: {number(paired.hac.durbinWatson)}. Excluded unmatched annual records: {cmp.referenceId} {paired.excludedYearsA.length}, {cmp.otherId} {paired.excludedYearsB.length}. This checks association in two model grid-point series, not causation or a whole-region difference.</p></>
       : <p className="comparison-note">Fewer than ten shared complete calendar years; no paired inference is reported.</p>}
     </section>;})}</div>;
 }
 function App(){
   const [inputs,setInputs]=useState(initialInputs), [results,setResults]=useState([]), [query,setQuery]=useState(null);
   const [state,setState]=useState('loading'),[status,setStatus]=useState('Retrieving NASA POWER records…'),[dirty,setDirty]=useState(false);
-  const [activeTab,setActiveTab]=useState('annual'),[annualRange,setAnnualRange]=useState('all'),[monthlyRange,setMonthlyRange]=useState('all');
+  const [activeTab,setActiveTab]=useState('annual'),[annualRange,setAnnualRange]=useState('all'),[monthlyRange,setMonthlyRange]=useState('all'),[monthlyMode,setMonthlyMode]=useState('monthly');
+  const [imported,setImported]=useState(null);
   const request=useRef(null), latestInputs=useRef(inputs), resultsRef=useRef(results);latestInputs.current=inputs;resultsRef.current=results;
   const run=useCallback(async input=>{
     let cfg;try{cfg=validate(input)}catch(error){setStatus(error.message);setState('error');return;}
@@ -183,8 +210,7 @@ function App(){
     try{
       const settled=await Promise.allSettled(cfg.points.map(async(point,index)=>{
         const fetched=await fetchNASA({...point,variable:cfg.variable,start:cfg.start,end:cfg.end},{signal:controller.signal});
-        const annual=annualMeans(fetched.monthly);
-        return {...fetched,...point,variable:cfg.variable,color:point.color||COLORS[index%COLORS.length],annual,trend:linearTrend(annual)};
+        return powerSeries(fetched,{...point,variable:cfg.variable,color:point.color||COLORS[index%COLORS.length]});
       }));
       if(timedOut)throw Error('NASA POWER did not respond within 30 seconds. Please retry.');
       if(controller.signal.aborted)return;
@@ -203,11 +229,14 @@ function App(){
   },[]);
   const selectCity=(id,name)=>{const pair=LOCATIONS[name];change({['city'+id]:name,...(pair?{['lat'+id]:String(pair[0]),['lon'+id]:String(pair[1])}:{})})};
   const pick=(id,p)=>change({['city'+id]:'custom',['lat'+id]:p.lat.toFixed(4),['lon'+id]:p.lon.toFixed(4),...(id==='B'?{compare:true}:id==='C'?{compareC:true}:id==='D'?{compareD:true}:{})});
-  const active=results[0], secondary=results[1], variable=query?.variable||inputs.variable, info=VARIABLES[variable], trend=active?.trend;
-  const tabItems=[['annual','Annual trend'],['monthly','Monthly data'],['comparison','Compare slopes']];
-  const otherSummary=results.slice(1).map(r=>`${r.id}: ${r.label} ${r.trend?`${signed(r.trend.slopePerDecade)} ${info.unit}/decade`:'n/a'}`).join(' · ');
-  const insight=trend?`A: ${active.label} ${signed(trend.slopePerDecade)} ${info.unit}/decade${otherSummary?` · ${otherSummary}. See Compare slopes for paired tests against A.`:'.'} Classical OLS assumes independent residuals; serial correlation and repeated searches can overstate confidence.`:'Results will appear after NASA data loads.';
-  function keyboardTab(e,index){let n;if(e.key==='ArrowRight')n=(index+1)%3;else if(e.key==='ArrowLeft')n=(index+2)%3;else if(e.key==='Home')n=0;else if(e.key==='End')n=2;if(n!==undefined){e.preventDefault();setActiveTab(tabItems[n][0]);document.getElementById('tab-'+tabItems[n][0])?.focus();}}
+  // One list of canonical Series feeds every panel; derivations are memoized per Series.
+  const series=useMemo(()=>imported?[...results,imported]:results,[results,imported]);
+  const findings=useMemo(()=>buildFindings(series),[series]);
+  const resultById=useMemo(()=>Object.fromEntries(results.map(s=>[s.id,analyzeSeries(s)])),[results]);
+  const active=results[0], primary=active?analyzeSeries(active):null, variable=query?.variable||inputs.variable, info=VARIABLES[variable], trend=primary?.trend, robust=primary?.robust;
+  const tabItems=[['annual','Annual trend'],['monthly','Monthly data'],['seasonal','Seasonal'],['comparison','Compare & test']];
+  const T=tabItems.length;
+  function keyboardTab(e,index){let n;if(e.key==='ArrowRight')n=(index+1)%T;else if(e.key==='ArrowLeft')n=(index+T-1)%T;else if(e.key==='Home')n=0;else if(e.key==='End')n=T-1;if(n!==undefined){e.preventDefault();setActiveTab(tabItems[n][0]);document.getElementById('tab-'+tabItems[n][0])?.focus();}}
   return <><a className="skip" href="#explore">Skip to workspace</a><header className="topbar"><div className="shell nav"><a href="./" className="brand">TERRA<span>//</span>LENS</a><span className="nav-subtitle">EARTH SYSTEM TERMINAL · MERRA-2 / NASA POWER</span><div className="nav-right"><span className="source-indicator"><i className="pulse"/>NASA POWER API</span><a href="./docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Methodology</a><a href="https://github.com/Ni-zav/terra-lens" target="_blank" rel="noreferrer">Source</a></div></div></header>
   <main className="shell explorer" id="explore"><h1 className="sr-only">Earth trend workspace</h1><div className="workspace">
   <aside className="panel controls" aria-label="Analysis settings"><div className="panel-title"><div className="pane-title-group"><span className="section-kicker">01 // CONFIG</span><h2>Configure analysis</h2></div><button className="link-button" id="example-button" type="button" onClick={()=>{setInputs({...defaults});run({...defaults})}}>Reset example</button></div>
@@ -243,29 +272,32 @@ function App(){
     <div className="telemetry-head"><span>PT</span><span>LOCATION</span><span>COORDINATES</span><span>SLOPE/DEC</span></div>
     {POINT_IDS.map(id=>{
       const enabled=pointEnabled(inputs,id);
-      const res=results.find(r=>r.id===id);
+      const res=resultById[id];
       const name=pointName(inputs,id);
       return <div className={'telemetry-row'+(enabled?' is-on':' is-off')} key={id}>
         <span className={'pin '+id.toLowerCase()}>{id}</span>
         <strong className="telemetry-city">{name}</strong>
         <span className="telemetry-coord">{Number(inputs['lat'+id]).toFixed(1)}°, {Number(inputs['lon'+id]).toFixed(1)}°</span>
-        <span className="telemetry-val">{enabled?(res?.trend?`${signed(res.trend.slopePerDecade)} ${info.unit}`:'Pending'):'OFF'}</span>
+        <span className="telemetry-val">{enabled?(res?.trend?`${signed(res.trend.slopePerDecade)} ${info.unit}`:res?'n/a':'Pending'):'OFF'}</span>
       </div>;
     })}
   </div>
   <p className="aside-note">Locations are NASA model grid-point estimates, not city-wide measurements.</p></aside>
   <section className="results" aria-label="Analysis results"><div className="result-heading"><div className="result-title-bar"><span className="section-kicker">02 // SERIES</span><strong>Historical trends</strong><p id="result-context">{query?`${dirty?'Previous result: ':''}${info.label} · ${query.start}–${query.end}`:'Waiting for NASA data'}</p></div><span className={'data-state '+(state==='success'&&!dirty?'live':'')} id="data-label">{dirty?'Inputs changed':state==='success'?'NASA data loaded':state==='loading'?'Loading':state==='error'?'Request failed':'Not loaded'}</span></div>
   <div className="metrics">
-    <div className="metric"><div className="metric-label">A · {active?active.label:pointName(inputs,'A')} TREND / DEC</div><strong id="metric-slope">{trend?`${signed(trend.slopePerDecade)} ${info.unit}`:'—'}</strong><p id="metric-slope-detail">{trend?`95% CI: ${signed(trend.ciLowPerDecade)} to ${signed(trend.ciHighPerDecade)} ${info.unit}/dec`:'Complete-year OLS fit'}</p></div>
-    <div className="metric"><div className="metric-label">{secondary?`${secondary.id} · ${secondary.label} TREND / DEC`:'COMPARISON POINTS'}</div><strong className="metric-secondary-val">{secondary?.trend?`${signed(secondary.trend.slopePerDecade)} ${info.unit}`:results.length>1?'Not estimated':'Single point'}</strong><p>{results.length>2?results.slice(2).map(r=>`${r.id} (${r.label}): ${r.trend?signed(r.trend.slopePerDecade)+' '+info.unit:'—'}`).join(' · '):secondary?.trend?`95% CI: ${signed(secondary.trend.ciLowPerDecade)} to ${signed(secondary.trend.ciHighPerDecade)} ${info.unit}/dec`:'Enable B, C, or D to compare'}</p></div>
-    <div className="metric"><div className="metric-label">OLS TEST (POINT A)</div><strong id="metric-significance" className={trend?(trend.significant?'yes':'no'):''}>{trend?(trend.significant?'Significant*':'Not significant'):'—'}</strong><p id="metric-significance-detail">{trend?`p ${pValue(trend.pValue)} · classical OLS`:'Two-sided t-test'}</p></div>
-    <div className="metric"><div className="metric-label">YEARS ANALYZED</div><strong id="metric-years">{active?active.annual.length:'—'}</strong><p id="metric-years-detail">{active?.annual.length?`Full years · ${active.annual[0].year}–${active.annual.at(-1).year}`:'Complete calendar years'}</p></div>
+    <div className="metric"><div className="metric-label">A · {active?active.label:pointName(inputs,'A')} · OLS TREND / DEC</div><strong id="metric-slope">{trend?`${signed(trend.slopePerDecade)} ${info.unit}`:'—'}</strong><p id="metric-slope-detail">{trend?`95% CI: ${signed(trend.ciLowPerDecade)} to ${signed(trend.ciHighPerDecade)} · p ${pValue(trend.pValue)}`:'Complete-year OLS fit'}</p></div>
+    <div className="metric"><div className="metric-label">ROBUST CHECK · THEIL–SEN / MANN–KENDALL</div><strong id="metric-robust">{robust?`${signed(robust.senSlopePerDecade)} ${info.unit}`:'—'}</strong><p id="metric-robust-detail">{robust?`95% CI: ${signed(robust.senCiLowPerDecade)} to ${signed(robust.senCiHighPerDecade)} · MK p ${pValue(robust.pValue)}`:'Rank-based, outlier resistant'}</p></div>
+    <div className="metric"><div className="metric-label">EVIDENCE (POINT A)</div><strong id="metric-significance" className={'verdict-text verdict-'+(primary?.verdict.level||'none')}>{primary?primary.verdict.headline:'—'}</strong><p id="metric-significance-detail">{primary?(primary.verdict.level==='insufficient'?primary.verdict.detail:`${primary.verdict.testsAgreeing}/2 tests p < 0.05${primary.verdict.dependenceFlag?' · autocorrelated ⚠':''}`):'OLS t-test + Mann–Kendall'}</p></div>
+    <div className="metric"><div className="metric-label">YEARS ANALYZED</div><strong id="metric-years">{primary?primary.coverage.completeYears:'—'}</strong><p id="metric-years-detail">{primary?.annual.length?`Full years · ${primary.annual[0].year}–${primary.annual.at(-1).year}${primary.coverage.missingMonths?` · ${primary.coverage.missingMonths} missing months`:''}`:'Complete calendar years'}</p></div>
   </div>
   <div className="chart-shell"><div className="chart-tabs" role="tablist" aria-label="Analysis views">{tabItems.map(([id,label],i)=><button key={id} role="tab" id={'tab-'+id} aria-selected={activeTab===id} aria-controls={'panel-'+id} tabIndex={activeTab===id?0:-1} onClick={()=>setActiveTab(id)} onKeyDown={e=>keyboardTab(e,i)}>{label}</button>)}<span className="chip" id="unit-chip">{results.length?`${info.unit} / ${info.label}`:'NASA POWER'}</span></div><div className="chart-views">
-  {activeTab==='comparison'?<section id="panel-comparison" role="tabpanel" aria-labelledby="tab-comparison">{results.length?<Confidence results={results} unit={info.unit}/>:<p className="comparison-empty">Run an analysis to compare slope estimates.</p>}</section>:<article className="chart-panel" id={'panel-'+activeTab} role="tabpanel" aria-labelledby={'tab-'+activeTab}><div className="chart-heading"><div className="pane-title-group"><h3>{activeTab==='annual'?'Annual mean & fitted trend':'Monthly values'}</h3><p>{activeTab==='annual'?'Complete-year, day-weighted averages':'NASA POWER monthly values, without gap filling'}</p></div></div><React.Suspense fallback={<p>Loading chart…</p>}><TimeChart key={activeTab} results={results} monthly={activeTab==='monthly'} unit={info.unit} range={activeTab==='annual'?annualRange:monthlyRange} setRange={activeTab==='annual'?setAnnualRange:setMonthlyRange}/></React.Suspense></article>}
+  {activeTab==='comparison'?<section id="panel-comparison" role="tabpanel" aria-labelledby="tab-comparison">{series.length?<Comparison series={series} findings={findings}/>:<p className="comparison-empty">Run an analysis to compare slope estimates.</p>}</section>
+  :<article className="chart-panel" id={'panel-'+activeTab} role="tabpanel" aria-labelledby={'tab-'+activeTab}><div className="chart-heading"><div className="pane-title-group"><h3>{{annual:'Annual mean & fitted trend',monthly:monthlyMode==='anomaly'?'Monthly anomalies':'Monthly values',seasonal:'Which months are changing?'}[activeTab]}</h3><p>{{annual:'Complete-year, day-weighted averages',monthly:monthlyMode==='anomaly'?'Seasonal cycle removed, so different places share one baseline':'NASA monthly values, without gap filling',seasonal:'Per-calendar-month trends and the mean seasonal cycle'}[activeTab]}</p></div></div>
+  <React.Suspense fallback={<p>Loading chart…</p>}>{activeTab==='seasonal'?<SeasonalChart series={series}/>
+    :<TimeChart key={activeTab} series={series} mode={activeTab==='annual'?'annual':monthlyMode} setMode={setMonthlyMode} range={activeTab==='annual'?annualRange:monthlyRange} setRange={activeTab==='annual'?setAnnualRange:setMonthlyRange}/>}</React.Suspense></article>}
   </div></div></section>
-  <aside className="location-column" aria-label="Location and data source"><Globe inputs={inputs} onPick={pick}/><section className="insight-card"><div className="pane-title-group"><span className="section-kicker">04 // INFERENCE</span></div><div className="finding"><p id="finding-text">{insight}</p></div><a href="./docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Assumptions and limitations</a></section><section className="sources-card" id="sources"><div><div className="pane-title-group"><span className="section-kicker">05 // PROVENANCE</span></div><p id="provenance-text">{active?`NASA POWER${active.metadata.sources?.length?' / '+active.metadata.sources.join(', '):''} · retrieved ${new Date(active.fetchedAt).toLocaleString('en-US')} · ${results.map(r=>`${r.id}: ${r.monthly.length} months`).join(' · ')}. Model-derived point estimates.`:'Waiting for NASA POWER monthly data.'}</p><p id="source-link">{results.length?results.map((r,i)=><React.Fragment key={r.id}>{i?' · ':''}<a href={r.url} target="_blank" rel="noreferrer">NASA {r.id} ({r.label})</a></React.Fragment>):<a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER documentation</a>}</p></div><div className="source-actions"><button id="download" disabled={!results.length} onClick={()=>csvDownload(results)}>Download CSV</button><button id="evidence-download" disabled={!results.length} onClick={()=>evidenceDownload(results)}>Evidence JSON</button><button id="share" onClick={async()=>{const url=makeShare(inputs);try{await navigator.clipboard.writeText(url);setStatus('Investigation URL copied.')}catch{window.prompt('Copy this investigation URL:',url)}}}>Copy link</button></div></section></aside>
-  </div></main><div className="shell"><React.Suspense fallback={<p>Loading independent dataset workspace…</p>}><GiovanniEvidence/></React.Suspense></div></>;
+  <aside className="location-column" aria-label="Location and data source"><Globe inputs={inputs} onPick={pick}/><section className="insight-card"><div className="pane-title-group"><span className="section-kicker">04 // INFERENCE</span></div><div className="finding"><p id="finding-text">{findings.lines.length?findings.lines.join(' '):'Results will appear after NASA data loads.'}</p>{findings.lines.length>0&&<p className="finding-caveat">Both tests assume independent annual values; serial correlation and repeated searches can overstate confidence. Not causal, not a forecast.</p>}</div><a href="./docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Assumptions and limitations</a></section><section className="sources-card" id="sources"><div><div className="pane-title-group"><span className="section-kicker">05 // PROVENANCE</span></div><p id="provenance-text">{active?`NASA POWER${active.provenance.metadata?.sources?.length?' / '+active.provenance.metadata.sources.join(', '):''} · retrieved ${new Date(active.provenance.retrievedAt).toLocaleString('en-US')} · ${series.map(r=>`${r.id}: ${r.monthly.length} months`).join(' · ')}. Model-derived point estimates${imported?'; G is a user-imported Giovanni file (not authenticated)':''}.`:'Waiting for NASA POWER monthly data.'}</p><p id="source-link">{results.length?results.map((r,i)=><React.Fragment key={r.id}>{i?' · ':''}<a href={r.provenance.url} target="_blank" rel="noreferrer">NASA {r.id} ({r.label})</a></React.Fragment>):<a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER documentation</a>}</p></div><div className="source-actions"><button id="download" disabled={!results.length} onClick={()=>csvDownload(series)}>Download CSV</button><button id="evidence-download" disabled={!results.length} onClick={()=>evidenceDownload(series,findings)}>Evidence JSON</button><button id="share" onClick={async()=>{const url=makeShare(inputs);try{await navigator.clipboard.writeText(url);setStatus('Investigation URL copied.')}catch{window.prompt('Copy this investigation URL:',url)}}}>Copy link</button></div></section></aside>
+  </div></main><div className="shell"><React.Suspense fallback={<p>Loading independent dataset workspace…</p>}><GiovanniEvidence imported={imported} onImport={setImported} onRemove={()=>setImported(null)}/></React.Suspense></div></>;
 }
 
 createRoot(document.getElementById('root')).render(<App/>);

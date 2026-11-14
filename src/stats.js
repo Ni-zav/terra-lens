@@ -121,3 +121,126 @@ export function linearTrend(annual, minYears = 10) {
     note: 'Exploratory classical OLS t-inference; serial correlation and multiple testing can invalidate p-values.'
   };
 }
+
+/** Complementary error function (Numerical Recipes erfcc, fractional error < 1.2e-7 everywhere). */
+export function erfc(x) {
+  const z = Math.abs(x), t = 1 / (1 + 0.5 * z);
+  const r = t * Math.exp(-z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418 +
+    t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 +
+    t * (-0.82215223 + t * 0.17087277)))))))));
+  return x >= 0 ? r : 2 - r;
+}
+
+/** Two-sided standard-normal p-value. */
+export function normalTwoSidedP(z) {
+  if (Number.isNaN(z)) throw new RangeError('Invalid z');
+  return Math.min(1, erfc(Math.abs(z) / Math.SQRT2));
+}
+
+const Z_975 = 1.959963984540054;
+
+/**
+ * Mann–Kendall monotonic trend test with tie-corrected variance and continuity
+ * correction, plus the Theil–Sen slope and its rank-based 95% interval
+ * (Sen 1968; Gilbert 1987 — same index convention as scipy.stats.theilslopes).
+ * Like the classical OLS test, it assumes serially independent annual values.
+ */
+export function mannKendall(annual, minYears = 10) {
+  const points = annual.filter(p => Number.isFinite(p.year) && Number.isFinite(p.value))
+    .sort((a, b) => a.year - b.year);
+  if (points.length < minYears || new Set(points.map(p => p.year)).size !== points.length) return null;
+  const n = points.length;
+  let s = 0;
+  const slopes = [];
+  for (let i = 0; i < n - 1; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const d = points[j].value - points[i].value;
+      s += d > 0 ? 1 : d < 0 ? -1 : 0;
+      slopes.push(d / (points[j].year - points[i].year));
+    }
+  }
+  const counts = new Map();
+  for (const p of points) counts.set(p.value, (counts.get(p.value) || 0) + 1);
+  let tieTerm = 0;
+  for (const t of counts.values()) if (t > 1) tieTerm += t * (t - 1) * (2 * t + 5);
+  const varS = (n * (n - 1) * (2 * n + 5) - tieTerm) / 18;
+  const z = varS <= 0 ? 0 : s > 0 ? (s - 1) / Math.sqrt(varS) : s < 0 ? (s + 1) / Math.sqrt(varS) : 0;
+  slopes.sort((a, b) => a - b);
+  const m = slopes.length;
+  const median = m % 2 ? slopes[(m - 1) / 2] : (slopes[m / 2 - 1] + slopes[m / 2]) / 2;
+  const c = Z_975 * Math.sqrt(Math.max(0, varS));
+  const lower = slopes[Math.max(Math.round((m - c) / 2) - 1, 0)];
+  const upper = slopes[Math.min(Math.round((m + c) / 2), m - 1)];
+  const pValue = normalTwoSidedP(z);
+  return {
+    n, s, varS, z, pValue, significant: pValue < 0.05,
+    tau: s / (n * (n - 1) / 2),
+    senSlopePerYear: median, senSlopePerDecade: median * 10,
+    senCiLowPerDecade: lower * 10, senCiHighPerDecade: upper * 10,
+    note: 'Mann–Kendall (normal approximation, tie and continuity corrected) and Theil–Sen slope; assumes serially independent values.'
+  };
+}
+
+/** Lag-1 autocorrelation of a numeric sequence; null when undefined. */
+export function lag1Autocorrelation(values) {
+  const x = values.filter(Number.isFinite);
+  if (x.length < 3) return null;
+  const mean = x.reduce((s, v) => s + v, 0) / x.length;
+  let num = 0, den = 0;
+  for (let i = 0; i < x.length; i++) {
+    den += (x[i] - mean) ** 2;
+    if (i) num += (x[i] - mean) * (x[i - 1] - mean);
+  }
+  return den < 1e-20 ? null : num / den;
+}
+
+/**
+ * Mean seasonal cycle from complete years only, so the baseline matches the
+ * annual series. Months without complete-year support are null, not filled.
+ */
+export function monthlyClimatology(monthly) {
+  const complete = new Set(annualMeans(monthly).map(row => row.year));
+  const sums = Array.from({length: 12}, () => ({sum: 0, n: 0, values: []}));
+  for (const p of monthly) {
+    if (!complete.has(p.year) || !Number.isFinite(p.value)) continue;
+    const bucket = sums[p.month - 1];
+    bucket.sum += p.value; bucket.n += 1; bucket.values.push(p.value);
+  }
+  return sums.map((b, i) => {
+    const mean = b.n ? b.sum / b.n : null;
+    const sd = b.n > 1 ? Math.sqrt(b.values.reduce((s, v) => s + (v - mean) ** 2, 0) / (b.n - 1)) : null;
+    return {month: i + 1, mean, sd, n: b.n};
+  });
+}
+
+/**
+ * Monthly anomalies relative to the series' own complete-year climatology.
+ * `standardized` divides by that month's interannual standard deviation, making
+ * series with different units or variability shape-comparable (unitless σ).
+ */
+export function monthlyAnomalies(monthly, {standardized = false} = {}) {
+  const clim = monthlyClimatology(monthly);
+  const out = [];
+  for (const p of monthly) {
+    const c = clim[p.month - 1];
+    if (!Number.isFinite(p.value) || c.mean === null) continue;
+    if (standardized && !(c.sd > 0)) continue;
+    out.push({year: p.year, month: p.month, value: standardized ? (p.value - c.mean) / c.sd : p.value - c.mean});
+  }
+  return out;
+}
+
+/**
+ * Calendar-month trends: OLS of each month's value against calendar year.
+ * Twelve simultaneous tests — individual p-values are descriptive only.
+ */
+export function seasonalTrends(monthly, minYears = 10) {
+  return Array.from({length: 12}, (_, i) => {
+    const series = monthly.filter(p => p.month === i + 1 && Number.isFinite(p.value))
+      .map(p => ({year: p.year, value: p.value}));
+    const trend = linearTrend(series, minYears);
+    return {month: i + 1, n: series.length, slopePerDecade: trend?.slopePerDecade ?? null,
+      ciLowPerDecade: trend?.ciLowPerDecade ?? null, ciHighPerDecade: trend?.ciHighPerDecade ?? null,
+      pValue: trend?.pValue ?? null};
+  });
+}

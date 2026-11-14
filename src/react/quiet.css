@@ -56,3 +56,23 @@
   .insight-card .finding { margin:2px 0; }
   .insight-card>a { margin-top:0; }
 }
+
+/* Shared evidence vocabulary: verdicts are graded by weight, not by success colors. */
+.verdict{display:inline-block;margin-left:auto;padding:1px 6px;border:1px solid var(--border-strong);border-radius:2px;font-family:var(--mono);font-size:9.5px;letter-spacing:.02em;color:var(--muted);white-space:nowrap}
+.verdict-consistent{color:var(--text);border-color:#9fb8c4}
+.verdict-mixed{color:#d6e2e8;border-style:dashed}
+.verdict-not-detected,.verdict-insufficient{color:var(--dim)}
+.metric strong.verdict-text{font-size:13px;line-height:1.25;color:var(--text)}
+.metric strong.verdict-not-detected,.metric strong.verdict-insufficient{color:var(--muted)}
+.comparison-location{flex-wrap:wrap}
+.comparison-stat strong.flag{color:var(--amber)}
+.legend-excluded{color:var(--dim);font-style:italic}
+.chart-toolbar-groups{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.finding-caveat{margin-top:6px;font-size:10.5px;color:var(--dim)}
+.insight-card .finding{overflow-y:auto;min-height:0}
+.giovanni-workspace{padding:1.5rem;margin:1.5rem 0}
+.giovanni-workspace .coord-row,.giovanni-workspace input[type=url]{max-width:720px}
+.giovanni-summary{margin-top:1rem;border-top:1px solid var(--border);padding-top:.75rem}
+.giovanni-summary code{overflow-wrap:anywhere}
+@media(max-width:1080px){.chart-tabs button{padding:0 7px;font-size:9.5px;white-space:nowrap}.chart-tabs .chip{display:none}}
+@media(max-width:860px){.chart-tabs button{padding:0 5px;font-size:9px;letter-spacing:0}}

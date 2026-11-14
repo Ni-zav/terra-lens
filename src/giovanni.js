@@ -1,3 +1,4 @@
+import {makeSeries, SUPPORT} from './series.js';
 /**
  * Import monthly CSV downloaded from NASA Giovanni / Giovanni in the Cloud.
  * Rejects multiple observations per month: hourly/daily aggregation requires
@@ -34,4 +35,23 @@ export function parseGiovanniMonthlyCSV(text) {
   rows.sort((a,b)=>a.year-b.year||a.month-b.month);
   if (!rows.length) throw new Error('No valid monthly measurements found in source CSV.');
   return {metadata,monthly:rows};
+}
+
+/**
+ * Adapter: an imported Giovanni CSV becomes a canonical Series. Treated as an
+ * area-averaged product (Giovanni time-series service), so it is never paired
+ * directly with a POWER grid-point estimate.
+ */
+export function giovanniSeries(parsed, {id = 'G', color = '#e79bc0', fileName, sha256, product, doi, sourceURL} = {}) {
+  const md = parsed.metadata;
+  const lat = Number(md.lat), lon = Number(md.lon);
+  return makeSeries({
+    id, color, monthly: parsed.monthly, support: SUPPORT.AREA_AVERAGE,
+    label: product ? `${product} (Giovanni)` : `${md.param_name} (Giovanni)`,
+    geo: Number.isFinite(lat) && Number.isFinite(lon) ? {lat, lon} : null,
+    variable: {code: 'GIOVANNI:' + md.param_name, label: md.param_name, unit: md.unit},
+    provenance: {kind: 'giovanni-import', fileName, sha256, product: product || null, doi: doi || null,
+      url: sourceURL || null, metadata: md, authenticated: false,
+      warning: 'User-supplied file; provenance fields are not independently authenticated.'}
+  });
 }

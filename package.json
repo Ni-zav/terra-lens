@@ -9,7 +9,7 @@
     "build": "vite build && node scripts/copy-static.mjs",
     "preview": "vite preview",
     "test": "node --test",
-    "check": "node --check src/stats.js && node --check src/power.js && node --check src/globe.js && npm test && npm run build"
+    "check": "node --check src/stats.js && node --check src/series.js && node --check src/contrast.js && node --check src/power.js && node --check src/giovanni.js && node --check src/globe.js && npm test && npm run build"
   },
   "engines": {
     "node": ">=20.19.0"

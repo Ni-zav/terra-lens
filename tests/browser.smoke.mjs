@@ -59,8 +59,15 @@ try{
   await page.locator('#tab-annual').click();await page.locator('#tab-annual').focus();await page.keyboard.press('ArrowRight');
   assert.equal(await page.locator('#tab-monthly').getAttribute('aria-selected'),'true');
   await page.locator('#monthly-cursor').fill('0');assert.match(await page.locator('#monthly-readout').textContent(),/2001-01.*Yogyakarta.*Jakarta/);
-  await page.locator('#tab-monthly').focus();await page.keyboard.press('ArrowLeft');await page.locator('#annual-cursor').fill('0');
+  await page.locator('#anomaly-toggle').click();
+  assert.equal(await page.locator('#anomaly-toggle').getAttribute('aria-pressed'),'true');
+  await page.getByRole('group',{name:'Monthly display mode'}).getByRole('button',{name:'Values'}).click();
+  await page.locator('#tab-seasonal').click();
+  assert.equal(await page.locator('#tab-seasonal').getAttribute('aria-selected'),'true');
+  await page.locator('#seasonal-cursor').fill('0');assert.match(await page.locator('#seasonal-readout').textContent(),/Jan.*Yogyakarta.*Jakarta/);
+  await page.locator('#tab-annual').click();await page.locator('#annual-cursor').fill('0');
   assert.match(await page.locator('#annual-readout').textContent(),/2001.*Yogyakarta.*Jakarta/);
+  assert.match(await page.locator('#metric-robust').textContent(),/°C/);
   const slope=await page.locator('#metric-slope').textContent();
   await page.getByRole('group',{name:'Annual chart displayed period'}).getByRole('button',{name:'10Y'}).click();
   await page.waitForFunction(()=>{const e=document.getElementById('annual-cursor');return e?.max==='9'&&e.value==='9';});
@@ -72,7 +79,7 @@ try{
   await page.screenshot({path:join(ROOT,'artifacts','react-fixture-desktop.png')});
   for(const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660],[820,700],[800,660]]){
     await page.setViewportSize({width,height});
-    for(const name of ['annual','monthly','comparison']){
+    for(const name of ['annual','monthly','seasonal','comparison']){
       await page.locator('#tab-'+name).click();
       const d=await page.evaluate(()=>{
         const boxes=['.controls','.location-column','.results','.chart-shell','[role="tabpanel"]'].map(selector=>{
