@@ -5,6 +5,13 @@ on:
     paths:
       - 'scripts/live-browser.mjs'
       - '.github/workflows/live-browser.yml'
+      - 'src/app.js'
+      - 'src/power.js'
+      - 'src/stats.js'
+      - 'functions/api/power.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'styles/**'
 permissions:
   contents: write
 jobs:
@@ -38,4 +45,6 @@ jobs:
           git add docs/screenshots/
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'docs: publish actual NASA browser evidence screenshots'
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
