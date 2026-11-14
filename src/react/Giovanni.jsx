@@ -26,17 +26,34 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
     finally {event.target.value='';}
   }
   const analysis=imported?analyzeSeries(imported):null;
-  return <section className="panel giovanni-workspace" aria-labelledby="giovanni-heading">
+  return <div className="giovanni-workspace" aria-labelledby="giovanni-heading">
     <div className="giovanni-head">
-      <div className="pane-title-group"><span className="section-kicker">Second NASA source</span><h2 id="giovanni-heading">Add a NASA Giovanni monthly series</h2></div>
+      <div className="pane-title-group">
+        <span className="section-kicker">06 // SOURCE</span>
+        <h2 id="giovanni-heading">Add a NASA Giovanni monthly series</h2>
+      </div>
       <p className="giovanni-links"><a href="https://giovanni.gsfc.nasa.gov/giovanni/" target="_blank" rel="noreferrer">Open NASA Giovanni</a> · <a href="https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GiC_Time_Series_Service.ipynb" target="_blank" rel="noreferrer">NASA CSV workflow example</a></p>
     </div>
     <div className="giovanni-grid">
       <div className="giovanni-copy">
-        <p className="giovanni-note">Export a <strong>monthly</strong> time series from NASA Giovanni and import it here. It joins the workspace as series <strong>G</strong> and runs through the same annual-mean, OLS, Mann–Kendall, and anomaly calculations as NASA POWER.</p>
-        <p className="giovanni-note">Because Giovanni series are area averages, Terra-Lens never runs a paired difference test against a POWER grid point; compare shapes in <em>Monthly → Anomaly</em>. The file is processed locally and is not authenticated by this app.</p>
+        <div className="giovanni-card">
+          <h3>Independent NASA Series Integration (Series G)</h3>
+          <p className="giovanni-note">Export a <strong>monthly</strong> time series from NASA Giovanni and import it here. It joins the workspace as series <strong>G</strong> and runs through the same annual-mean, OLS, Mann–Kendall, and anomaly calculations as NASA POWER.</p>
+          <p className="giovanni-note">Because Giovanni series are area averages, Terra-Lens never runs a paired difference test against a POWER grid point; compare shapes in <em>Monthly → Anomaly</em>. The file is processed locally and is not authenticated by this app.</p>
+        </div>
+        {analysis ? <div aria-live="polite" className="giovanni-summary">
+          <h3>Active Imported Series (G)</h3>
+          <p><strong>{imported.label}</strong> · {imported.monthly.length} monthly records, {analysis.coverage.completeYears} complete years · unit {imported.variable.unit}. <em>{analysis.verdict.headline}.</em></p>
+          {analysis.trend && <p className="giovanni-note">OLS {fmt(analysis.trend.slopePerDecade)} {imported.variable.unit}/decade (p {analysis.trend.pValue.toFixed(4)}) · Sen {fmt(analysis.robust.senSlopePerDecade)} (Mann–Kendall p {analysis.robust.pValue.toFixed(4)})</p>}
+          <p className="giovanni-note">SHA-256: <code>{imported.provenance.sha256}</code></p>
+          <button type="button" id="giovanni-remove" onClick={onRemove}>Remove series G</button>
+        </div> : <div className="giovanni-summary is-empty">
+          <h3>Series G Status</h3>
+          <p className="giovanni-note">No Giovanni CSV currently imported. Upload a NASA Giovanni monthly time-series CSV on the right to overlay Series G across Annual, Monthly, Seasonal, and Compare views.</p>
+        </div>}
       </div>
       <div className="giovanni-form">
+        <h3>Import Parameters & CSV File</h3>
         <div className="coord-row">
           <div><label htmlFor="giovanni-product">NASA dataset/product identifier</label><input id="giovanni-product" value={product} onChange={e=>setProduct(e.target.value)} placeholder="e.g. M2TMNXSLV, version" /></div>
           <div><label htmlFor="giovanni-doi">Dataset DOI (if known)</label><input id="giovanni-doi" value={doi} onChange={e=>setDoi(e.target.value)} placeholder="doi:10.5067/..." /></div>
@@ -46,13 +63,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
         <label htmlFor="giovanni-file">Giovanni monthly time-series CSV (max 12 MB)</label>
         <input id="giovanni-file" type="file" accept=".csv,text/csv" onChange={importCSV} />
         {error&&<p role="alert" className="status error">{error}</p>}
-        {analysis && <div aria-live="polite" className="giovanni-summary">
-          <p><strong>{imported.label}</strong> · {imported.monthly.length} monthly records, {analysis.coverage.completeYears} complete years · unit {imported.variable.unit}. <em>{analysis.verdict.headline}.</em></p>
-          {analysis.trend && <p className="giovanni-note">OLS {fmt(analysis.trend.slopePerDecade)} {imported.variable.unit}/decade (p {analysis.trend.pValue.toFixed(4)}) · Sen {fmt(analysis.robust.senSlopePerDecade)} (Mann–Kendall p {analysis.robust.pValue.toFixed(4)})</p>}
-          <p className="giovanni-note">SHA-256: <code>{imported.provenance.sha256}</code></p>
-          <button type="button" id="giovanni-remove" onClick={onRemove}>Remove series G</button>
-        </div>}
       </div>
     </div>
-  </section>;
+  </div>;
 }

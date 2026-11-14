@@ -1062,7 +1062,7 @@
 }
 
 @media (min-width: 800px) and (max-width: 899px) and (min-height: 660px) {
-  .workspace { grid-template-columns: 192px minmax(0, 1fr) 204px; }
+  .workspace { grid-template-columns: 182px minmax(0, 1fr) 194px; }
   .globe-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 

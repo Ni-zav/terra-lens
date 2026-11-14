@@ -89,9 +89,15 @@ try{
   assert.equal(await page.locator('.echart canvas').count()>0,true,'ECharts must render a chart');
   await mkdir(join(ROOT,'artifacts'),{recursive:true});
   await page.screenshot({path:join(ROOT,'artifacts','react-fixture-desktop.png')});
+  await page.locator('#tab-finder').click();
+  await page.locator('#finder-run').waitFor({timeout:20000});
+  await page.screenshot({path:join(ROOT,'artifacts','react-fixture-finder.png')});
+  await page.locator('#tab-giovanni').click();
+  await page.locator('#giovanni-heading').waitFor({timeout:20000});
+  await page.screenshot({path:join(ROOT,'artifacts','react-fixture-giovanni.png')});
   for(const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660],[820,700],[800,660]]){
     await page.setViewportSize({width,height});
-    for(const name of ['annual','monthly','seasonal','comparison']){
+    for(const name of ['annual','monthly','seasonal','comparison','finder','giovanni']){
       await page.locator('#tab-'+name).click();
       const d=await page.evaluate(()=>{
         const boxes=['.controls','.location-column','.results','.chart-shell','[role="tabpanel"]'].map(selector=>{
@@ -99,7 +105,7 @@ try{
         const inside=[['.insight-card>a','.insight-card'],['.globe-credit','.globe-panel'],['.source-actions','.sources-card']].map(([c,p])=>({child:c,bottom:document.querySelector(c).getBoundingClientRect().bottom,parentBottom:document.querySelector(p).getBoundingClientRect().bottom}));
         return {sw:document.documentElement.scrollWidth,sh:document.documentElement.scrollHeight,boxes,inside};
       });
-      assert.ok(d.sw<=width+2,'Desktop horizontal document overflow '+JSON.stringify({width,height,name,d})); // The independent Giovanni evidence section intentionally scrolls vertically below the viewport.
+      assert.ok(d.sw<=width+2&&d.sh<=height+2,'Desktop document overflow '+JSON.stringify({width,height,name,d}));
       for(const b of d.boxes)assert.ok(b.right<=width+1&&b.bottom<=height+1&&b.scroll<=b.client+2&&b.scrollWidth<=b.clientWidth+2,'Desktop content clipped '+JSON.stringify({width,height,name,b}));
       for(const item of d.inside)assert.ok(item.bottom<=item.parentBottom+1,'Desktop panel overlap '+JSON.stringify({width,height,name,item}));
     }
@@ -120,6 +126,7 @@ try{
   const finderPage=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});
   const finderErrors=[];finderPage.on('pageerror',e=>finderErrors.push(e.message));
   await finderPage.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
+  await finderPage.locator('#tab-finder').click();
   await finderPage.locator('#finder-run').waitFor({timeout:25000});
   assert.equal(await finderPage.locator('.discovery-table tbody tr').count(),8,'All eight declared sites must be shown before scanning');
   await finderPage.locator('#finder-run').click();

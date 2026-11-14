@@ -87,6 +87,7 @@ try{
   await page.locator('#explore').screenshot({path:join(ROOT,'docs','screenshots','nasa-real-mobile.png'),animations:'disabled'});
 
   // The new discovery flow is tested AGAINST REAL NASA, not the separate fixture server.
+  await page.locator('#tab-finder').click();
   await page.locator('#finder-run').waitFor({timeout:25000});
   assert.equal(await page.locator('.discovery-table tbody tr').count(),8);
   await page.locator('#finder-run').click();
