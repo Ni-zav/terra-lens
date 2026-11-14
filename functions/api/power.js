@@ -7,7 +7,8 @@ export async function onRequestGet({request}) {
   const lat = Number(input.get('latitude')), lon = Number(input.get('longitude'));
   const start = Number(input.get('start')), end = Number(input.get('end'));
   const variable = input.get('parameters');
-  if (!allowed.has(variable) || !Number.isFinite(lat) || lat < -90 || lat > 90 ||
+  if (!['parameters', 'latitude', 'longitude', 'start', 'end'].every(key => input.has(key) && input.get(key)?.trim() !== '') ||
+      !allowed.has(variable) || !Number.isFinite(lat) || lat < -90 || lat > 90 ||
       !Number.isFinite(lon) || lon < -180 || lon > 180 ||
       !Number.isInteger(start) || !Number.isInteger(end) ||
       start < 1981 || end > 2025 || start > end) {
