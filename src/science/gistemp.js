@@ -6,6 +6,42 @@
  */
 import {annualMeans,linearTrend} from '../stats.js';
 export const GISTEMP_CSV_URL='https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.csv';
+export const GISTEMP_TXT_URL='https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.txt';
+/** NASA official text table uses hundredths of °C (NOT raw °C) and repeats the header. */
+export function parseGISTEMPtext(contents){
+ if(typeof contents!=='string'||contents.length>1e6)throw Error('Missing NASA GISS text table');
+ if(!contents.includes('GLOBAL Land-Ocean Temperature Index'))throw Error('Not a NASA GISTEMP global text table');
+ const series=[],incomplete=[],seen=new Set();
+ for(const line of contents.split(/\r?\n/)){
+   const tokens=line.trim().split(/\s+/);
+   if(!/^\d{4}$/.test(tokens[0]||''))continue;
+   const year=Number(tokens[0]);
+   if(year<1880||year>2100||tokens.length<13)continue;
+   if(seen.has(year))throw Error('Duplicate NASA GISTEMP calendar year');
+   seen.add(year);let valid=0;
+   for(let i=0;i<12;i++){
+     const raw=tokens[i+1];
+     if(!/^[+-]?\d+$/.test(raw||''))continue;
+     const value=Number(raw)/100;
+     if(!Number.isFinite(value)||Math.abs(value)>20)throw Error('Invalid NASA global anomaly');
+     series.push({year,month:i+1,value,date:String(year)+'-'+String(i+1).padStart(2,'0')});
+     valid++;
+   }
+   if(valid<12)incomplete.push({year,validMonths:valid});
+ }
+ if(series.length<120)throw Error('NASA GISS text has too few monthly records');
+ return {series:series.sort((a,b)=>a.year-b.year||a.month-b.month),incomplete,
+   source:'NASA GISS GISTEMP v4',product:'Global Land-Ocean Temperature Index',
+   originalBaseline:'1951–1980 by calendar month',unit:'°C anomaly',
+   spatialSupport:'global land+ocean index, not a map point',
+   note:'Converted official text table hundredths of degrees Celsius into degrees Celsius. NASA periodically revises historic values.'};
+}
+export async function fetchGISTEMPtext({fetcher=fetch,signal}={}){
+ const response=await fetcher(GISTEMP_TXT_URL,{signal});
+ if(!response.ok)throw Error('NASA GISS text HTTP '+response.status);
+ return {...parseGISTEMPtext(await response.text()),sourceURL:GISTEMP_TXT_URL,
+   retrievedAt:new Date().toISOString()};
+}
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 export function parseGISTEMP(csv){
  if(typeof csv!=='string'||csv.length>1e6)throw new Error('GISTEMP CSV missing or unexpectedly large');
