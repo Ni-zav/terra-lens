@@ -10,11 +10,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Unit tests and syntax checks
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Unit tests and build
         run: npm run check
       - name: Install browser test tools
         run: |
-          npm install --no-save playwright
           npx playwright install --with-deps chromium
       - name: Browser smoke with mock fixture
         run: node tests/browser.smoke.mjs

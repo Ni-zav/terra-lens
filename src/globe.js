@@ -1,6 +1,6 @@
 // Interactive geographic picker. Blue Marble is a historical context image,
 // not a climate-data layer. Rendering happens only after interaction.
-import * as THREE from '../vendor/three.module.js';
+import * as THREE from 'three';
 
 const RAD = Math.PI / 180;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -30,8 +30,10 @@ export function createGlobe(host, onPick) {
   const sunlight = new THREE.DirectionalLight(0xffffff, 1.6);
   sunlight.position.set(3, 2, 4); scene.add(sunlight);
   const markers = new THREE.Group(); scene.add(markers);
+  let disposed = false;
   const loader = new THREE.TextureLoader();
   loader.load(new URL('../assets/nasa-blue-marble.jpg', import.meta.url).href, texture => {
+    if (disposed) {texture.dispose(); return;}
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
     earth.material.map = texture; earth.material.needsUpdate = true; draw();
@@ -43,6 +45,7 @@ export function createGlobe(host, onPick) {
   let centerLat = -8, centerLon = 110, pointer = null, pendingFrame = 0;
   const raycaster = new THREE.Raycaster(), cursor = new THREE.Vector2();
   function draw() {
+    if (disposed) return;
     if (pendingFrame) return;
     pendingFrame = requestAnimationFrame(() => {
       pendingFrame = 0;
@@ -91,5 +94,11 @@ export function createGlobe(host, onPick) {
   });
   renderer.domElement.addEventListener('pointercancel', () => {pointer=null;});
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
-  return {setPoints, focus(point) {centerLat=clamp(point.lat,-85,85); centerLon=wrap(point.lon); draw();}};
+  return {setPoints, focus(point) {centerLat=clamp(point.lat,-85,85); centerLon=wrap(point.lon); draw();},
+    dispose() {
+      disposed=true; observer.disconnect(); if(pendingFrame)cancelAnimationFrame(pendingFrame);
+      for (const marker of markers.children) {marker.geometry.dispose(); marker.material.dispose();}
+      earth.geometry.dispose(); earth.material.map?.dispose(); earth.material.dispose();
+      renderer.dispose(); renderer.domElement.remove();
+    }};
 }

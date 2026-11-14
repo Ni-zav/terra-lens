@@ -20,18 +20,19 @@ The map-like coordinate graphic is **not** a spatial heat map. A NASA POWER grid
 
 ## Start immediately
 
-No dependency install is needed for the website:
+Install the locked dependencies and start the Vite development server:
 
 ```bash
 git clone https://github.com/Ni-zav/terra-lens.git
 cd terra-lens
-python3 -m http.server 4173
-# visit http://localhost:4173
+npm ci
+npm run dev
+# open the local URL printed by Vite
 ```
 
 The default Yogyakarta/Jakarta investigation loads from NASA on entry. Select a variable, 10+ calendar years, and one or two locations, then press **Analyze NASA data** to request a new investigation. The application requests the NASA API through `/api/power` when a Cloudflare Pages Function is available, otherwise tries NASA POWER directly.
 
-**Production hosting:** Cloudflare Pages with the bundled proxy is recommended, because a browser may be blocked by NASA upstream CORS. Connect the repository to Cloudflare Pages with framework preset **None**, no build step, and output directory **.**. A local static server does not provide the Pages Function.
+**Production hosting:** GitHub Pages deploys the built `dist/` directory through GitHub Actions. It calls NASA POWER directly. For Cloudflare Pages, use `npm ci && npm run build` and output directory `dist`; the repository also includes an optional Pages Function proxy, which must be tested on that host.
 
 ## Tests
 
@@ -39,7 +40,7 @@ The default Yogyakarta/Jakarta investigation loads from NASA on entry. Select a 
 npm run check
 ```
 
-Node 20+ required for tests. The browser smoke test is separate; its deterministic fixture is only for tests and never used in the shipped app.
+Node 20.19+ is required. The workspace uses React, Vite, Apache ECharts, and Three.js; exact versions are pinned in `package-lock.json`. The browser smoke test is separate; its deterministic fixture is only for tests and never used in the shipped app.
 
 ## Seven-slide project demonstration
 
@@ -49,7 +50,7 @@ Node 20+ required for tests. The browser smoke test is separate; its determinist
 - [Live NASA browser validation workflow](.github/workflows/live-browser.yml) — tests two points, a second variable, CSV exports, and mobile layout.
 - [Independent NASA/SciPy cross-validation](.github/workflows/scipy-verify.yml) — retrieves NASA observations and recomputes the same annual trends in Python and JavaScript.
 
-**Hosting reminder:** Source files and the PDF are public in GitHub. A Cloudflare Pages live application URL has not yet been independently confirmed by this repository; submission must include an externally accessible final-project URL and separately check the real Pages API proxy. NASA challenge Resources-tab data-source eligibility also requires separate confirmation.
+**Live app:** https://ni-zav.github.io/terra-lens/ . NASA challenge Resources-tab data-source eligibility remains unresolved; NASA POWER is not itself listed on that tab.
 
 ## Project evidence
 

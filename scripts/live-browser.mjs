@@ -9,7 +9,8 @@ import {chromium} from 'playwright';
 import {onRequestGet} from '../functions/api/power.js';
 
 const ROOT=fileURLToPath(new URL('../', import.meta.url));
-const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml','.md':'text/plain'};
+const DIST=join(ROOT,'dist');
+const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.md':'text/plain'};
 const calls=[];
 const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://127.0.0.1');
@@ -33,7 +34,7 @@ const server=createServer(async(req,res)=>{
   }
   const path=url.pathname==='/'?'index.html':decodeURIComponent(url.pathname).replace(/^\/+/, '');
   if(path.includes('..')){res.writeHead(403).end();return}
-  try{const body=await readFile(join(ROOT,path));res.writeHead(200,{'content-type':mime[extname(path)]||'application/octet-stream'}).end(body)}
+  try{const body=await readFile(join(DIST,path));res.writeHead(200,{'content-type':mime[extname(path)]||'application/octet-stream'}).end(body)}
   catch{res.writeHead(404).end('Not found')}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -73,13 +74,13 @@ try{
   await page.locator('#compare').uncheck();
   await page.locator('#analyze').click();
   await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA DATA LOADED'
-    && document.getElementById('unit-chip').textContent.includes('%'),null,{timeout:125000});
+    && document.getElementById('unit-chip')?.textContent.includes('%'),null,{timeout:125000});
   assert.ok(calls.some(c=>c.parameters==='RH2M'));
   await page.locator('#variable').selectOption('T2M');
   await page.locator('#compare').check();
   await page.locator('#analyze').click();
   await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA DATA LOADED'
-    && document.getElementById('unit-chip').textContent.includes('°C'),null,{timeout:125000});
+    && document.getElementById('unit-chip')?.textContent.includes('°C'),null,{timeout:125000});
   await page.setViewportSize({width:390,height:844});
   const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
   assert.ok(overflow.scroll<=overflow.width+2,'Mobile overflow: '+JSON.stringify(overflow));

@@ -5,15 +5,16 @@ on:
     paths:
       - 'scripts/live-browser.mjs'
       - '.github/workflows/live-browser.yml'
-      - 'src/app.js'
+      - 'src/react/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
       - 'src/globe.js'
       - 'src/power.js'
       - 'src/stats.js'
       - 'assets/**'
-      - 'vendor/**'
       - 'functions/api/power.js'
       - 'index.html'
-      - 'styles.css'
       - 'styles/**'
 concurrency:
   group: terra-lens-live-evidence-main
@@ -31,9 +32,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install locked dependencies and build
+        run: |
+          npm ci
+          npm run build
       - name: Install Chromium browser harness
         run: |
-          npm install --no-save playwright
           npx playwright install --with-deps chromium
       - name: Render and test real NASA data end to end
         run: node scripts/live-browser.mjs
