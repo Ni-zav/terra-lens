@@ -8,6 +8,8 @@
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./styles.css">
 <link rel="stylesheet" href="./styles/observatory.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module" src="./src/app.js"></script>
 </head>
 <body>
@@ -72,7 +74,7 @@
 </article>
 <div class="subcharts">
 <article class="panel chart-panel"><div class="chart-heading"><div><small>EVIDENCE / 02</small><h3>Monthly variability</h3><p>Seasonal and interannual observations.</p></div></div><div class="legend" id="monthly-legend"></div><div class="svg-scroll"><svg id="monthly-chart" viewBox="0 0 960 270" role="img" aria-label="Monthly data chart"><text x="480" y="140" fill="#8299aa" text-anchor="middle">Monthly observations appear here.</text></svg></div></article>
-<article class="panel chart-panel"><div class="chart-heading"><div><small>EVIDENCE / 03</small><h3>Coordinates</h3><p>Selected NASA grid-point locations.</p></div></div><svg id="coordinate-chart" viewBox="0 0 620 270" role="img" aria-label="Schematic latitude-longitude plot"></svg><p class="hint">Schematic latitude–longitude coordinates only. This is not a basemap, spatial trend map, or city-wide average.</p><div id="coordinate-list" class="coordinate-list"></div></article>
+<article class="panel chart-panel"><div class="chart-heading"><div><small>EVIDENCE / 03</small><h3>Coordinates</h3><p>Selected NASA grid-point locations.</p></div></div><div id="map-stack" class="map-stack"><div id="geo-map" class="geo-map" aria-label="Geographic context map with selected NASA sample coordinates"></div><svg id="coordinate-chart" viewBox="0 0 620 270" role="img" aria-label="Fallback schematic latitude-longitude plot"></svg></div><p class="hint">OpenStreetMap basemap appears when tiles are available; otherwise coordinates are plotted schematically. Pins identify NASA grid-point samples, not spatial trend coverage or city averages.</p><div id="coordinate-list" class="coordinate-list"></div></article>
 </div>
 <article class="panel sources-card" id="sources"><div><small>RESEARCH INTEGRITY</small><h3>Follow the source, not the hype.</h3><p id="provenance-text">Results come from NASA POWER's public meteorological reanalysis service, with source links and transparent limitations.</p><p id="source-link"><a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noopener">NASA POWER documentation ↗</a></p></div><div class="source-actions"><button id="download" disabled>↓ Download observations CSV</button><button id="share">⤴ Copy investigation link</button></div></article>
 </div></div></section>
