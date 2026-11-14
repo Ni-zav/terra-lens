@@ -14,6 +14,10 @@ try{
   const image=page.locator('img[src="../docs/screenshots/nasa-real-desktop.png"]');
   const verified=await image.evaluate(img=>img.complete&&img.naturalWidth>0);
   if(!verified)throw Error('The authentic NASA browser screenshot is missing from the demo.');
+  for (const path of ['annual-temperature.png','slope-intervals.png']) {
+    const chart=page.locator(`img[src="${path}"]`);
+    if(!await chart.evaluate(img=>img.complete&&img.naturalWidth>0))throw Error(`Missing scientific figure: ${path}`);
+  }
   if(await page.locator('.slide').count()!==7)throw Error('Demo must contain exactly seven slides');
   await page.emulateMedia({media:'print'});
   await page.pdf({path:output,preferCSSPageSize:true,printBackground:true});

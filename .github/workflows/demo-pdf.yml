@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'demo/index.html'
+      - 'demo/*.png'
+      - 'demo/*.jpg'
       - 'scripts/build-demo.mjs'
       - '.github/workflows/demo-pdf.yml'
       - 'docs/screenshots/nasa-real-desktop.png'
