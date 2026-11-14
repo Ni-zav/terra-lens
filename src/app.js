@@ -171,7 +171,14 @@ function renderPlot(id, series, monthly, unit) {
   for (const group of groups) {
     if (!group.points.length) continue;
     const points = group.points.map(p=>({x:pointX(p),y:p.value,...p}));
-    const d = points.map((p,i) => (i===0?'M':'L') + sx(p.x).toFixed(2) + ',' + sy(p.y).toFixed(2)).join(' ');
+    const d = points.map((p,i) => {
+      const previous = points[i-1];
+      // Never draw a continuous line across an unobserved month or year.
+      const currentIndex = monthly ? p.year * 12 + p.month : p.year;
+      const previousIndex = previous && (monthly ? previous.year * 12 + previous.month : previous.year);
+      const command = !previous || currentIndex - previousIndex !== 1 ? 'M' : 'L';
+      return command + sx(p.x).toFixed(2) + ',' + sy(p.y).toFixed(2);
+    }).join(' ');
     svg.append(svgNode('path',{d,fill:'none',stroke:group.color,'stroke-width':monthly?1.7:2.8,'stroke-linecap':'round','stroke-linejoin':'round'}));
     if (!monthly) {
       for (const point of points) {
@@ -238,10 +245,32 @@ function updateResults(config, series, warnings) {
   renderLegend('monthly-legend', series);
   renderPlot('annual-chart', series, false, varInfo.unit);
   renderPlot('monthly-chart', series, true, varInfo.unit);
-  renderCoordinates(config.points);
+  renderCoordinates(series);
   setStatus('Loaded ' + series.length + ' NASA point' + (series.length>1?'s':'') + '. ' +
     series.reduce((sum,item)=>sum+item.monthly.length,0) + ' valid monthly records. ' +
     (warnings.length ? warnings.join(' ') : ''),warnings.length ? 'error' : 'success');
+}
+
+function resetResultsUI() {
+  results = [];
+  $('metric-slope').textContent = '—';
+  $('metric-slope-detail').textContent = 'Awaiting verified NASA observations';
+  $('metric-significance').textContent = '—';
+  $('metric-significance').className = '';
+  $('metric-significance-detail').textContent = 'No inference until a request succeeds';
+  $('metric-years').textContent = '—';
+  $('metric-years-detail').textContent = 'Complete years only';
+  $('result-context').textContent = 'Waiting for new observations';
+  $('finding-text').textContent = 'Retrieving real NASA data. Previous findings are cleared to avoid stale evidence.';
+  $('provenance-text').textContent = 'Data provenance will appear after successful NASA retrieval.';
+  $('source-link').replaceChildren();
+  for (const id of ['annual-chart','monthly-chart']) {
+    const svg = $(id);
+    clearSvg(svg, 'Awaiting new NASA observations');
+    svg.append(svgNode('text', {x:480,y:140,'text-anchor':'middle',fill:'#8299aa'}, 'Waiting for observations…'));
+  }
+  $('annual-legend').replaceChildren();
+  $('monthly-legend').replaceChildren();
 }
 
 async function runAnalysis() {
@@ -256,13 +285,13 @@ async function runAnalysis() {
   setStatus('Retrieving real monthly records. NASA may take a few moments.');
   $('data-label').textContent='LOADING'; $('data-label').classList.remove('live');
   $('download').disabled = true;
-  results = [];
+  resetResultsUI();
   try {
     const tasks = config.points.map(async (point,index) => {
       const input = {lat:point.lat,lon:point.lon,variable:config.variable,start:config.start,end:config.end};
       const fetched = await fetchNASA(input,{signal:controller.signal});
       const annual = annualMeans(fetched.monthly);
-      return {...fetched,...point,color:COLORS[index],annual,
+      return {...fetched,...point,variable:config.variable,color:COLORS[index],annual,
         trend:linearTrend(annual)};
     });
     const settled = await Promise.allSettled(tasks);
@@ -327,13 +356,13 @@ function restoreURL() {
 
 function exportCSV() {
   if (!results.length) return;
-  const variable=$('variable').value;
+  const variable=results[0].variable;
   const columns=['location','latitude','longitude','variable','year','month','value','unit','source_url','retrieved_at'];
   const escape = value => '"' + String(value).replaceAll('"','""') + '"';
   const rows=[columns.join(',')];
   for (const item of results) for (const data of item.monthly) {
-    rows.push([item.label,item.lat,item.lon,variable,data.year,data.month,data.value,
-      VARIABLES[variable].unit,item.url,item.fetchedAt].map(escape).join(','));
+    rows.push([item.label,item.lat,item.lon,item.variable,data.year,data.month,data.value,
+      VARIABLES[item.variable].unit,item.url,item.fetchedAt].map(escape).join(','));
   }
   const href=URL.createObjectURL(new Blob([rows.join('\n')+'\n'],{type:'text/csv;charset=utf-8'}));
   const link=document.createElement('a'); link.href=href; link.download='terra-lens-nasa-power-'+variable+'.csv';
