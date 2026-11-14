@@ -86,7 +86,8 @@ export async function samplePoints({points=SENTINEL_POINTS,variable='T2M',start=
         const trend=linearTrend(annual);
         record={...point,status:trend?'ok':'insufficient-years',monthly:source.monthly,annual,trend,
           source:source.source||'NASA POWER',sourceURL:source.url||null,
-          retrievedAt:source.fetchedAt||null,metadata:source.metadata||{},variable};
+          retrievedAt:source.fetchedAt||null,metadata:source.metadata||{},variable,
+          cacheHit:Boolean(source.cacheHit)};
       } catch(error) {
         if(signal?.aborted||error?.name==='AbortError')throw abortError();
         record={...point,status:'error',error:message(error),monthly:[],annual:[],trend:null,variable};
