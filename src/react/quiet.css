@@ -55,3 +55,26 @@ body{background:#11161b;color:#e5e9eb}
 .chart-inspector input[type=range]:hover::-webkit-slider-thumb{background:#fff}
 .chart-inspector input[type=range]:disabled{opacity:.4;cursor:not-allowed}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #bdcbcd;outline-offset:2px}
+
+/* The optional Giovanni source panel intentionally sits below the fixed-size
+   explorer. Keep it reachable on laptops instead of trapping body scrolling. */
+@media (min-width:800px) and (min-height:660px) {
+  html, body { height:auto; min-height:100%; overflow-x:hidden; overflow-y:auto; }
+}
+/* The paired interval evidence exceeds the chart region on short laptops.
+   Scroll inside the comparison itself instead of clipping the third finding. */
+.comparison-panel { overflow-y:auto; overscroll-behavior:contain; }
+.source-actions { flex-wrap:wrap; }
+
+/* Source importer forms must never retain intrinsic input widths on phones. */
+.giovanni-workspace { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+.giovanni-workspace input { width:100%; min-width:0; max-width:100%; box-sizing:border-box; }
+.giovanni-workspace label { display:block; margin:.65rem 0 .3rem; }
+.giovanni-workspace .coord-row { flex-wrap:wrap; align-items:flex-start; }
+.giovanni-workspace .coord-row > div { flex:1 1 220px; min-width:0; }
+@media(min-width:800px) and (max-width:999px) and (max-height:720px) {
+  .source-actions { flex-wrap:nowrap; gap:3px; }
+  .source-actions button { font-size:9px; padding:4px 5px; min-height:26px; }
+  .insight-card .finding { margin:2px 0; }
+  .insight-card>a { margin-top:0; }
+}

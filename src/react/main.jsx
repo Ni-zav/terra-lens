@@ -1,8 +1,10 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {annualMeans, linearTrend} from '../stats.js';
+import {pairedContrast} from '../contrast.js';
 import {VARIABLES, LOCATIONS, fetchNASA, requestURL} from '../power.js';
 const TimeChart=React.lazy(()=>import('./Chart.jsx').then(module=>({default:module.TimeChart})));
+const GiovanniEvidence=React.lazy(()=>import('./Giovanni.jsx'));
 import './base.css';
 import '../../styles/workspace.css';
 import './react.css';
@@ -49,6 +51,22 @@ function csvDownload(results){
   const link=document.createElement('a');link.href=url;link.download=`terra-lens-nasa-power-${results[0].variable}.csv`;
   document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
+function evidenceDownload(results) {
+  if (!results.length) return;
+  const pairing = results.length === 2 ? pairedContrast(results[0].annual, results[1].annual) : null;
+  const payload = {
+    schema: 'terra-lens-evidence-v1',
+    generatedAt: new Date().toISOString(),
+    provenanceNote: 'Actual NASA POWER responses retrieved at runtime. Statistical estimates are derived, not raw observations.',
+    method: 'Day-weighted full-year monthly means; classical OLS. Paired B-A aligned-year contrast with exploratory Bartlett Newey-West HAC.',
+    limitations: 'Point estimates are not whole-city measurements. HAC uncertainty is approximate; no causation, forecast or correction for multiple exploratory searches.',
+    sources: results.map(r=>({id:r.id,label:r.label,lat:r.lat,lon:r.lon,variable:r.variable,unit:VARIABLES[r.variable].unit,source:r.source,sourceURL:r.url,retrievedAt:r.fetchedAt,metadata:r.metadata,monthly:r.monthly,annual:r.annual,trend:r.trend})),
+    pairedContrast: pairing
+  };
+  const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)+'\n'],{type:'application/json;charset=utf-8'}));
+  const link=document.createElement('a');link.href=url;link.download='terra-lens-auditable-evidence.json';
+  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
 function Globe({inputs,onPick}){
   const host=useRef(null),globe=useRef(null),pickRef=useRef(onPick),[target,setTarget]=useState('A'),targetRef=useRef('A');
   const [status,setStatus]=useState('Drag to rotate · Click to place point A');
@@ -79,6 +97,7 @@ function Globe({inputs,onPick}){
     <p className="globe-credit">Historical <a href="https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/" target="_blank" rel="noreferrer">NASA Blue Marble</a> imagery (2001) · Context only, not live data.</p></section>;
 }
 function Confidence({results,unit}){
+  const paired=results.length===2 ? pairedContrast(results[0].annual,results[1].annual) : null;
   const valid=results.filter(r=>r.trend&&Number.isFinite(r.trend.ciLowPerDecade)&&Number.isFinite(r.trend.ciHighPerDecade));
   if(!valid.length)return <p className="comparison-empty">At least 10 complete years are needed to estimate a trend.</p>;
   let min=Math.min(0,...valid.map(r=>r.trend.ciLowPerDecade)),max=Math.max(0,...valid.map(r=>r.trend.ciHighPerDecade));const padding=(max-min||.5)*.13;min-=padding;max+=padding;
@@ -91,7 +110,17 @@ function Confidence({results,unit}){
     <text x="580" y="18" textAnchor="middle" fill="#b7c9d3" fontSize="18">Classical 95% slope intervals · {unit}/decade</text></svg></div>
     <div className="comparison-rows" id="comparison-rows">{results.map(r=><article className="comparison-point" key={r.id} style={{'--series-color':r.color}}><div className="comparison-location"><span className="comparison-badge">{r.id}</span><strong>{r.label}</strong><small>{number(r.lat,4)}°, {number(r.lon,4)}°</small></div><div className="comparison-numbers">
       <div className="comparison-stat"><span>Complete years</span><strong>{r.annual.length}</strong></div><div className="comparison-stat"><span>Linear trend</span><strong>{r.trend?`${signed(r.trend.slopePerDecade,3)} ${unit}/decade`:'Not estimated'}</strong></div><div className="comparison-stat"><span>Classical 95% slope interval</span><strong>{r.trend?`${signed(r.trend.ciLowPerDecade,3)} to ${signed(r.trend.ciHighPerDecade,3)}`:'—'}</strong></div><div className="comparison-stat"><span>Classical two-sided p</span><strong>{r.trend?pValue(r.trend.pValue):'—'}</strong></div>
-    </div></article>)}</div><p className="comparison-note">Differences between slopes are descriptive. Separate tests do not establish a significant difference. Classical intervals assume independent residuals.</p></div>;
+    </div></article>)}</div><p className="comparison-note">Separate slope tests do not test the contrast. The paired comparison below uses only shared complete years; its HAC interval remains approximate and exploratory.</p>
+    {results.length===2 && <section className="comparison-point" aria-label="Paired difference in trends">
+      <div className="comparison-topline"><div><h3>Paired trend contrast (B − A)</h3><p>Direct comparison on the same calendar years</p></div></div>
+      {paired ? <><div className="comparison-numbers">
+        <div className="comparison-stat"><span>Paired complete years</span><strong>{paired.n} ({paired.years[0]}–{paired.years.at(-1)})</strong></div>
+        <div className="comparison-stat"><span>Difference in fitted slopes</span><strong>{signed(paired.classical.slopePerDecade,3)} {unit}/decade</strong></div>
+        <div className="comparison-stat"><span>Approximate HAC 95% interval</span><strong>{signed(paired.hac.ciLowPerDecade,3)} to {signed(paired.hac.ciHighPerDecade,3)} {unit}/decade</strong></div>
+        <div className="comparison-stat"><span>Approximate HAC two-sided p</span><strong>{pValue(paired.hac.pValue)}</strong></div>
+      </div><p className="comparison-note">Bartlett Newey–West, lag {paired.hac.lag}; n−2 t reference. Durbin–Watson: {number(paired.hac.durbinWatson)}. Excluded unmatched annual records: A {paired.excludedYearsA.length}, B {paired.excludedYearsB.length}. This checks association in two model grid-point series, not causation or a whole-region difference. Residual dependence, uncertainty in the NASA inputs and exploratory multiple testing remain limitations.</p></>
+      : <p className="comparison-note">Fewer than ten shared complete calendar years; no paired inference is reported.</p>}
+    </section>}</div>;
 }
 function App(){
   const [inputs,setInputs]=useState(initialInputs), [results,setResults]=useState([]), [query,setQuery]=useState(null);
@@ -128,7 +157,7 @@ function App(){
   const pick=(id,p)=>change({['city'+id]:'custom',['lat'+id]:p.lat.toFixed(4),['lon'+id]:p.lon.toFixed(4),...(id==='B'?{compare:true}:{})});
   const active=results[0], variable=query?.variable||inputs.variable, info=VARIABLES[variable], trend=active?.trend;
   const tabItems=[['annual','Annual trend'],['monthly','Monthly data'],['comparison','Compare slopes']];
-  const insight=trend?`A: ${signed(trend.slopePerDecade)} ${info.unit}/decade${results[1]?.trend?` · B: ${signed(results[1].trend.slopePerDecade)} ${info.unit}/decade. Difference is descriptive.`:'.'} Classical OLS assumes independent residuals; serial correlation and repeated searches can overstate confidence.`:'Results will appear after NASA data loads.';
+  const insight=trend?`A: ${signed(trend.slopePerDecade)} ${info.unit}/decade${results[1]?.trend?` · B: ${signed(results[1].trend.slopePerDecade)} ${info.unit}/decade. See Compare slopes for the paired B−A test.`:'.'} Classical OLS assumes independent residuals; serial correlation and repeated searches can overstate confidence.`:'Results will appear after NASA data loads.';
   function keyboardTab(e,index){let n;if(e.key==='ArrowRight')n=(index+1)%3;else if(e.key==='ArrowLeft')n=(index+2)%3;else if(e.key==='Home')n=0;else if(e.key==='End')n=2;if(n!==undefined){e.preventDefault();setActiveTab(tabItems[n][0]);document.getElementById('tab-'+tabItems[n][0])?.focus();}}
   return <><a className="skip" href="#explore">Skip to workspace</a><header className="topbar"><div className="shell nav"><a href="./" className="brand">terra-lens</a><span className="nav-subtitle">Earth trend workspace</span><div className="nav-right"><span className="source-indicator">NASA POWER</span><a href="./docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Methodology</a><a href="https://github.com/Ni-zav/terra-lens" target="_blank" rel="noreferrer">Source</a></div></div></header>
   <main className="shell explorer" id="explore"><h1 className="sr-only">Earth trend workspace</h1><div className="workspace">
@@ -143,8 +172,8 @@ function App(){
   <div className="chart-shell"><div className="chart-tabs" role="tablist" aria-label="Analysis views">{tabItems.map(([id,label],i)=><button key={id} role="tab" id={'tab-'+id} aria-selected={activeTab===id} aria-controls={'panel-'+id} tabIndex={activeTab===id?0:-1} onClick={()=>setActiveTab(id)} onKeyDown={e=>keyboardTab(e,i)}>{label}</button>)}</div><div className="chart-views">
   {activeTab==='comparison'?<section id="panel-comparison" role="tabpanel" aria-labelledby="tab-comparison">{results.length?<Confidence results={results} unit={info.unit}/>:<p className="comparison-empty">Run an analysis to compare slope estimates.</p>}</section>:<article className="chart-panel" id={'panel-'+activeTab} role="tabpanel" aria-labelledby={'tab-'+activeTab}><div className="chart-heading"><div><h3>{activeTab==='annual'?'Annual mean & fitted trend':'Monthly values'}</h3><p>{activeTab==='annual'?'Complete-year, day-weighted averages':'NASA POWER monthly values, without gap filling'}</p></div><span className="chip" id="unit-chip">{results.length?`${info.unit} / ${info.label}`:'NASA POWER'}</span></div><React.Suspense fallback={<p>Loading chart…</p>}><TimeChart key={activeTab} results={results} monthly={activeTab==='monthly'} unit={info.unit} range={activeTab==='annual'?annualRange:monthlyRange} setRange={activeTab==='annual'?setAnnualRange:setMonthlyRange}/></React.Suspense></article>}
   </div></div></section>
-  <aside className="location-column" aria-label="Location and data source"><Globe inputs={inputs} onPick={pick}/><section className="insight-card"><span className="section-kicker">Interpretation</span><div className="finding"><p id="finding-text">{insight}</p></div><a href="./docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Assumptions and limitations</a></section><section className="sources-card" id="sources"><div><span className="section-kicker">Source and provenance</span><p id="provenance-text">{active?`NASA POWER${active.metadata.sources?.length?' / '+active.metadata.sources.join(', '):''} · retrieved ${new Date(active.fetchedAt).toLocaleString('en-US')} · ${results.map(r=>`${r.id}: ${r.monthly.length} months`).join(' · ')}. Model-derived point estimates.`:'Waiting for NASA POWER monthly data.'}</p><p id="source-link">{results.length?results.map((r,i)=><React.Fragment key={r.id}>{i?' · ':''}<a href={r.url} target="_blank" rel="noreferrer">NASA request {r.id}</a></React.Fragment>):<a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER documentation</a>}</p></div><div className="source-actions"><button id="download" disabled={!results.length} onClick={()=>csvDownload(results)}>Download CSV</button><button id="share" onClick={async()=>{const url=makeShare(inputs);try{await navigator.clipboard.writeText(url);setStatus('Investigation URL copied.')}catch{window.prompt('Copy this investigation URL:',url)}}}>Copy link</button></div></section></aside>
-  </div></main></>;
+  <aside className="location-column" aria-label="Location and data source"><Globe inputs={inputs} onPick={pick}/><section className="insight-card"><span className="section-kicker">Interpretation</span><div className="finding"><p id="finding-text">{insight}</p></div><a href="./docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Assumptions and limitations</a></section><section className="sources-card" id="sources"><div><span className="section-kicker">Source and provenance</span><p id="provenance-text">{active?`NASA POWER${active.metadata.sources?.length?' / '+active.metadata.sources.join(', '):''} · retrieved ${new Date(active.fetchedAt).toLocaleString('en-US')} · ${results.map(r=>`${r.id}: ${r.monthly.length} months`).join(' · ')}. Model-derived point estimates.`:'Waiting for NASA POWER monthly data.'}</p><p id="source-link">{results.length?results.map((r,i)=><React.Fragment key={r.id}>{i?' · ':''}<a href={r.url} target="_blank" rel="noreferrer">NASA request {r.id}</a></React.Fragment>):<a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER documentation</a>}</p></div><div className="source-actions"><button id="download" disabled={!results.length} onClick={()=>csvDownload(results)}>Download CSV</button><button id="evidence-download" disabled={!results.length} onClick={()=>evidenceDownload(results)}>Evidence JSON</button><button id="share" onClick={async()=>{const url=makeShare(inputs);try{await navigator.clipboard.writeText(url);setStatus('Investigation URL copied.')}catch{window.prompt('Copy this investigation URL:',url)}}}>Copy link</button></div></section></aside>
+  </div></main><div className="shell"><React.Suspense fallback={<p>Loading independent dataset workspace…</p>}><GiovanniEvidence/></React.Suspense></div></>;
 }
 
 createRoot(document.getElementById('root')).render(<App/>);
