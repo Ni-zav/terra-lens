@@ -44,4 +44,8 @@ jobs:
           git add demo/Terra-Lens_Seven_Slide_Demo.pdf
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'docs: publish seven-slide NASA demo PDF with real screenshot'
+          # Other evidence jobs may have advanced main while the PDF was rendering.
+          # Rebase this self-contained binary addition rather than overwrite history.
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
