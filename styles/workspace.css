@@ -115,9 +115,8 @@
 }
 .section-kicker {
   font: 700 9px var(--mono);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   color: var(--cyan);
-  text-transform: uppercase;
   white-space: nowrap;
   flex: none;
 }
@@ -849,7 +848,6 @@
   display: block;
   font: 600 8.5px var(--mono);
   color: var(--dim);
-  text-transform: uppercase;
 }
 .comparison-stat strong {
   display: block;

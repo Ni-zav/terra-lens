@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import * as echarts from 'echarts/core';
 import {LineChart, BarChart} from 'echarts/charts';
 import {GridComponent, TooltipComponent, DataZoomComponent, AriaComponent, MarkLineComponent} from 'echarts/components';
@@ -36,7 +36,8 @@ export function TimeChart({series, mode, range, setRange, setMode}) {
   const [cursor,setCursor]=useState(0);
   const model=useMemo(()=>buildChartModel(series,{mode,range}),[series,mode,range]);
   const monthly=mode!=='annual', anomaly=mode==='anomaly', unit=model.unit;
-  useEffect(()=>{setCursor(Math.max(0,model.dates.length-1));},[model]);
+  // Reset the cursor before paint when the dataset/range changes so slider interactions aren't overwritten.
+  useLayoutEffect(()=>{setCursor(Math.max(0,model.dates.length-1));},[model]);
   useEffect(()=>{
     const instance=chart.current; if(!instance)return;
     const dataSeries=model.series.flatMap(s=>[
@@ -94,7 +95,7 @@ export function TimeChart({series, mode, range, setRange, setMode}) {
         </div>
       </div></div>
     <div className="echart" ref={container} role="img" aria-label={`${anomaly?'Monthly anomaly':monthly?'Monthly':'Annual'} NASA chart. Exact values are available with the date slider.`}/>
-    <div className="chart-inspector"><label htmlFor={idBase+'-cursor'}>{monthly?'MONTH':'YEAR'}</label>
+    <div className="chart-inspector"><label htmlFor={idBase+'-cursor'}>{monthly?'Month':'Year'}</label>
       <input id={idBase+'-cursor'} type="range" min="0" max={Math.max(0,model.dates.length-1)} value={position} disabled={!model.dates.length} aria-valuetext={readout} onChange={e=>setCursor(Number(e.target.value))}/>
       <output id={idBase+'-readout'}>{readout}</output></div>
     <div className="chart-foot">{anomaly?(model.standardized?'Standardized anomaly: (value − month mean) ÷ month s.d., because units differ':'Anomaly: value − that calendar month’s complete-year mean, removing the seasonal cycle'):monthly?'Missing months break the line':'Solid: annual mean · Dashed: full-period OLS fit'} · 10Y changes display only · Ctrl + scroll to zoom</div>
@@ -138,7 +139,7 @@ export function SeasonalChart({series}) {
         <button type="button" aria-pressed={!trend} onClick={()=>setView('cycle')}>Seasonal cycle</button>
       </div></div>
     <div className="echart" ref={container} role="img" aria-label="Seasonal NASA chart. Exact values are available with the month slider."/>
-    <div className="chart-inspector"><label htmlFor="seasonal-cursor">MONTH</label>
+    <div className="chart-inspector"><label htmlFor="seasonal-cursor">Month</label>
       <input id="seasonal-cursor" type="range" min="0" max="11" value={cursor} disabled={!model.series.length} aria-valuetext={readout} onChange={e=>setCursor(Number(e.target.value))}/>
       <output id="seasonal-readout">{readout}</output></div>
     <div className="chart-foot">{trend?'Each bar: OLS slope of that calendar month across years · 12 parallel fits, descriptive only (no multiple-testing correction)':'Mean of each calendar month over complete years only'}</div>

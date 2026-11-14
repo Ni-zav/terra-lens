@@ -63,20 +63,27 @@ try{
   await page.locator('#analyze').click();await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
   await page.locator('#tab-annual').click();await page.locator('#tab-annual').focus();await page.keyboard.press('ArrowRight');
   assert.equal(await page.locator('#tab-monthly').getAttribute('aria-selected'),'true');
-  await page.locator('#monthly-cursor').fill('0');assert.match(await page.locator('#monthly-readout').textContent(),/2001-01.*Yogyakarta.*Jakarta/);
+  await page.locator('#monthly-cursor').fill('0');
+  await page.waitForFunction(()=>document.getElementById('monthly-readout')?.textContent.startsWith('2001-01'));
+  assert.match(await page.locator('#monthly-readout').textContent(),/2001-01.*Yogyakarta.*Jakarta/);
   await page.locator('#anomaly-toggle').click();
   assert.equal(await page.locator('#anomaly-toggle').getAttribute('aria-pressed'),'true');
   await page.getByRole('group',{name:'Monthly display mode'}).getByRole('button',{name:'Values'}).click();
   await page.locator('#tab-seasonal').click();
   assert.equal(await page.locator('#tab-seasonal').getAttribute('aria-selected'),'true');
-  await page.locator('#seasonal-cursor').fill('0');assert.match(await page.locator('#seasonal-readout').textContent(),/Jan.*Yogyakarta.*Jakarta/);
+  await page.locator('#seasonal-cursor').fill('0');
+  await page.waitForFunction(()=>document.getElementById('seasonal-readout')?.textContent.startsWith('Jan'));
+  assert.match(await page.locator('#seasonal-readout').textContent(),/Jan.*Yogyakarta.*Jakarta/);
   await page.locator('#tab-annual').click();await page.locator('#annual-cursor').fill('0');
+  await page.waitForFunction(()=>document.getElementById('annual-readout')?.textContent.startsWith('2001'));
   assert.match(await page.locator('#annual-readout').textContent(),/2001.*Yogyakarta.*Jakarta/);
   assert.match(await page.locator('#metric-robust').textContent(),/°C/);
   const slope=await page.locator('#metric-slope').textContent();
   await page.getByRole('group',{name:'Annual chart displayed period'}).getByRole('button',{name:'10Y'}).click();
   await page.waitForFunction(()=>{const e=document.getElementById('annual-cursor');return e?.max==='9'&&e.value==='9';});
-  await page.locator('#annual-cursor').fill('0');assert.match(await page.locator('#annual-readout').textContent(),/^2015/);
+  await page.locator('#annual-cursor').fill('0');
+  await page.waitForFunction(()=>document.getElementById('annual-readout')?.textContent.startsWith('2015'));
+  assert.match(await page.locator('#annual-readout').textContent(),/^2015/);
   assert.equal(await page.locator('#metric-slope').textContent(),slope);
   await page.getByRole('group',{name:'Annual chart displayed period'}).getByRole('button',{name:'All'}).click();
   assert.equal(await page.locator('.echart canvas').count()>0,true,'ECharts must render a chart');
@@ -109,6 +116,35 @@ try{
   await offline.route('**/power.larc.nasa.gov/**',route=>route.fulfill({status:503,body:'unavailable'}));
   await offline.goto(`http://127.0.0.1:${port}/`);await offline.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='Request failed');
   assert.equal((await offline.locator('#metric-slope').textContent()).trim(),'—');assert.equal(await offline.locator('#download').isDisabled(),true);await offline.close();
+  // Experimental regional finder: synthetic fixture is allowed for UI tests ONLY.
+  const finderPage=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});
+  const finderErrors=[];finderPage.on('pageerror',e=>finderErrors.push(e.message));
+  await finderPage.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
+  await finderPage.locator('#finder-run').waitFor({timeout:25000});
+  assert.equal(await finderPage.locator('.discovery-table tbody tr').count(),8,'All eight declared sites must be shown before scanning');
+  await finderPage.locator('#finder-run').click();
+  await finderPage.waitForFunction(()=>document.getElementById('finder-status')?.textContent.includes('Finished:'),
+    null,{timeout:45000});
+  assert.match(await finderPage.locator('#finder-status').textContent(),/8 trends/);
+  assert.equal(await finderPage.locator('.discovery-table tbody tr').count(),8);
+  assert.equal(await finderPage.locator('.discovery-table [aria-pressed=true]').count(),2);
+  assert.ok((await finderPage.evaluate(()=>document.documentElement.scrollWidth))<=392,
+    'Discovery screen must not cause mobile page overflow');
+  const expectedHref=await finderPage.locator('.discovery-inspect').getAttribute('href');
+  assert.match(expectedHref,/auto=1/);
+  assert.match(expectedHref,/compare=1/);
+  const finderDownloaded=finderPage.waitForEvent('download');
+  await finderPage.locator('#finder-download').click();
+  const downloadResult=await finderDownloaded;
+  const evidence=JSON.parse(await readFile(await downloadResult.path(),'utf8'));
+  assert.equal(evidence.schema,'terra-lens-sentinel-screen-v1');
+  assert.equal(evidence.records.length,8);
+  assert.equal(evidence.count.successes,8);
+  assert.equal(evidence.protocol.maxConcurrency,3);
+  assert.match(evidence.brief.uncertainty,/post-selection/);
+  assert.ok(evidence.records.every(r=>r.sourceURL?.includes('power.larc.nasa.gov')));
+  assert.equal(finderErrors.length,0,finderErrors.join('; '));
+  await finderPage.close();
   assert.equal(errors.length,0,errors.join('; '));
   console.log('React/ECharts browser smoke passed: fixture-only data, globe, tabs, values, layout and offline failure.');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

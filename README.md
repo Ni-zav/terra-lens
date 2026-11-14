@@ -96,10 +96,19 @@ the scrollable plot regions are keyboard accessible.
 Three.js 0.187.0 is distributed under the MIT license in `vendor/THREE-LICENSE.txt`.
 
 
-## New evidence workflows (candidate development branch)
+## Evidence workflows in main
 
 This branch introduces a paired A/B trend comparison using **shared complete calendar years**, a direct B−A slope, and an exploratory **Bartlett Newey–West HAC** uncertainty estimate. It does not confuse separate individual t-tests with a test of their difference. Download an auditable Evidence JSON alongside the existing original monthly CSV.
 
 The NASA POWER selector includes nine meteorological parameters rather than three, with explicit units and meanings; see [data catalog](docs/DATA_CATALOG.md). A local **NASA Giovanni monthly CSV** workspace can analyze a second source with product ID, DOI, original URL, file checksum, complete-year means and classical OLS; see [Giovanni evidence guide](docs/GIOVANNI_EVIDENCE.md).
 
 **Release caution:** The Giovanni pathway is software capability only; this repository has not confirmed a genuinely downloaded Giovanni dataset or the competition's challenge-listed-source eligibility. Neither these changes nor a GitHub PR constitute a completed NASA team submission. Do not claim statistical significance of the B−A difference without inspecting paired/HAC results and assumptions.
+
+
+## Award-impact prototype (feature branch only; not on public main)
+
+The opt-in **Trend Contrast Finder** is an experimental eight-coordinate Indonesia sentinel screen that turns NASA POWER point-series requests into questions for science educators and community researchers. A fixed sampling frame, limited three-request concurrency, transparent errors, full-year counts, descriptive slope ranking, matched-calendar-year selected pair and auditable JSON are implemented. Users can drill down into the existing A/B explorer.
+
+**The plotted dots are not a heatmap, an exhaustive search, a representative sample, or local policy risk scores.** The highest/lowest points were selected *from this sample after inspecting the data*, so their paired HAC interval must not be treated as confirmatory evidence. No claims of improved human health, water security or policy adoption are demonstrated. Read [discovery limitations and acceptance criteria](docs/DISCOVERY_METHOD.md) and [human-impact questions](docs/IMPACT_AND_DISCOVERY.md). **A complete eight-point live NASA POWER T2M screen was independently reproduced with SciPy**; see [verified sentinel case study](docs/DISCOVERY_CASE_STUDY.md) and [workflow evidence](https://github.com/Ni-zav/terra-lens/actions/runs/43581659085). The maximum/minimum comparison remains post-selected and non-confirmatory.
+
+The branch is intentionally not merged or deployed; it has not resolved the separate official NASA Resources-tab requirement.
