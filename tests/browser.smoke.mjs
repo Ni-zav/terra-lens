@@ -106,7 +106,7 @@ try {
     'Changing the display period must not change the fitted analysis');
   await page.locator('[data-chart="annual"][data-years="all"]').click();
   // Desktop must fit actual controls and each view, not merely hide overflow.
-  for (const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660]]) {
+  for (const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660],[820,700],[800,660]]) {
     await page.setViewportSize({width,height});
     for (const name of ['annual','monthly','comparison']) {
       await page.locator('#tab-'+name).click();
