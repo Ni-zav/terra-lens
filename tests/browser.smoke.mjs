@@ -36,6 +36,8 @@ try{
   await page.locator('#earth-globe canvas').click({position:{x:(await page.locator('#earth-globe canvas').boundingBox()).width/2,y:(await page.locator('#earth-globe canvas').boundingBox()).height/2}});
   assert.ok(Math.abs(Number(await page.locator('#lat-a').inputValue())+8)<.1);
   assert.ok(Math.abs(Number(await page.locator('#lon-a').inputValue())-110)<.1);
+  assert.match(await page.locator('#globe-status').textContent(),/Point A · Yogyakarta/);
+  assert.equal((await page.locator('.loc-a .loc-city-badge').textContent()).trim(),'Yogyakarta');
   assert.equal((await page.locator('#data-label').textContent()).trim(),'Inputs changed');
   assert.match(await page.locator('#result-context').textContent(),/^Previous result:/);
   await page.locator('#city-a').selectOption('Yogyakarta');
@@ -46,6 +48,12 @@ try{
   await page.locator('#analyze').click();await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
   await page.locator('#tab-comparison').click();assert.equal(await page.locator('.comparison-point').count(),2);
   assert.equal(await page.locator('#confidence-chart circle').count(),2);
+  await page.locator('#compare-c').check();
+  await page.locator('#analyze').click();await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
+  assert.equal(await page.locator('.comparison-point').count(),3);
+  assert.equal(await page.locator('#confidence-chart circle').count(),3);
+  await page.locator('#compare-c').uncheck();
+  await page.locator('#analyze').click();await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
   await page.locator('#tab-annual').click();await page.locator('#tab-annual').focus();await page.keyboard.press('ArrowRight');
   assert.equal(await page.locator('#tab-monthly').getAttribute('aria-selected'),'true');
   await page.locator('#monthly-cursor').fill('0');assert.match(await page.locator('#monthly-readout').textContent(),/2001-01.*Yogyakarta.*Jakarta/);
@@ -58,6 +66,8 @@ try{
   assert.equal(await page.locator('#metric-slope').textContent(),slope);
   await page.getByRole('group',{name:'Annual chart displayed period'}).getByRole('button',{name:'All'}).click();
   assert.equal(await page.locator('.echart canvas').count()>0,true,'ECharts must render a chart');
+  await mkdir(join(ROOT,'artifacts'),{recursive:true});
+  await page.screenshot({path:join(ROOT,'artifacts','react-fixture-desktop.png')});
   for(const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660],[820,700],[800,660]]){
     await page.setViewportSize({width,height});
     for(const name of ['annual','monthly','comparison']){

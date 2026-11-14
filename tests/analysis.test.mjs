@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {daysInMonth, annualMeans, linearTrend, regularizedBeta, studentTCritical95, studentTTwoSidedP} from '../src/stats.js';
-import {requestURL, parseMonthly, fetchNASA} from '../src/power.js';
+import {requestURL, parseMonthly, fetchNASA, resolveLocationName} from '../src/power.js';
 
 test('leap years and day-weighted annual averages', () => {
   assert.equal(daysInMonth(2024, 2), 29);
@@ -60,4 +60,11 @@ test('NASA request fails honestly if network fails', async () => {
   await assert.rejects(fetchNASA({lat:0, lon:0, start: 2001, end: 2020, variable:'T2M'}, {
     fetcher: async () => { throw new Error('network offline'); }
   }), /network offline/);
+});
+test('resolveLocationName returns simple city or region name for any coordinate', () => {
+  assert.equal(resolveLocationName(-7.8, 110.37), 'Yogyakarta');
+  assert.equal(resolveLocationName(-6.21, 106.85), 'Jakarta');
+  assert.equal(resolveLocationName(35.68, 139.65), 'Tokyo');
+  assert.equal(resolveLocationName(-7.26, 112.75), 'Surabaya');
+  assert.equal(resolveLocationName(0, -140), 'Equatorial Pacific');
 });

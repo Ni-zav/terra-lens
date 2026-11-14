@@ -11,11 +11,13 @@ export function buildChartModel(results, monthly, range) {
     else dates.push(String(year));
   }
   const key=point=>monthly?`${point.year}-${String(point.month).padStart(2,'0')}`:String(point.year);
-  const colors=['#62d6e4','#f6b975'];
+  const colors=['#62d6e4','#f6b975','#a38cf8','#56d39a'];
   return {dates,series:results.map((item,index)=>{
     const data=new Map((monthly?item.monthly:item.annual).map(point=>[key(point),point.value]));
     const fit=new Map((item.trend?.fitted||[]).map(point=>[String(point.year),point.value]));
-    return {id:item.id,label:item.label,color:colors[index],values:dates.map(date=>data.get(date)??null),
+    return {id:item.id,label:item.label,color:item.color||colors[index%colors.length],
+      slopePerDecade:item.trend?.slopePerDecade??null,
+      values:dates.map(date=>data.get(date)??null),
       fit:monthly?[]:dates.map(date=>fit.get(date)??null)};
   })};
 }

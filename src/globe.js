@@ -5,6 +5,8 @@ import * as THREE from 'three';
 const RAD = Math.PI / 180;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const wrap = lon => ((lon + 180) % 360 + 360) % 360 - 180;
+const MARKER_COLORS = { A: 0x62d6e4, B: 0xf6b975, C: 0xa38cf8, D: 0x56d39a };
+
 export function pointToVector(lat, lon, radius = 1) {
   const phi = lat * RAD, lambda = lon * RAD;
   return new THREE.Vector3(radius * Math.cos(phi) * Math.cos(lambda),
@@ -15,7 +17,7 @@ export function vectorToPoint(vector) {
   return {lat: Math.asin(clamp(v.y, -1, 1)) / RAD, lon: wrap(Math.atan2(-v.z, v.x) / RAD)};
 }
 
-export function createGlobe(host, onPick) {
+export function createGlobe(host, onPick, onHover) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, powerPreference:'low-power'});
@@ -65,11 +67,21 @@ export function createGlobe(host, onPick) {
     }
     for (const point of points) {
       if (!Number.isFinite(point.lat) || !Number.isFinite(point.lon) || Math.abs(point.lat)>90 || Math.abs(point.lon)>180) continue;
-      const marker = new THREE.Mesh(new THREE.SphereGeometry(.025, 16, 12),
-        new THREE.MeshBasicMaterial({color:point.id === 'B' ? 0xf6b975 : 0x62d6e4}));
-      marker.position.copy(pointToVector(point.lat, point.lon, 1.02)); markers.add(marker);
+      const color = MARKER_COLORS[point.id] || 0x62d6e4;
+      const marker = new THREE.Mesh(new THREE.SphereGeometry(.026, 16, 12),
+        new THREE.MeshBasicMaterial({color}));
+      marker.position.copy(pointToVector(point.lat, point.lon, 1.02));
+      markers.add(marker);
     }
     draw();
+  }
+  function hitTest(clientX, clientY) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    cursor.set((clientX - rect.left) / rect.width * 2 - 1, -(clientY - rect.top) / rect.height * 2 + 1);
+    raycaster.setFromCamera(cursor, camera);
+    const hit = raycaster.intersectObject(earth)[0];
+    return hit ? vectorToPoint(hit.point) : null;
   }
   renderer.domElement.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;
@@ -77,7 +89,10 @@ export function createGlobe(host, onPick) {
     renderer.domElement.setPointerCapture(e.pointerId);
   });
   renderer.domElement.addEventListener('pointermove', e => {
-    if (!pointer) return;
+    if (!pointer) {
+      if (onHover) onHover(hitTest(e.clientX, e.clientY));
+      return;
+    }
     const dx=e.clientX-pointer.x, dy=e.clientY-pointer.y;
     pointer.x=e.clientX; pointer.y=e.clientY;
     centerLon=wrap(centerLon-dx*.35); centerLat=clamp(centerLat+dy*.35,-85,85); draw();
@@ -86,13 +101,11 @@ export function createGlobe(host, onPick) {
     if (!pointer) return;
     const distance=Math.hypot(e.clientX-pointer.startX,e.clientY-pointer.startY); pointer=null;
     if (distance > 5) return;
-    const rect=renderer.domElement.getBoundingClientRect();
-    cursor.set((e.clientX-rect.left)/rect.width*2-1, -(e.clientY-rect.top)/rect.height*2+1);
-    raycaster.setFromCamera(cursor,camera);
-    const hit=raycaster.intersectObject(earth)[0];
-    if (hit) onPick(vectorToPoint(hit.point));
+    const picked = hitTest(e.clientX, e.clientY);
+    if (picked) onPick(picked);
   });
-  renderer.domElement.addEventListener('pointercancel', () => {pointer=null;});
+  renderer.domElement.addEventListener('pointerleave', () => {if (onHover) onHover(null);});
+  renderer.domElement.addEventListener('pointercancel', () => {pointer=null; if (onHover) onHover(null);});
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   return {setPoints, focus(point) {centerLat=clamp(point.lat,-85,85); centerLon=wrap(point.lon); draw();},
     dispose() {
