@@ -57,6 +57,10 @@ try {
   assert.equal(await page.locator('#comparison-point').count(), 0, 'No stale legacy comparison cards');
   assert.equal(await page.locator('#comparison-panel').isVisible(), true);
   assert.equal(await page.locator('.comparison-point').count(), 2);
+  assert.equal(await page.locator('#confidence-chart circle').count(), 2,
+    'Forest plot must display one actual slope estimate for each point');
+  assert.equal(await page.locator('#confidence-chart line').count() >= 8, true,
+    'Confidence limits and zero/grid reference should be visible');
   assert.match(await page.locator('.comparison-point').first().textContent(), /Yogyakarta/);
   assert.match(await page.locator('.comparison-point').last().textContent(), /Jakarta/);
   assert.equal(await page.locator('link[href="./styles/observatory.css"]').count(), 1);
