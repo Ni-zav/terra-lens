@@ -50,7 +50,7 @@ For comparison, the **pre-existing** 2001–2024 Jakarta vs Yogyakarta B−A stu
 - `scripts/live-discovery.mjs` preserved raw valid monthly observations and derived annual estimates.
 - `scripts/verify-discovery-scipy.py` independently recalculated all monthly-to-annual weighted means, all eight OLS slopes/p/95% intervals and the selected-pair approximate HAC variance, confidence interval and p from the **same real NASA records**. All matched; workflow passed.
 - Existing fixed-fixture unit tests and browser smoke tests assess code behavior, not validity of actual NASA climate measurements.
-- A live browser run **specifically interacting with the complete new finder** and a real user comprehension test are still separate acceptance gates. The script verified the underlying live research math, not public deployment.
+- **A separate actual Chromium browser run of the complete eight-point Finder also PASSED**, using real NASA POWER responses through the locally served Cloudflare Pages Function code: 8/8 valid point requests, A/B deep link, full exported evidence JSON, 390px mobile overflow, and authentic desktop/mobile screenshots. [Live browser run #43582005814](https://github.com/Ni-zav/terra-lens/actions/runs/43582005814). This is **not proof of a hosted feature-branch deployment or user adoption**. A real user comprehension test remains an independent gate.
 
 ## Who can responsibly use the result?
 
