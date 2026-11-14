@@ -24,6 +24,52 @@ a{color:#aaf6dd}a:hover{color:#fff}.bullets{margin-top:0; padding-left:1.5em;fon
 button{padding:10px 17px;border:1px solid #43656e;border-radius:9px;background:#112a3c;color:white;font:inherit;cursor:pointer}button:hover,button:focus-visible{background:#194656;outline:2px solid var(--mint)}button:disabled{opacity:.35;cursor:not-allowed}.control-left{display:flex;gap:10px;align-items:center}
 @media(max-width:700px){.deck{width:100vw;margin:0}.slide{border-radius:0;padding:5% 5%;aspect-ratio:auto;min-height:74vh}.slide:after{bottom:11%}.meta{font-size:11px}h1{font-size:clamp(33px,8vw,50px)}h2{font-size:clamp(28px,6vw,42px)}p{font-size:15px}.stack{grid-template-columns:1fr;gap:12px}.panel{padding:12px}.panel b{font-size:18px}.panel span{font-size:14px}.two{grid-template-columns:1fr;gap:10px}.big{font-size:32px}.metric{padding:12px;margin:5px 0}.diagram{max-height:200px}.source{margin-bottom:14%}.question{font-size:30px}.bullets{font-size:15px}.footer{bottom:4%}.number{bottom:4%}.controls{width:94vw}}
 @media print{@page{size:16in 9in;margin:0}body{background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.deck{margin:0;width:100%}.slide,.slide.active{display:flex;break-after:page;border:0;box-shadow:none;border-radius:0;width:16in;height:9in;padding:0.8in .95in}.slide:last-child{break-after:auto}.controls{display:none}}
+
+/* Mobile is a reflowing research story, not a squashed 16:9 PPT canvas. */
+@media screen and (max-width:700px) {
+  .deck { width:100%; margin:0; }
+  .slide,.slide.active {
+    width:100%; min-height:calc(100svh - 85px); height:auto;
+    padding:26px 22px 22px; border-radius:0; overflow:visible;
+    aspect-ratio:auto; box-shadow:none; gap:10px;
+  }
+  .slide::after {display:none;}
+  .meta { font-size:10px; line-height:1.4; letter-spacing:.16em; }
+  h1 {font-size:clamp(36px,9.2vw,52px); line-height:1.07; letter-spacing:-.046em;}
+  h2 {font-size:clamp(30px,7.4vw,44px); letter-spacing:-.035em;}
+  p {font-size:15px; line-height:1.55; max-width:100%;}
+  .stack {grid-template-columns:1fr; gap:10px; margin:12px 0 18px;}
+  .panel {padding:15px 16px; border-radius:10px;}
+  .panel b {font-size:19px; margin:0 0 5px;}
+  .panel span {font-size:14px;}
+  .two, .two[style] {display:grid;grid-template-columns:1fr !important;gap:14px;flex:none !important;}
+  .metric {margin-bottom:10px; padding:16px;}
+  .metric .big,.big {font-size:clamp(28px,7.1vw,39px);}
+  .small {font-size:12px;}
+  .diagram {width:100%;max-height:none;height:auto;}
+  .tag {font-size:11px;line-height:1.5; margin:0 6px 8px 0;}
+  .bullets {padding-left:19px;font-size:15px;line-height:1.52;}
+  .bullets li {margin-bottom:12px;}
+  .question {font-size:26px;}
+  .source {font-size:12px;line-height:1.5;margin:12px 0 18px;}
+  .slide .footer,.slide .number {
+    position:static; align-self:flex-start; bottom:auto; right:auto;left:auto;
+    margin-top:8px; line-height:1.4; font-size:11px;
+  }
+  .slide .number {align-self:flex-end;margin-top:auto;}
+  .slide figure[style] {height:auto !important;min-height:0 !important;overflow:visible !important;}
+  .slide figure[style] img {height:auto !important;object-fit:contain !important;max-height:45vh;}
+  .controls {width:100%; margin:0; padding:12px 16px 20px; flex-wrap:wrap;
+    align-items:stretch; gap:12px;font-size:12px;background:#030b12;}
+  .control-left {flex-wrap:wrap;}
+  .controls button {font-size:13px; padding:10px 14px;min-height:42px;}
+}
+@media screen and (max-width:380px) {
+  .slide,.slide.active {padding:22px 16px;}
+  h1 {font-size:34px;}
+  h2 {font-size:28px;}
+}
+
 </style></head><body>
 <main class="deck" aria-label="Terra-Lens seven-slide demonstration">
 <section class="slide active" aria-label="Slide 1 of 7"><div class="meta">Terra-Lens / NASA Space Apps Challenge 2026</div><div style="margin:auto 0"><h1>Earth is changing.<br><em>Show the evidence.</em></h1><p>Explore NASA model-derived observations, compare places, and question whether a historical trend stands up to a statistical test.</p><span class="tag">EARTH SYSTEM TREND DETECTIVE</span><span class="tag">INTERACTIVE RESEARCH TOOL</span></div><div class="footer">Independent open-source submission · Yogyakarta, Indonesia</div><div class="number">01 / 07</div></section>
