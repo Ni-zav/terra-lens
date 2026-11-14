@@ -85,6 +85,38 @@ try{
   const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
   assert.ok(overflow.scroll<=overflow.width+2,'Mobile overflow: '+JSON.stringify(overflow));
   await page.locator('#explore').screenshot({path:join(ROOT,'docs','screenshots','nasa-real-mobile.png'),animations:'disabled'});
+
+  // The new discovery flow is tested AGAINST REAL NASA, not the separate fixture server.
+  await page.locator('#finder-run').waitFor({timeout:25000});
+  assert.equal(await page.locator('.discovery-table tbody tr').count(),8);
+  await page.locator('#finder-run').click();
+  await page.waitForFunction(()=>document.getElementById('finder-status')?.textContent.includes('Finished:'),
+    null,{timeout:125000});
+  assert.match(await page.locator('#finder-status').textContent(),/8 trends/);
+  assert.equal(await page.locator('.discovery-table tbody tr').count(),8);
+  assert.equal(await page.locator('.discovery-table tbody tr').filter({hasText:'Request failed'}).count(),0);
+  const finderLink=await page.locator('.discovery-inspect').getAttribute('href');
+  assert.match(finderLink,/auto=1/);
+  assert.match(finderLink,/compare=1/);
+  const downloadEvidence=page.waitForEvent('download');
+  await page.locator('#finder-download').click();
+  const jsonFile=await downloadEvidence;
+  const evidence=JSON.parse(await readFile(await jsonFile.path(),'utf8'));
+  assert.equal(evidence.schema,'terra-lens-sentinel-screen-v1');
+  assert.equal(evidence.records.length,8);
+  assert.equal(evidence.count.successes,8);
+  assert.ok(evidence.records.every(r=>r.monthly.length===288&&r.annual.length===24));
+  assert.ok(evidence.records.every(r=>r.sourceURL.startsWith('https://power.larc.nasa.gov/')));
+  assert.match(evidence.brief.uncertainty,/post-selection/);
+  assert.equal(calls.filter(c=>c.parameters==='T2M').length>=8,true,'Every sentinel point needs real NASA response');
+  const finderOverflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
+  assert.ok(finderOverflow.scroll<=finderOverflow.width+2,'Mobile discovery overflow: '+JSON.stringify(finderOverflow));
+  await page.locator('#contrast-finder').screenshot({
+    path:join(ROOT,'docs','screenshots','nasa-real-finder-mobile.png'),animations:'disabled'});
+  await page.setViewportSize({width:1280,height:900});
+  await page.locator('#contrast-finder').screenshot({
+    path:join(ROOT,'docs','screenshots','nasa-real-finder-desktop.png'),animations:'disabled'});
+  console.log('LIVE eight-point NASA discovery passed in Chromium: 8/8 point requests, 24 complete years each, export, A/B link, mobile layout, real screenshots.');
   await writeFile(join(ROOT,'docs','screenshots','README.md'),[
     '# Verified LIVE NASA browser screenshots',
     '',
@@ -96,6 +128,7 @@ try{
     'Secondary integration check: RH2M at Yogyakarta.',
     '',
     'The result describes model-derived grid-point estimates. Classical OLS intervals may be optimistic under serial correlation. Run this script again if the source changes.',
+    'Branch-only experimental Finder verification: additional eight Indonesian sentinel points, all based on REAL NASA POWER monthly T2M responses; see nasa-real-finder-desktop.png and nasa-real-finder-mobile.png. This is not spatially representative and the selected extreme-pair HAC inference is post-selected and non-confirmatory.',
     '',
     'Workflow: https://github.com/Ni-zav/terra-lens/actions/workflows/live-browser.yml',
     '',
