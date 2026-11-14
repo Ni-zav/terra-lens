@@ -1,0 +1,40 @@
+name: NASA SWOT and POWER multisource science
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/science/**'
+      - 'scripts/live-swot-water-case.mjs'
+      - 'scripts/verify-swot-water-python.py'
+      - '.github/workflows/swot-water-science.yml'
+  push:
+    paths:
+      - 'src/science/**'
+      - 'scripts/live-swot-water-case.mjs'
+      - 'scripts/verify-swot-water-python.py'
+      - '.github/workflows/swot-water-science.yml'
+permissions:
+  contents: read
+jobs:
+  real-nasa-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch actual NASA SWOT satellite and NASA POWER model results
+        run: node scripts/live-swot-water-case.mjs
+      - name: Independently reproduce all month grouping in Python
+        run: python scripts/verify-swot-water-python.py
+      - name: Preserve source URLs, raw records, quality and derived case
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nasa-swot-power-cross-source-real-data
+          path: artifacts/swot-nasa-water-case.json
+          if-no-files-found: ignore

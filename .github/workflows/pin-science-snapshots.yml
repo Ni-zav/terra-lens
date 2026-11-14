@@ -1,0 +1,100 @@
+name: Pin verified NASA multi-source examples (science branch only)
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/nasa-multisource-science-20261114
+    paths:
+      - '.github/workflows/pin-science-snapshots.yml'
+permissions:
+  contents: write
+concurrency:
+  group: verify-science-snapshots-science-only
+  cancel-in-progress: false
+jobs:
+  pin:
+    if: github.ref == 'refs/heads/feat/nasa-multisource-science-20261114'
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          ref: feat/nasa-multisource-science-20261114
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch REAL NASA SWOT and NASA POWER source data
+        run: node scripts/live-swot-water-case.mjs
+      - name: Independently reproduce SWOT observations and grouping
+        run: python scripts/verify-swot-water-python.py
+      - name: Fetch NASA GISS official table or documented dated snapshot plus live NASA POWER
+        run: node scripts/live-gistemp-context.mjs
+      - name: Independently reproduce global/local anomaly calculations
+        run: python scripts/verify-gistemp-python.py
+      - name: Preserve source-complete downloadable examples for static web frontend
+        run: |
+          mkdir -p data/cases
+          cp artifacts/swot-nasa-water-case.json data/cases/ohio-river-swot-power.json
+          cp artifacts/gistemp-power-global-local.json data/cases/yogyakarta-global-gistemp-power.json
+          node --input-type=module <<'NODE'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const swot=JSON.parse(readFileSync('data/cases/ohio-river-swot-power.json'));
+          const giss=JSON.parse(readFileSync('data/cases/yogyakarta-global-gistemp-power.json'));
+          const manifest={
+            schema:'terra-lens-verified-case-manifest-v1',
+            generatedAt:new Date().toISOString(),
+            generatedOnBranch:'feat/nasa-multisource-science-20261114',
+            status:'Snapshot, NOT a live Earth-science feed or flood/health warning.',
+            eligibility:'Official 2026 Resources-tab item match still requires participant verification.',
+            cases:[
+              {
+                id:'swot-ohio-water-context',
+                title:'Ohio River: NASA SWOT satellite passes and nearby modeled rain context',
+                url:'./ohio-river-swot-power.json',
+                generatedAt:swot.createdAt,
+                sources:[swot.swot.sourceURL,swot.power.url],
+                sourceKind:['NASA SWOT RiverSP satellite reach snapshots','NASA POWER modeled precipitation rate'],
+                caveat:'Sparse quality-flagged satellite overpasses, nearby point rainfall; NOT a continuous flood gauge, forecast or causal inference.',
+                simple:swot.caseStudy.simple
+              },
+              {
+                id:'giss-yogyakarta-temperature-context',
+                title:'NASA global temperature anomalies and Yogyakarta model point context',
+                url:'./yogyakarta-global-gistemp-power.json',
+                generatedAt:giss.generatedAt,
+                sources:[giss.global.sourceURL,giss.local.url],
+                globalGISSObservedLive:!giss.global.notLive,
+                gissAcquisition:giss.gissAcquisition,
+                sourceKind:['NASA GISS global observation-based land+ocean index','NASA POWER modeled point temperature'],
+                caveat:'GISS may be a dated original-table snapshot. Model point and global index are NOT spatially equivalent; no direct significance test of their numeric slope difference.',
+                simple:giss.comparison.simple
+              }
+            ]
+          };
+          writeFileSync('data/cases/manifest.json',JSON.stringify(manifest,null,2)+'\n');
+          NODE
+      - name: Commit ONLY verified case snapshots to science feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cases/manifest.json data/cases/ohio-river-swot-power.json data/cases/yogyakarta-global-gistemp-power.json
+          if git diff --cached --quiet; then
+            echo "Cases have not changed."
+            exit 0
+          fi
+          git commit -m "data: pin independently verified NASA cross-source examples [skip ci]"
+          git push origin HEAD:refs/heads/feat/nasa-multisource-science-20261114
+      - name: Also retain GitHub Actions evidence artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-nasa-science-branch-review
+          path: |
+            artifacts/swot-nasa-water-case.json
+            artifacts/gistemp-power-global-local.json
+            data/cases/manifest.json
+          if-no-files-found: ignore

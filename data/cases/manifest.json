@@ -1,0 +1,61 @@
+{
+  "schema": "terra-lens-verified-case-manifest-v1",
+  "generatedAt": "2026-11-14T15:45:34.870Z",
+  "generatedOnBranch": "feat/nasa-multisource-science-20261114",
+  "status": "Snapshot, NOT a live Earth-science feed or flood/health warning.",
+  "eligibility": "Official 2026 Resources-tab item match still requires participant verification.",
+  "cases": [
+    {
+      "id": "swot-ohio-water-context",
+      "title": "Ohio River: NASA SWOT satellite passes and nearby modeled rain context",
+      "url": "./ohio-river-swot-power.json",
+      "generatedAt": "2026-11-14T15:45:33.915Z",
+      "sources": [
+        "https://soto.podaac.earthdatacloud.nasa.gov/hydrocron/v1/timeseries?feature=Reach&feature_id=74267300251&start_time=2025-03-15T00%3A00%3A00Z&end_time=2025-05-16T00%3A00%3A00Z&collection_name=SWOT_L2_HR_RiverSP_D&output=csv&fields=reach_id%2Ctime_str%2Cwse%2Cwse_u%2Cwidth%2Creach_q%2Ccrid",
+        "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=PRECTOTCORR&community=AG&longitude=-85.7585&latitude=38.2527&start=2025&end=2025&format=JSON"
+      ],
+      "sourceKind": [
+        "NASA SWOT RiverSP satellite reach snapshots",
+        "NASA POWER modeled precipitation rate"
+      ],
+      "caveat": "Sparse quality-flagged satellite overpasses, nearby point rainfall; NOT a continuous flood gauge, forecast or causal inference.",
+      "simple": {
+        "title": "River levels from space, with nearby rainfall context",
+        "whatChanged": "Between the captured satellite overpasses, observed water-surface elevation spanned 10.56 m at this reach. This is not a continuous-time rise or flood-stage estimate.",
+        "where": "SWOT SWORD reach 74267300251 (Ohio River near Louisville); POWER grid-point sample near Louisville (38.2527,-85.7585). Not necessarily upstream watershed precipitation.",
+        "period": "2025-03-22 to 2025-05-15",
+        "observationCount": 12,
+        "commonMonths": 3,
+        "nextStep": "Check local gauges, upstream watershed rain and official flood bulletins before responding to an event.",
+        "limitation": "SWOT observes a river reach intermittently; POWER precipitation is modelled at a nearby grid cell. Neither indicates a forecast, flooding extent, water safety or causation."
+      }
+    },
+    {
+      "id": "giss-yogyakarta-temperature-context",
+      "title": "NASA global temperature anomalies and Yogyakarta model point context",
+      "url": "./yogyakarta-global-gistemp-power.json",
+      "generatedAt": "2026-11-14T15:45:34.723Z",
+      "sources": [
+        "https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.txt",
+        "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M&community=AG&longitude=110.3695&latitude=-7.7956&start=2001&end=2024&format=JSON"
+      ],
+      "globalGISSObservedLive": false,
+      "gissAcquisition": "original NASA GISS published table: dated 2001–2024 snapshot (web-verified, not live CI acquisition)",
+      "sourceKind": [
+        "NASA GISS global observation-based land+ocean index",
+        "NASA POWER modeled point temperature"
+      ],
+      "caveat": "GISS may be a dated original-table snapshot. Model point and global index are NOT spatially equivalent; no direct significance test of their numeric slope difference.",
+      "simple": {
+        "title": "Put a local temperature change in global context",
+        "question": "What do a modeled point and the global index each show over the same years?",
+        "years": "2001–2024",
+        "baseline": "2001–2020",
+        "pointFittedTrendCPerDecade": 0.17909095516131454,
+        "globalFittedTrendCPerDecade": 0.2503698558210228,
+        "meaning": "Both slopes describe historical fitted changes at different spatial and observational supports. This is NOT a formal local-vs-global significance test.",
+        "nextStep": "Check nearby station observations, local land use and the GISTEMP source methodology before drawing adaptation or attribution conclusions."
+      }
+    }
+  ]
+}
