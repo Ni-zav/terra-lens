@@ -121,7 +121,53 @@ function drawCoordinates(points) {
   }
 }
 
-function renderCoordinates(points) { drawCoordinates(points); }
+let contextMap = null;
+let contextMarkers = null;
+function updateContextMap(points) {
+  // Optional geographic context only; NASA measurements remain point samples.
+  // If the remote tile service fails, the genuine coordinate graticule stays visible.
+  if (!window.L) return;
+  const valid = points.filter(point => Number.isFinite(point.lat) &&
+    Number.isFinite(point.lon) && Math.abs(point.lat) <= 90 && Math.abs(point.lon) <= 180);
+  if (!valid.length) return;
+  const L = window.L;
+  if (!contextMap) {
+    contextMap = L.map('geo-map', {
+      scrollWheelZoom: false, zoomControl: true, attributionControl: true,
+      doubleClickZoom: true, maxZoom: 10
+    });
+    contextMarkers = L.layerGroup().addTo(contextMap);
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      minZoom: 1, maxZoom: 10
+    }).addTo(contextMap);
+    tiles.on('load', () => $('map-stack').classList.add('map-ready'));
+    tiles.on('tileerror', () => $('map-stack').classList.remove('map-ready'));
+  }
+  contextMarkers.clearLayers();
+  valid.forEach((point, index) => {
+    const color = COLORS[index] || COLORS[0];
+    const icon = L.divIcon({
+      className: 'terra-map-pin',
+      html: '<span style="--pin-color:' + color + '">' + (point.id === 'B' ? 'B' : 'A') + '</span>',
+      iconSize: [34, 34], iconAnchor: [17, 17]
+    });
+    const marker = L.marker([point.lat, point.lon], {icon}).addTo(contextMarkers);
+    const label = document.createElement('span');
+    label.textContent = point.id + ' · ' + point.label + ' (' +
+      format(point.lat, 4) + '°, ' + format(point.lon, 4) + '°)';
+    marker.bindTooltip(label);
+  });
+  // This map is a geographic locator; no NASA raster or interpolated trend is shown.
+  if (valid.length === 1) contextMap.setView([valid[0].lat, valid[0].lon], 6);
+  else contextMap.fitBounds(L.latLngBounds(valid.map(p => [p.lat, p.lon])),
+    {padding: [35, 35], maxZoom: 7});
+  contextMap.invalidateSize(false);
+}
+function renderCoordinates(points) {
+  drawCoordinates(points);
+  updateContextMap(points);
+}
 
 function renderLegend(container, series) {
   const parent = $(container);
@@ -477,3 +523,5 @@ $('share').addEventListener('click',async()=>{
 });
 renderCoordinates(readLocationPreview());
 restoreURL();
+window.addEventListener('load', () => renderCoordinates(readLocationPreview()));
+window.addEventListener('resize', () => contextMap?.invalidateSize(false), {passive: true});
