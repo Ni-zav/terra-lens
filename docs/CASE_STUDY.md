@@ -42,3 +42,20 @@ These are historical modeled/reanalysis grid-cell estimates, not urban area aver
 ## Reading the evidence
 
 Use this case study as the first credible hackathon demo and preserve the numerical values only alongside the exact 2001–2024 period, coordinates, variable, source, retrieval timestamp and OLS assumptions. NASA may revise its datasets, so subsequent requests might differ.
+
+
+## Directly tested difference: Jakarta minus Yogyakarta (new)
+
+**Independent validation:** [NASA POWER NumPy/SciPy + JavaScript run #43579062738](https://github.com/Ni-zav/terra-lens/actions/runs/43579062738), 14 November 2026. The same authentic NASA responses were fed to independent Python/NumPy and JavaScript calculations.
+
+| Paired statistic | Verified estimate |
+| --- | ---: |
+| Shared complete years | 24 (2001–2024) |
+| Fitted trend difference (Jakarta − Yogyakarta) | **+0.044694 °C/decade** |
+| Exploratory Newey–West HAC bandwidth | 2 annual lags |
+| Approximate HAC 95% CI for difference | **−0.057416 to +0.146803 °C/decade** |
+| Approximate HAC two-sided p | **0.3738526** |
+
+**Interpretation:** The difference between the two fitted trends is numerically positive, but this paired HAC approximation does **not** establish that Jakarta's NASA grid point warmed faster than Yogyakarta's. The CI includes zero. This does not prove the rates are identical. The analysis uses aligned complete years and models serially correlated annual difference residuals; it remains exploratory, conditional on model assumptions, and cannot identify physical causes or represent whole cities. The chosen 2-lag Bartlett kernel and t(n−2) reference are documented in [METHODOLOGY.md](METHODOLOGY.md). NASA source/model uncertainty and the consequences of exploratory searches are not eliminated by this HAC correction.
+
+The independent implementations agreeing on these figures validates the computation on the **same** underlying NASA data, not the physical accuracy of that data or proof of general scientific significance.
