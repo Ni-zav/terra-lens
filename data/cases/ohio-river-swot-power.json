@@ -1,0 +1,619 @@
+{
+  "schema": "terra-lens-swot-nasa-water-evidence-v1",
+  "createdAt": "2026-11-14T15:45:33.915Z",
+  "notes": "Fetched live from NASA Hydrocron and NASA POWER. Quality flags and temporal support are retained. No flood forecast or statistically supported rainfall causality.",
+  "swot": {
+    "source": "NASA SWOT via PO.DAAC Hydrocron",
+    "collection": "SWOT_L2_HR_RiverSP_D",
+    "quantity": "water surface elevation above reference geoid (not river depth or flood extent)",
+    "temporalSupport": "irregular satellite overpass snapshots",
+    "spatialSupport": "identified SWORD river reach, not a point rain gauge or a whole watershed",
+    "unit": "m",
+    "maxQuality": 2,
+    "rawRows": 12,
+    "observations": [
+      {
+        "time": "2025-03-22T23:55:38.000Z",
+        "year": 2025,
+        "month": 3,
+        "value": 120.84,
+        "unit": "m",
+        "quality": 2,
+        "width": 800.442537,
+        "reportedUncertainty": 0.10158,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-03-23T13:09:48.000Z",
+        "year": 2025,
+        "month": 3,
+        "value": 122.4912,
+        "unit": "m",
+        "quality": 1,
+        "width": 772.133013,
+        "reportedUncertainty": 0.10781,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-04-02T22:18:28.000Z",
+        "year": 2025,
+        "month": 4,
+        "value": 123.0559,
+        "unit": "m",
+        "quality": 1,
+        "width": 851.840157,
+        "reportedUncertainty": 0.09609,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-04-03T11:32:37.000Z",
+        "year": 2025,
+        "month": 4,
+        "value": 123.4468,
+        "unit": "m",
+        "quality": 1,
+        "width": 835.697529,
+        "reportedUncertainty": 0.09824,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-04-12T20:40:43.000Z",
+        "year": 2025,
+        "month": 4,
+        "value": 131.2465,
+        "unit": "m",
+        "quality": 1,
+        "width": 956.352535,
+        "reportedUncertainty": 0.09455,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-04-13T09:54:52.000Z",
+        "year": 2025,
+        "month": 4,
+        "value": 131.005,
+        "unit": "m",
+        "quality": 2,
+        "width": 852.862135,
+        "reportedUncertainty": 0.09802,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-04-23T19:03:35.000Z",
+        "year": 2025,
+        "month": 4,
+        "value": 121.055,
+        "unit": "m",
+        "quality": 1,
+        "width": 746.324459,
+        "reportedUncertainty": 0.11455,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-04-24T08:17:44.000Z",
+        "year": 2025,
+        "month": 4,
+        "value": 120.682,
+        "unit": "m",
+        "quality": 1,
+        "width": 723.413398,
+        "reportedUncertainty": 0.11762,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-05-03T17:25:47.000Z",
+        "year": 2025,
+        "month": 5,
+        "value": 122.0728,
+        "unit": "m",
+        "quality": 1,
+        "width": 757.907173,
+        "reportedUncertainty": 0.096,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-05-04T06:39:56.000Z",
+        "year": 2025,
+        "month": 5,
+        "value": 122.8724,
+        "unit": "m",
+        "quality": 1,
+        "width": 788.556176,
+        "reportedUncertainty": 0.10448,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-05-14T15:48:38.000Z",
+        "year": 2025,
+        "month": 5,
+        "value": 121.8829,
+        "unit": "m",
+        "quality": 1,
+        "width": 793.597367,
+        "reportedUncertainty": 0.11123,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      },
+      {
+        "time": "2025-05-15T05:02:48.000Z",
+        "year": 2025,
+        "month": 5,
+        "value": 121.8344,
+        "unit": "m",
+        "quality": 1,
+        "width": 769.943539,
+        "reportedUncertainty": 0.10818,
+        "crid": "PGD0",
+        "reachId": "74267300251"
+      }
+    ],
+    "excluded": [],
+    "qualityCounts": {
+      "0": 0,
+      "1": 10,
+      "2": 2,
+      "3": 0
+    },
+    "caveat": "Quality 1=suspect, 2=degraded; 0 may be rare. Reported wse_u is not guaranteed validated uncertainty. Hydrocron observations are not a daily continuous water-level record.",
+    "sourceURL": "https://soto.podaac.earthdatacloud.nasa.gov/hydrocron/v1/timeseries?feature=Reach&feature_id=74267300251&start_time=2025-03-15T00%3A00%3A00Z&end_time=2025-05-16T00%3A00%3A00Z&collection_name=SWOT_L2_HR_RiverSP_D&output=csv&fields=reach_id%2Ctime_str%2Cwse%2Cwse_u%2Cwidth%2Creach_q%2Ccrid",
+    "retrievedAt": "2026-11-14T15:45:33.501Z",
+    "monthly": [
+      {
+        "month": "2025-03",
+        "count": 2,
+        "meanObserved": 121.66560000000001,
+        "minObserved": 120.84,
+        "maxObserved": 122.4912,
+        "maxQuality": 2,
+        "support": "observed satellite passes only; NOT a time-weighted monthly mean"
+      },
+      {
+        "month": "2025-04",
+        "count": 6,
+        "meanObserved": 125.08186666666666,
+        "minObserved": 120.682,
+        "maxObserved": 131.2465,
+        "maxQuality": 2,
+        "support": "observed satellite passes only; NOT a time-weighted monthly mean"
+      },
+      {
+        "month": "2025-05",
+        "count": 4,
+        "meanObserved": 122.165625,
+        "minObserved": 121.8344,
+        "maxObserved": 122.8724,
+        "maxQuality": 1,
+        "support": "observed satellite passes only; NOT a time-weighted monthly mean"
+      }
+    ]
+  },
+  "power": {
+    "source": "NASA POWER / MERRA-2-derived model point",
+    "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=PRECTOTCORR&community=AG&longitude=-85.7585&latitude=38.2527&start=2025&end=2025&format=JSON",
+    "fetchedAt": "2026-11-14T15:45:33.914Z",
+    "monthly": [
+      {
+        "year": 2025,
+        "month": 1,
+        "value": 1.94,
+        "date": "202501"
+      },
+      {
+        "year": 2025,
+        "month": 2,
+        "value": 5.08,
+        "date": "202502"
+      },
+      {
+        "year": 2025,
+        "month": 3,
+        "value": 3.99,
+        "date": "202503"
+      },
+      {
+        "year": 2025,
+        "month": 4,
+        "value": 7.08,
+        "date": "202504"
+      },
+      {
+        "year": 2025,
+        "month": 5,
+        "value": 4.04,
+        "date": "202505"
+      },
+      {
+        "year": 2025,
+        "month": 6,
+        "value": 4.16,
+        "date": "202506"
+      },
+      {
+        "year": 2025,
+        "month": 7,
+        "value": 3.95,
+        "date": "202507"
+      },
+      {
+        "year": 2025,
+        "month": 8,
+        "value": 1.03,
+        "date": "202508"
+      },
+      {
+        "year": 2025,
+        "month": 9,
+        "value": 2.8,
+        "date": "202509"
+      },
+      {
+        "year": 2025,
+        "month": 10,
+        "value": 4.11,
+        "date": "202510"
+      },
+      {
+        "year": 2025,
+        "month": 11,
+        "value": 2.36,
+        "date": "202511"
+      },
+      {
+        "year": 2025,
+        "month": 12,
+        "value": 1.85,
+        "date": "202512"
+      }
+    ],
+    "metadata": {
+      "title": "NASA/POWER Source Native Resolution Monthly and Annual",
+      "api": {
+        "version": "v2.10.0",
+        "name": "POWER Monthly and Annual API"
+      },
+      "sources": [
+        "MERRA2"
+      ],
+      "fill_value": -999,
+      "time_standard": "LST",
+      "start": "20250101",
+      "end": "20251231"
+    }
+  },
+  "caseStudy": {
+    "schema": "terra-lens-cross-source-water-v1",
+    "question": "How did a river reach change during satellite overpasses, and what was modeled precipitation context nearby?",
+    "simple": {
+      "title": "River levels from space, with nearby rainfall context",
+      "whatChanged": "Between the captured satellite overpasses, observed water-surface elevation spanned 10.56 m at this reach. This is not a continuous-time rise or flood-stage estimate.",
+      "where": "SWOT SWORD reach 74267300251 (Ohio River near Louisville); POWER grid-point sample near Louisville (38.2527,-85.7585). Not necessarily upstream watershed precipitation.",
+      "period": "2025-03-22 to 2025-05-15",
+      "observationCount": 12,
+      "commonMonths": 3,
+      "nextStep": "Check local gauges, upstream watershed rain and official flood bulletins before responding to an event.",
+      "limitation": "SWOT observes a river reach intermittently; POWER precipitation is modelled at a nearby grid cell. Neither indicates a forecast, flooding extent, water safety or causation."
+    },
+    "advanced": {
+      "sourceA": {
+        "name": "NASA SWOT via PO.DAAC Hydrocron",
+        "product": "SWOT_L2_HR_RiverSP_D",
+        "version": "D",
+        "quantity": "water surface elevation above reference geoid (not river depth or flood extent)",
+        "unit": "m",
+        "url": "https://soto.podaac.earthdatacloud.nasa.gov/hydrocron/v1/timeseries?feature=Reach&feature_id=74267300251&start_time=2025-03-15T00%3A00%3A00Z&end_time=2025-05-16T00%3A00%3A00Z&collection_name=SWOT_L2_HR_RiverSP_D&output=csv&fields=reach_id%2Ctime_str%2Cwse%2Cwse_u%2Cwidth%2Creach_q%2Ccrid",
+        "retrievedAt": "2026-11-14T15:45:33.501Z",
+        "temporalSupport": "irregular satellite overpass snapshots",
+        "spatialSupport": "identified SWORD river reach, not a point rain gauge or a whole watershed",
+        "overpasses": [
+          {
+            "time": "2025-03-22T23:55:38.000Z",
+            "year": 2025,
+            "month": 3,
+            "value": 120.84,
+            "unit": "m",
+            "quality": 2,
+            "width": 800.442537,
+            "reportedUncertainty": 0.10158,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-03-23T13:09:48.000Z",
+            "year": 2025,
+            "month": 3,
+            "value": 122.4912,
+            "unit": "m",
+            "quality": 1,
+            "width": 772.133013,
+            "reportedUncertainty": 0.10781,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-04-02T22:18:28.000Z",
+            "year": 2025,
+            "month": 4,
+            "value": 123.0559,
+            "unit": "m",
+            "quality": 1,
+            "width": 851.840157,
+            "reportedUncertainty": 0.09609,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-04-03T11:32:37.000Z",
+            "year": 2025,
+            "month": 4,
+            "value": 123.4468,
+            "unit": "m",
+            "quality": 1,
+            "width": 835.697529,
+            "reportedUncertainty": 0.09824,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-04-12T20:40:43.000Z",
+            "year": 2025,
+            "month": 4,
+            "value": 131.2465,
+            "unit": "m",
+            "quality": 1,
+            "width": 956.352535,
+            "reportedUncertainty": 0.09455,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-04-13T09:54:52.000Z",
+            "year": 2025,
+            "month": 4,
+            "value": 131.005,
+            "unit": "m",
+            "quality": 2,
+            "width": 852.862135,
+            "reportedUncertainty": 0.09802,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-04-23T19:03:35.000Z",
+            "year": 2025,
+            "month": 4,
+            "value": 121.055,
+            "unit": "m",
+            "quality": 1,
+            "width": 746.324459,
+            "reportedUncertainty": 0.11455,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-04-24T08:17:44.000Z",
+            "year": 2025,
+            "month": 4,
+            "value": 120.682,
+            "unit": "m",
+            "quality": 1,
+            "width": 723.413398,
+            "reportedUncertainty": 0.11762,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-05-03T17:25:47.000Z",
+            "year": 2025,
+            "month": 5,
+            "value": 122.0728,
+            "unit": "m",
+            "quality": 1,
+            "width": 757.907173,
+            "reportedUncertainty": 0.096,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-05-04T06:39:56.000Z",
+            "year": 2025,
+            "month": 5,
+            "value": 122.8724,
+            "unit": "m",
+            "quality": 1,
+            "width": 788.556176,
+            "reportedUncertainty": 0.10448,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-05-14T15:48:38.000Z",
+            "year": 2025,
+            "month": 5,
+            "value": 121.8829,
+            "unit": "m",
+            "quality": 1,
+            "width": 793.597367,
+            "reportedUncertainty": 0.11123,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          },
+          {
+            "time": "2025-05-15T05:02:48.000Z",
+            "year": 2025,
+            "month": 5,
+            "value": 121.8344,
+            "unit": "m",
+            "quality": 1,
+            "width": 769.943539,
+            "reportedUncertainty": 0.10818,
+            "crid": "PGD0",
+            "reachId": "74267300251"
+          }
+        ],
+        "excluded": [],
+        "qualityCounts": {
+          "0": 0,
+          "1": 10,
+          "2": 2,
+          "3": 0
+        }
+      },
+      "sourceB": {
+        "name": "NASA POWER / MERRA-2-derived model point",
+        "variable": "PRECTOTCORR",
+        "unit": "mm/day",
+        "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=PRECTOTCORR&community=AG&longitude=-85.7585&latitude=38.2527&start=2025&end=2025&format=JSON",
+        "retrievedAt": "2026-11-14T15:45:33.914Z",
+        "months": [
+          {
+            "month": "2025-01",
+            "value": 1.94,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-02",
+            "value": 5.08,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-03",
+            "value": 3.99,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-04",
+            "value": 7.08,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-05",
+            "value": 4.04,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-06",
+            "value": 4.16,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-07",
+            "value": 3.95,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-08",
+            "value": 1.03,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-09",
+            "value": 2.8,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-10",
+            "value": 4.11,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-11",
+            "value": 2.36,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          },
+          {
+            "month": "2025-12",
+            "value": 1.85,
+            "unit": "mm/day",
+            "variable": "PRECTOTCORR",
+            "support": "NASA POWER monthly model grid-cell estimate"
+          }
+        ]
+      },
+      "harmonization": {
+        "pairs": [
+          {
+            "month": "2025-03",
+            "swotMeanObservedM": 121.66560000000001,
+            "swotMinObservedM": 120.84,
+            "swotMaxObservedM": 122.4912,
+            "swotPasses": 2,
+            "swotWorstQuality": 2,
+            "powerValue": 3.99,
+            "powerVariable": "PRECTOTCORR",
+            "powerUnit": "mm/day"
+          },
+          {
+            "month": "2025-04",
+            "swotMeanObservedM": 125.08186666666666,
+            "swotMinObservedM": 120.682,
+            "swotMaxObservedM": 131.2465,
+            "swotPasses": 6,
+            "swotWorstQuality": 2,
+            "powerValue": 7.08,
+            "powerVariable": "PRECTOTCORR",
+            "powerUnit": "mm/day"
+          },
+          {
+            "month": "2025-05",
+            "swotMeanObservedM": 122.165625,
+            "swotMinObservedM": 121.8344,
+            "swotMaxObservedM": 122.8724,
+            "swotPasses": 4,
+            "swotWorstQuality": 1,
+            "powerValue": 4.04,
+            "powerVariable": "PRECTOTCORR",
+            "powerUnit": "mm/day"
+          }
+        ],
+        "excludedSWOTMonthsMissingPOWER": [],
+        "interpretation": "Juxtaposed, NOT physically harmonized: NASA SWOT satellite passes over a single river reach versus NASA POWER monthly reanalysis cell estimates. A match by calendar month is not proof of shared watershed influence, causation, river discharge or flood risk."
+      },
+      "association": {
+        "status": "insufficient",
+        "n": 3,
+        "reason": "Fewer than six matched observed months; no association coefficient reported."
+      },
+      "method": "Observed SWOT pass heights grouped by UTC month (arithmetic sample means only); NASA POWER monthly average daily precipitation rate at nearby cell. Calendar-month overlap only. No shared-pixel or watershed model. No long-term slope/significance on a two-month event.",
+      "caveats": [
+        "SWOT water surface elevation relative to a geoid is not water depth",
+        "Do not infer flood thresholds from water height alone",
+        "Quality 1/2 flags and WSE uncertainty require review",
+        "POWER is a reanalysis cell, not a catchment rainfall total",
+        "Temporal correlation of sparse samples is not causal",
+        "Do not extrapolate to entire river basin or location population"
+      ]
+    }
+  }
+}
