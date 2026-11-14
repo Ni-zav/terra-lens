@@ -1,0 +1,67 @@
+/**
+ * Machine-readable catalog to keep user-facing claims aligned with what code
+ * actually implements. planned !== available.
+ */
+export const SCIENCE_CATALOG=Object.freeze([
+  {id:'nasa-power',label:'NASA POWER / MERRA-2-derived meteorology',
+   provider:'NASA POWER',access:'anonymous',integration:'live',
+   variables:['T2M','T2M_MAX','T2M_MIN','RH2M','PRECTOTCORR','WS2M','PS','QV2M','T2MDEW'],
+   cadence:'monthly',spatialSupport:'model grid point estimate',
+   url:'https://power.larc.nasa.gov/docs/services/api/temporal/monthly/',
+   challengeResourceStatus:'NASA source, not yet confirmed directly as official Resources-tab-listed item'},
+  {id:'nasa-swot-river',label:'NASA SWOT RiverSP surface-water elevation',
+   provider:'NASA PO.DAAC Hydrocron',access:'anonymous',integration:'live',
+   variables:['wse','wse_u','width','reach_q'],
+   cadence:'irregular satellite overpasses',spatialSupport:'SWORD river reach ID',
+   url:'https://podaac.github.io/hydrocron/timeseries/',
+   challengeResourceStatus:'SWOT mission appears in independently reported challenge Resources list; official tab direct confirmation still needed'},
+  {id:'nasa-giovanni',label:'NASA Giovanni / GES DISC monthly exports',
+   provider:'NASA Giovanni',access:'Earthdata Login for extraction',integration:'local-csv-import',
+   variables:['CSV-dependent'],cadence:'depends on actual product',
+   spatialSupport:'depends on selected Giovanni region/aggregation',
+   url:'https://giovanni.gsfc.nasa.gov/',
+   challengeResourceStatus:'Named by independently reported Resources list; actual authenticated export NOT acquired by this repo'},
+  {id:'gpm-imerg',label:'NASA GPM IMERG precipitation',provider:'NASA GES DISC',
+   access:'Earthdata Login',integration:'planned',variables:['precipitation'],
+   cadence:'half-hourly/daily/monthly depending on product',spatialSupport:'satellite gridded product',
+   url:'https://gpm.nasa.gov/data/imerg',challengeResourceStatus:'Mission named by challenge background; product not yet ingested'},
+  {id:'gldas-noah',label:'NASA GLDAS Noah soil water',provider:'NASA GES DISC',
+   access:'Earthdata Login',integration:'planned',variables:['soil moisture','runoff','evapotranspiration'],
+   cadence:'monthly model',spatialSupport:'land-model grid cell',url:'https://ldas.gsfc.nasa.gov/gldas',
+   challengeResourceStatus:'Mission/model named by challenge background; product not yet ingested'},
+  {id:'modis-land',label:'NASA MODIS vegetation / land temperature',provider:'NASA LP DAAC / AppEEARS',
+   access:'Earthdata Login for AppEEARS',integration:'planned',variables:['NDVI','LST'],
+   cadence:'composite product-specific',spatialSupport:'pixel, requiring QA/cloud masking',
+   url:'https://appeears.earthdatacloud.nasa.gov/',
+   challengeResourceStatus:'AppEEARS appears in independently reported Resources list; data not yet processed'},
+  {id:'firms-fire',label:'NASA FIRMS active fire detections',provider:'NASA FIRMS',
+   access:'API key',integration:'planned',variables:['thermal anomaly detections'],
+   cadence:'overpass detection events',spatialSupport:'detections/footprints (not burned area)',
+   url:'https://firms.modaps.eosdis.nasa.gov/',
+   challengeResourceStatus:'Not verified in this challenge Resources list; data not yet processed'}
+].map(p=>Object.freeze({...p,variables:Object.freeze(p.variables)})));
+export const SCIENCE_QUESTIONS=Object.freeze([
+  {id:'river-observation',title:'How did this river change across satellite passes?',
+    audience:'River science educators and water researchers',sources:['nasa-swot-river','nasa-power'],
+    availability:'live-data-pipeline',scope:'Water surface elevation / nearby modeled rainfall context',
+    warning:'Not flood-stage or a warning; no causal rainfall-to-level attribution'},
+  {id:'compare-warming',title:'Do two points show different historical fitted warming?',
+    audience:'Students and climate communicators',sources:['nasa-power'],
+    availability:'live-existing-workspace',scope:'Matched annual NASA POWER reanalysis point observations',
+    warning:'Model cells not whole cities; approximate HAC only'},
+  {id:'farm-water-context',title:'What data could inform water-planning research?',
+    audience:'Water research and farmer support groups',sources:['nasa-power','gldas-noah','gpm-imerg'],
+    availability:'partial-model-data-only',scope:'Monthly precipitation rate only until GLDAS/GPM are implemented',
+    warning:'Not farm-scale irrigation advice or drought-risk prediction'},
+  {id:'vegetation-heat',title:'Where might land cover and heat merit joint investigation?',
+    audience:'Urban nature and heat researchers',sources:['nasa-power','modis-land'],
+    availability:'planned',scope:'Requires MODIS QA and geographic/time alignment',
+    warning:'No supported NDVI or surface temperature result yet'}
+].map(q=>Object.freeze({...q,sources:Object.freeze(q.sources)})));
+export function scienceForAudience({advanced=false}={}){
+  return {schema:'terra-lens-science-catalog-v1',
+    mode:advanced?'advanced':'simple',
+    questions:SCIENCE_QUESTIONS.filter(q=>q.availability!=='planned'||advanced),
+    sources:SCIENCE_CATALOG.filter(s=>advanced||s.integration==='live'||s.integration==='local-csv-import'),
+    truth:'Never treat planned dataset connectors as live or claim verified Global Award eligibility without the official Resources tab.'};
+}
