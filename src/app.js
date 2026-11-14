@@ -5,6 +5,8 @@ const $ = id => document.getElementById(id);
 const COLORS = ['#62d6e4', '#f6b975'];
 let results = [];
 let activeRequest = null;
+let globe = null;
+let globeTarget = 'a';
 
 const format = (value, digits = 2) => Number.isFinite(value)
   ? new Intl.NumberFormat('en-US', {maximumFractionDigits: digits}).format(value) : '—';
@@ -167,6 +169,7 @@ function updateContextMap(points) {
 function renderCoordinates(points) {
   drawCoordinates(points);
   updateContextMap(points);
+  globe?.setPoints(points);
 }
 
 function renderLegend(container, series) {
@@ -211,7 +214,7 @@ function renderPlot(id, series, monthly, unit) {
   }
   const yearTicks = new Set();
   for (let i=0;i<=4;i++) {
-    const year = Math.round(minX+(maxX-minX)*i/4);
+    const year = Math.min(Math.floor(maxX), Math.round(minX+(maxX-minX)*i/4));
     yearTicks.add(year);
   }
   for (const year of [...yearTicks].sort((a,b)=>a-b)) {
@@ -251,6 +254,36 @@ function renderPlot(id, series, monthly, unit) {
         'stroke-width':2,'stroke-dasharray':'8 6',opacity:.8}));
     }
   }
+  // Crosshair and range control expose exact same-date values for pointer,
+  // touch and keyboard users. Missing records remain explicitly missing.
+  const prefix = monthly ? 'monthly' : 'annual';
+  const slider = $(prefix+'-cursor'), readout = $(prefix+'-readout');
+  const dates = [...new Set(groups.flatMap(group => group.points.map(pointX)))].sort((a,b)=>a-b);
+  const line=svgNode('line',{y1:top,y2:bottom,stroke:'#d6e9ed','stroke-width':1,
+    'stroke-dasharray':'3 5',opacity:.75,'pointer-events':'none'});
+  svg.append(line);
+  slider.disabled=false; slider.max=String(dates.length-1); slider.value=String(dates.length-1);
+  function showAt(index) {
+    const x=dates[index], record=groups.flatMap(g=>g.points).find(p=>pointX(p)===x);
+    const date=monthly ? record.year+'-'+String(record.month).padStart(2,'0') : String(record.year);
+    line.setAttribute('x1',sx(x)); line.setAttribute('x2',sx(x));
+    readout.textContent=date+'  ·  '+groups.map(group=>{
+      const match=group.points.find(p=>pointX(p)===x);
+      return group.label+': '+(match ? format(match.value,3)+' '+unit : 'no record');
+    }).join('   /   ');
+    slider.setAttribute('aria-valuetext',readout.textContent);
+  }
+  slider.oninput=()=>showAt(Number(slider.value));
+  svg.onpointermove=event=>{
+    const point=svg.createSVGPoint(); point.x=event.clientX; point.y=event.clientY;
+    const matrix=svg.getScreenCTM(); if (!matrix) return;
+    const plotX=point.matrixTransform(matrix.inverse()).x;
+    const x=minX+(plotX-left)/(right-left)*(maxX-minX);
+    let best=0;
+    for(let i=1;i<dates.length;i++) if (Math.abs(dates[i]-x)<Math.abs(dates[best]-x)) best=i;
+    slider.value=String(best); showAt(best);
+  };
+  showAt(dates.length-1);
 }
 
 function renderConfidencePlot(series, variable) {
@@ -435,6 +468,10 @@ function resetResultsUI() {
     clearSvg(svg, 'Awaiting new NASA observations');
     svg.append(svgNode('text', {x:480,y:140,'text-anchor':'middle',fill:'#8299aa'}, 'Waiting for observations…'));
   }
+  for (const prefix of ['annual','monthly']) {
+    $(prefix+'-cursor').disabled=true;
+    $(prefix+'-readout').textContent='Run an investigation to inspect values.';
+  }
   $('annual-legend').replaceChildren();
   $('monthly-legend').replaceChildren();
   $('comparison-panel').hidden = true;
@@ -579,5 +616,45 @@ $('share').addEventListener('click',async()=>{
 });
 renderCoordinates(readLocationPreview());
 restoreURL();
+const globeHost = $('earth-globe');
+function chooseGlobeTarget(side) {
+  globeTarget=side;
+  for (const name of ['a','b']) $('globe-'+name).setAttribute('aria-pressed', String(name===side));
+  $('globe-status').textContent='Selecting point '+side.toUpperCase()+'. Click the globe to set coordinates.';
+}
+for (const side of ['a','b']) $('globe-'+side).addEventListener('click',()=>chooseGlobeTarget(side));
+$('globe-center').addEventListener('click',()=>{
+  const lat=Number($('lat-'+globeTarget).value), lon=Number($('lon-'+globeTarget).value);
+  if (Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat)<=90 && Math.abs(lon)<=180) globe?.focus({lat,lon});
+});
+const globeObserver = new IntersectionObserver(async entries => {
+  if (!entries.some(entry=>entry.isIntersecting)) return;
+  globeObserver.disconnect();
+  try {
+    const {createGlobe}=await import('./globe.js');
+    globe=createGlobe(globeHost, ({lat,lon})=>{
+      const side=globeTarget;
+      if (activeRequest) {
+        activeRequest.abort();
+        resetResultsUI();
+        $('finding-text').textContent='The previous request was cancelled. Run analysis for the new coordinates.';
+        $('download').disabled=true;
+      }
+      if (side==='b' && !$('compare').checked) { $('compare').checked=true; setCompareEnabled(); }
+      $('city-'+side).value='custom';
+      $('lat-'+side).value=lat.toFixed(4); $('lon-'+side).value=lon.toFixed(4);
+      renderCoordinates(readLocationPreview());
+      $('globe-status').textContent='Point '+side.toUpperCase()+' set to '+lat.toFixed(4)+'°, '+lon.toFixed(4)+'°. Run analysis to load the new location.';
+      $('data-label').textContent='INPUTS CHANGED'; $('data-label').classList.remove('live');
+      setStatus('Coordinates changed. Run analysis to update the results.');
+    });
+    globe.setPoints(readLocationPreview());
+  } catch {
+    globeHost.dataset.error='true';
+    globeHost.textContent='Globe unavailable on this device. Use the coordinate fields below.';
+    $('globe-status').textContent='Use the coordinate fields below to select locations.';
+  }
+}, {rootMargin:'200px'});
+globeObserver.observe(globeHost);
 window.addEventListener('load', () => renderCoordinates(readLocationPreview()));
 window.addEventListener('resize', () => contextMap?.invalidateSize(false), {passive: true});

@@ -263,3 +263,23 @@ h1 em,.method h2 em { color: #8de7ec; }
 .chart-scroll-hint {display:none; color:#a6c2ce; font-size:12px; margin:8px 0;}
 .svg-scroll:focus-visible,.confidence-wrap:focus-visible {outline:2px solid #62d6e4; outline-offset:2px;}
 @media (max-width:700px) {.chart-scroll-hint {display:block;}}
+
+/* An imagery-backed geographic picker; analysis still uses point records. */
+.globe-panel {display:grid;grid-template-columns:1fr minmax(280px,44%);align-items:center;gap:24px;margin:0 0 24px;padding:28px 36px;background:radial-gradient(circle at 75% 40%,#153c4c,#0b1c2a 50%,#0a1824);border:1px solid #284b5c;border-radius:14px;overflow:hidden;}
+.globe-copy h3 {font-size:clamp(25px,2.4vw,36px);letter-spacing:-.035em;margin:12px 0;}
+.globe-copy>p {color:#a9c2cc;line-height:1.55;max-width:43rem;}
+.globe-controls {display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 12px;}
+.globe-controls button {border:1px solid #365b6d;border-radius:7px;background:#10293a;color:#c5dce4;padding:10px 14px;min-height:42px;cursor:pointer;}
+.globe-controls button[aria-pressed=true] {border-color:#62d6e4;color:#a7f3f7;background:#143c49;}
+.globe-controls button:focus-visible {outline:2px solid #62d6e4;outline-offset:2px;}
+.globe-copy .globe-status {font-size:13px;color:#a8e1e7;}
+.globe-copy .globe-credit {font-size:11px;color:#91aab5;max-width:35rem;margin-top:18px;}
+.globe-credit a {color:#a5dce4;text-decoration:underline;}
+.earth-globe {height:340px;min-width:0;cursor:grab;touch-action:none;background:radial-gradient(circle,transparent 38%,#1e5361 43%,transparent 51%);}
+.earth-globe:active {cursor:grabbing}.earth-globe canvas {display:block;width:100%;height:100%;}
+.earth-globe[data-error] {display:grid;place-items:center;cursor:auto;color:#b9d2dc;font-size:13px;padding:20px;}
+@media(max-width:700px) {.globe-panel {grid-template-columns:1fr;padding:22px;gap:4px}.earth-globe {height:280px;grid-row:2}.globe-copy h3 {font-size:27px}.globe-copy .globe-credit {font-size:11px}}
+.chart-inspector {display:grid;grid-template-columns:auto minmax(80px,1fr);gap:8px 14px;align-items:center;margin:12px 0;color:#a9c5d0;font-size:12px;}
+.chart-inspector label {font-weight:600;color:#d5e9ed;}
+.chart-inspector input {width:100%;accent-color:#62d6e4;cursor:pointer;}
+.chart-inspector output {grid-column:1/-1;min-height:2em;color:#d5e9ed;font-variant-numeric:tabular-nums;line-height:1.5;}

@@ -73,3 +73,19 @@ Independent hackathon project. Not affiliated with, sponsored by, or endorsed by
 ## License
 
 MIT; see [LICENSE](LICENSE).
+
+### Geographic picker and chart inspection
+
+The interactive globe is a location picker, not a live raster or trend map. Its
+background is the Blue Marble 2001 land and shallow-water composite, courtesy
+Reto Stöckli and NASA Earth Observatory. The image is downsampled and compressed
+from the [NASA image](https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/).
+NASA POWER results are retrieved separately for the selected coordinates. For
+precise or keyboard-only selection, use the latitude and longitude fields. Drag
+the globe to rotate; click to set point A or B. The globe is loaded only when
+it approaches the viewport, and the form remains usable if WebGL is unavailable.
+
+Annual and monthly charts provide a date slider and a crosshair. Values shown
+are actual records at that date; missing records are labeled rather than filled
+or interpolated. Sliders and the scrollable plot regions are keyboard accessible.
+Three.js 0.187.0 is distributed under the MIT license in `vendor/THREE-LICENSE.txt`.

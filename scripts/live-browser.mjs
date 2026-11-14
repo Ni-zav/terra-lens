@@ -55,7 +55,11 @@ try{
   assert.equal(calls.filter(c=>c.parameters==='T2M').length,2,'Both points must fetch real NASA T2M');
   assert.equal(errors.length,0,errors.join('; '));
   await mkdir(join(ROOT,'docs','screenshots'),{recursive:true});
-  await page.locator('#explore').screenshot({path:join(ROOT,'docs','screenshots','nasa-real-desktop.png'),animations:'disabled'});
+  // Frame the controls and results for the presentation; the full explorer is
+  // substantially taller now that the geographic picker precedes it.
+  await page.locator('.topbar').evaluate(el => { el.style.visibility='hidden'; });
+  await page.locator('.workspace').screenshot({path:join(ROOT,'docs','screenshots','nasa-real-desktop.png'),animations:'disabled'});
+  await page.locator('.topbar').evaluate(el => { el.style.visibility=''; });
   // Changing the SELECT control must not relabel CSV that still represents the old analysis.
   await page.locator('#variable').selectOption('RH2M');
   const downloadPromise=page.waitForEvent('download');
@@ -86,7 +90,7 @@ try{
     '',
     'Captured: '+new Date().toISOString()+' (UTC).',
     '',
-    'These images were produced by a real Chromium browser running the application against actual NASA POWER API responses via the project Cloudflare Pages Function code served locally. They are NOT generated from test fixtures, AI image generation, or a deployed Cloudflare site.',
+    'These images were produced by a real Chromium browser running the application against actual NASA POWER API responses via the project Cloudflare Pages Function code served locally. The desktop image frames the workspace with the sticky navigation hidden to avoid covering data. They are NOT generated from test fixtures, AI image generation, or a deployed Cloudflare site.',
     '',
     'Initial investigation: T2M, 2001–2024, Yogyakarta (-7.7956, 110.3695) and Jakarta (-6.2088, 106.8456).',
     'Secondary integration check: RH2M at Yogyakarta.',

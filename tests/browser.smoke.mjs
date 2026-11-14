@@ -48,6 +48,20 @@ try {
   page.on('pageerror',err=>errors.push(err.message));
   await page.goto('http://127.0.0.1:'+port,{waitUntil:'domcontentloaded'});
   assert.match(await page.locator('h1').textContent(),/Find the signal/);
+  await page.locator('#earth-globe').scrollIntoViewIfNeeded();
+  await page.locator('#earth-globe canvas').waitFor({timeout:20000});
+  const globeBox=await page.locator('#earth-globe canvas').boundingBox();
+  await page.mouse.click(globeBox.x+globeBox.width/2,globeBox.y+globeBox.height/2);
+  assert.ok(Math.abs(Number(await page.locator('#lat-a').inputValue())+8)<0.1);
+  assert.ok(Math.abs(Number(await page.locator('#lon-a').inputValue())-110)<0.1);
+  assert.match(await page.locator('#globe-status').textContent(),/Run analysis/);
+  await page.locator('#city-a').selectOption('Yogyakarta');
+  await page.locator('#compare').uncheck();
+  await page.locator('#globe-b').click();
+  await page.locator('#earth-globe canvas').click({position:{x:globeBox.width/2,y:globeBox.height/2}});
+  assert.equal(await page.locator('#compare').isChecked(),true);
+  assert.match(await page.locator('#globe-status').textContent(),/Point B set/);
+  await page.locator('#city-b').selectOption('Jakarta');
   await page.locator('#analyze').click();
   await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA DATA LOADED',
     null,{timeout:15000});
@@ -67,6 +81,10 @@ try {
   assert.equal(await page.locator('#example-button').count(), 1);
   assert.ok(await page.locator('#annual-chart path').count()>=2);
   assert.ok(await page.locator('#monthly-chart path').count()>=2);
+  await page.locator('#annual-cursor').fill('0');
+  assert.match(await page.locator('#annual-readout').textContent(),/2001.*Yogyakarta.*Jakarta/);
+  await page.locator('#monthly-cursor').fill('0');
+  assert.match(await page.locator('#monthly-readout').textContent(),/2001-01.*Yogyakarta.*Jakarta/);
   assert.equal(errors.length,0,'Browser errors: '+errors.join('; '));
   await mkdir(join(ROOT,'artifacts'),{recursive:true});
   await page.screenshot({path:join(ROOT,'artifacts','desktop.png'),fullPage:true});
@@ -88,6 +106,19 @@ try {
   }));
   assert.ok(visibility.display!=='none' && visibility.width > 200,
     'Comparison information must be readable on mobile: '+JSON.stringify(visibility));
+  const noWebGL=await browser.newPage({viewport:{width:390,height:844}});
+  await noWebGL.addInitScript(() => {
+    const original=HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext=function(type,...args) {
+      return type.startsWith('webgl') ? null : original.call(this,type,...args);
+    };
+  });
+  await noWebGL.goto('http://127.0.0.1:'+port,{waitUntil:'domcontentloaded'});
+  await noWebGL.locator('#earth-globe').scrollIntoViewIfNeeded();
+  await noWebGL.locator('#earth-globe[data-error]').waitFor({timeout:20000});
+  assert.equal(await noWebGL.locator('#lat-a').isEnabled(),true,
+    'Manual coordinates must remain available without WebGL');
+  await noWebGL.close();
   console.log('Browser smoke passed: fixture-only data rendering, A/B comparison, charts, desktop/tablet/mobile and export.');
 } finally {
   if(browser) await browser.close();
