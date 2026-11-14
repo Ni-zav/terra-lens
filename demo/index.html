@@ -25,8 +25,8 @@ button{padding:10px 17px;border:1px solid #43656e;border-radius:9px;background:#
 @media(max-width:700px){.deck{width:100vw;margin:0}.slide{border-radius:0;padding:5% 5%;aspect-ratio:auto;min-height:74vh}.slide:after{bottom:11%}.meta{font-size:11px}h1{font-size:clamp(33px,8vw,50px)}h2{font-size:clamp(28px,6vw,42px)}p{font-size:15px}.stack{grid-template-columns:1fr;gap:12px}.panel{padding:12px}.panel b{font-size:18px}.panel span{font-size:14px}.two{grid-template-columns:1fr;gap:10px}.big{font-size:32px}.metric{padding:12px;margin:5px 0}.diagram{max-height:200px}.source{margin-bottom:14%}.question{font-size:30px}.bullets{font-size:15px}.footer{bottom:4%}.number{bottom:4%}.controls{width:94vw}}
 @media print{@page{size:16in 9in;margin:0}body{background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.deck{margin:0;width:100%}.slide,.slide.active{display:flex;break-after:page;border:0;box-shadow:none;border-radius:0;width:16in;height:9in;padding:0.8in .95in}.slide:last-child{break-after:auto}.controls{display:none}}
 
-/* Mobile is a reflowing research story, not a squashed 16:9 PPT canvas. */
-@media screen and (max-width:700px) {
+/* Phone and tablet are a reflowing research story, not a squashed 16:9 PPT canvas. */
+@media screen and (max-width:1050px) {
   .deck { width:100%; margin:0; }
   .slide,.slide.active {
     width:100%; min-height:calc(100svh - 85px); height:auto;
