@@ -60,3 +60,7 @@ Recommended post-hackathon statistical upgrades: residual autocorrelation diagno
 ## Code
 
 Pure operations: `src/stats.js`. NASA adapter: `src/power.js`. Deterministic tests: `tests/analysis.test.mjs`.
+
+## Relevant challenge-listed NASA methodology reference
+
+The selected 2026 challenge's published resource mirror includes NASA's [*Time-Series Analysis of Remotely-Sensed SeaWiFS Chlorophyll in River-Influenced Coastal Regions*](https://ntrs.nasa.gov/api/citations/20090042747/downloads/20090042747.pdf) (Acker et al., NASA NTRS record 20090042747). We consulted its discussion of time-series regression, outlier sensitivity, and the difference between ordinary and robust trend methods to inform the explanatory limitations above. **This is a methodology reference, not the source of Terra-Lens temperature observations**: the actual climate data in this project are retrieved from NASA POWER. Using a research reference is not automatically evidence of satisfying NASA's requirement to use a listed NASA *data source*.
