@@ -12,7 +12,7 @@
  */
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {join} from 'node:path';
+import {join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {parseGiovanniMonthlyCSV} from '../src/giovanni.js';
 import {annualMeans,linearTrend} from '../src/stats.js';
@@ -62,8 +62,10 @@ const evidence={
     'This execution alone does not certify 2026 NASA challenge Resources-tab source eligibility.'
   ]
 };
-const target=join(root,'artifacts','giovanni-source-evidence.json');
-await mkdir(join(root,'artifacts'),{recursive:true});
+const target=process.env.GIOVANNI_EVIDENCE_OUTPUT
+  ? resolve(process.env.GIOVANNI_EVIDENCE_OUTPUT)
+  :join(root,'artifacts','giovanni-source-evidence.json');
+await mkdir(dirname(target),{recursive:true});
 await writeFile(target,JSON.stringify(evidence,null,2)+'\n');
 console.log(JSON.stringify({
   state:'NASA-provenance-pending-independent-review',
