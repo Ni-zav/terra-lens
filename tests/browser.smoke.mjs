@@ -54,18 +54,37 @@ try {
   assert.match(await page.locator('#metric-slope').textContent(),/°C/);
   assert.match(await page.locator('#metric-years').textContent(),/24/);
   assert.equal(await page.locator('#download').isDisabled(),false);
+  assert.equal(await page.locator('#comparison-point').count(), 0, 'No stale legacy comparison cards');
+  assert.equal(await page.locator('#comparison-panel').isVisible(), true);
+  assert.equal(await page.locator('.comparison-point').count(), 2);
+  assert.match(await page.locator('.comparison-point').first().textContent(), /Yogyakarta/);
+  assert.match(await page.locator('.comparison-point').last().textContent(), /Jakarta/);
+  assert.equal(await page.locator('link[href="./styles/observatory.css"]').count(), 1);
+  assert.equal(await page.locator('#example-button').count(), 1);
   assert.ok(await page.locator('#annual-chart path').count()>=2);
   assert.ok(await page.locator('#monthly-chart path').count()>=2);
   assert.equal(errors.length,0,'Browser errors: '+errors.join('; '));
   await mkdir(join(ROOT,'artifacts'),{recursive:true});
   await page.screenshot({path:join(ROOT,'artifacts','desktop.png'),fullPage:true});
+  await page.setViewportSize({width:768,height:1024});
+  const tabletOverflow = await page.evaluate(()=>({
+    scroll:document.documentElement.scrollWidth,width:window.innerWidth
+  }));
+  assert.ok(tabletOverflow.scroll <= tabletOverflow.width+2,
+    'Tablet horizontal overflow: '+JSON.stringify(tabletOverflow));
   await page.setViewportSize({width:390,height:844});
   await page.screenshot({path:join(ROOT,'artifacts','mobile.png'),fullPage:true});
   const overflow=await page.evaluate(()=>({
     scroll:document.documentElement.scrollWidth,width:window.innerWidth
   }));
   assert.ok(overflow.scroll <= overflow.width+2, 'Mobile horizontal overflow: '+JSON.stringify(overflow));
-  console.log('Browser smoke passed: real UI rendering, mocked API, charts, stats, export, mobile layout.');
+  assert.equal(await page.locator('.comparison-point').count(), 2);
+  const visibility = await page.locator('.comparison-point').first().evaluate(el=>({
+    display:getComputedStyle(el).display, width:el.getBoundingClientRect().width
+  }));
+  assert.ok(visibility.display!=='none' && visibility.width > 200,
+    'Comparison information must be readable on mobile: '+JSON.stringify(visibility));
+  console.log('Browser smoke passed: fixture-only data rendering, A/B comparison, charts, desktop/tablet/mobile and export.');
 } finally {
   if(browser) await browser.close();
   await new Promise(resolve=>server.close(resolve));
