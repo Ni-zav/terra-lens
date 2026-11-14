@@ -1,17 +1,1204 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Terra-Lens · NASA Space Apps 2026</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terra-Lens · NASA Space Apps 2026 · Seven-Slide Scientific Demo</title>
 <style>
-:root{color-scheme:dark;--ink:#f0f3f2;--muted:#aab5b7;--a:#62d6e4;--b:#f6b975}*{box-sizing:border-box}body{margin:0;background:#0b1013;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}a{color:inherit;text-underline-offset:3px}.deck{width:min(96vw,1440px);margin:2vh auto 0}.slide{display:none;position:relative;aspect-ratio:16/9;overflow:hidden;background:#11191d;padding:5% 6% 6%;flex-direction:column}.slide.active{display:flex}.kicker{font-size:clamp(12px,1.15vw,17px);color:#aebbbb;margin:0 0 2%}.slide h1,.slide h2{font-weight:600;letter-spacing:-.045em;line-height:1.05;margin:0}.slide h1{font-size:clamp(42px,6vw,88px)}.slide h2{font-size:clamp(30px,3.45vw,50px);max-width:1000px}.lead{font-size:clamp(17px,1.6vw,24px);line-height:1.4;color:#c2cecf;margin:2% 0 0;max-width:780px}.footer{position:absolute;bottom:4%;left:6%;right:6%;display:flex;justify-content:space-between;align-items:end;color:#a4b0b3;font-size:clamp(10px,.92vw,13px);line-height:1.35}.footer a{color:#c0d2d3}.cover{background:#101a1d}.cover:before{content:"";position:absolute;inset:0 0 0 39%;background:linear-gradient(90deg,#101a1d 0%,transparent 68%),url('nasa-blue-marble.jpg') center/cover no-repeat;opacity:.7}.cover>.kicker,.cover>.cover-text{position:relative}.cover .cover-text{margin:auto 0;max-width:56%}.cover h1{font-size:clamp(56px,7vw,100px)}.cover .lead{max-width:560px}.app-shot{width:100%;min-height:0;flex:1;object-fit:contain;object-position:center;margin:2% 0 3%}.plot{width:100%;min-height:0;flex:1;object-fit:contain;object-position:center;margin:1% 0 3%}.case-title{display:flex;align-items:baseline;justify-content:space-between;gap:20px}.case-title span{font-size:clamp(12px,1.1vw,16px);color:var(--muted);white-space:nowrap}.flow{display:flex;align-items:baseline;gap:3%;margin:auto 0;font-size:clamp(23px,3.2vw,45px);line-height:1.2;letter-spacing:-.03em}.flow span{flex:1}.flow small{font-size:clamp(14px,1.3vw,19px);display:block;letter-spacing:0;line-height:1.45;color:var(--muted);margin-top:12px}.flow i{font-style:normal;color:#67777a;font-size:.65em}.notes{display:grid;grid-template-columns:1fr 1fr;gap:7%;margin:auto 0}.notes p{font-size:clamp(20px,2.3vw,34px);line-height:1.25;margin:0}.notes small{display:block;margin-top:16px;font-size:clamp(14px,1.25vw,18px);line-height:1.5;color:var(--muted)}.end-links{display:flex;gap:8%;margin:5% 0 0;font-size:clamp(17px,1.6vw,23px)}.end-links span{display:block;color:var(--muted);font-size:clamp(12px,1vw,15px);margin-bottom:8px}.disclosure{font-size:clamp(11px,1vw,15px);line-height:1.45;color:var(--muted);max-width:1000px;margin:auto 0 2%}.controls{width:min(96vw,1440px);margin:12px auto 24px;display:flex;justify-content:space-between;gap:12px;color:#aab5b7;font-size:14px}.control-left{display:flex;align-items:center;gap:10px}button{font:inherit;background:#222d31;color:#e8eeee;border:0;border-radius:4px;padding:10px 14px;cursor:pointer}button:hover{background:#344246}button:focus-visible,a:focus-visible{outline:2px solid #d1e2e2;outline-offset:2px}button:disabled{opacity:.4;cursor:not-allowed}
-@media screen and (max-width:1050px){.deck{width:100%;margin:0}.slide,.slide.active{aspect-ratio:auto;min-height:calc(100svh - 90px);height:auto;overflow:visible;padding:32px 24px 24px;gap:16px}.cover:before{inset:0;opacity:.3}.cover .cover-text{max-width:100%;margin:auto 0}.slide h1{font-size:clamp(48px,10vw,70px)}.slide h2{font-size:clamp(31px,6vw,48px)}.lead{font-size:17px}.footer,.cover>.footer{position:static;margin-top:auto;font-size:12px;gap:15px}.app-shot,.plot{flex:none;width:100%;height:auto;margin:4px 0}.case-title{display:block}.case-title span{display:block;margin-top:10px}.flow{display:block;margin:auto 0;font-size:28px}.flow span{display:block}.flow small{margin:4px 0 12px;font-size:14px}.flow i{display:none}.notes{display:block;margin:auto 0}.notes p{font-size:23px;margin:20px 0}.notes small{font-size:14px;margin-top:6px}.end-links{display:block;font-size:17px;margin:15px 0}.end-links div{margin-bottom:18px}.disclosure{font-size:12px}.controls{width:100%;padding:12px 16px;flex-wrap:wrap;margin:0}.control-left{flex-wrap:wrap}}
-@media print{@page{size:16in 9in;margin:0}body{background:#11191d;-webkit-print-color-adjust:exact;print-color-adjust:exact}.deck{width:100%;margin:0}.slide,.slide.active{display:flex;flex-direction:column;width:16in;height:9in;aspect-ratio:auto;padding:.7in .95in .85in;break-after:page}.slide:last-child{break-after:auto}.slide h1{font-size:72pt}.slide h2{font-size:39pt}.kicker{font-size:14pt}.lead{font-size:20pt}.footer{font-size:10pt}.flow{font-size:34pt}.flow small{font-size:14pt}.notes p{font-size:25pt}.notes small{font-size:15pt}.controls{display:none}}
-</style></head><body><main class="deck" aria-label="Terra-Lens seven-slide demonstration">
-<section class="slide cover active" aria-label="Slide 1 of 7"><div class="kicker">NASA Space Apps Challenge 2026 · Yogyakarta</div><div class="cover-text"><h1>Terra-Lens</h1><p class="lead">Do two Indonesian model-grid locations show the same warming trend?</p></div><div class="footer"><span><a href="https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/">NASA Blue Marble · Reto Stöckli / NASA Earth Observatory · 2001</a></span><span>01 / 07</span></div></section>
-<section class="slide" aria-label="Slide 2 of 7"><div class="kicker">The workspace</div><h2>Choose the question. Follow the NASA evidence.</h2><img class="app-shot" src="../docs/screenshots/nasa-real-desktop.png" alt="Real NASA POWER data displayed in Terra-Lens for Yogyakarta and Jakarta"><div class="footer"><span>Actual NASA POWER results · Yogyakarta and Jakarta · 2001–2024</span><span>02 / 07</span></div></section>
-<section class="slide" aria-label="Slide 3 of 7"><div class="kicker">From source to result</div><h2>From monthly NASA records to an auditable trend.</h2><div class="flow"><span>NASA POWER<small>Monthly point estimates</small></span><i>→</i><span>Annual means<small>Day-weighted; complete years only</small></span><i>→</i><span>Linear trend<small>Per-decade slope and conditional inference</small></span></div><div class="footer"><span><a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/">NASA POWER API</a> · <a href="https://github.com/Ni-zav/terra-lens/blob/main/docs/METHODOLOGY.md">Methods</a></span><span>03 / 07</span></div></section>
-<section class="slide" aria-label="Slide 4 of 7"><div class="case-title"><h2>One period. Two temperature histories.</h2><span>2 m air temperature · 2001–2024</span></div><img class="plot" src="annual-temperature.png" alt="Annual mean temperature at the Yogyakarta and Jakarta NASA POWER grid points with linear trend lines, 2001 through 2024"><div class="footer"><span>NASA POWER · 24 complete years per point · <a href="https://github.com/Ni-zav/terra-lens/blob/main/docs/CASE_STUDY.md">Case study</a></span><span>04 / 07</span></div></section>
-<section class="slide" aria-label="Slide 5 of 7"><div class="case-title"><h2>Both fitted slopes are positive. Are they different?</h2><span>Classical 95% intervals</span></div><img class="plot" src="slope-intervals.png" alt="Yogyakarta and Jakarta estimated slopes and classical 95 percent confidence intervals"><div class="footer"><span>°C per decade · These intervals test each slope, NOT the B − A difference.</span><span>05 / 07</span></div></section>
-<section class="slide" aria-label="Slide 6 of 7"><div class="kicker">Reading the result</div><h2>The fitted gap is not statistically decisive.</h2><div class="notes"><p>Paired B − A slope<small>Jakarta minus Yogyakarta: +0.0447 °C per decade across 24 matched complete years.</small></p><p>Approximate HAC 95% interval<small>−0.0574 to +0.1468 °C/decade; p ≈ 0.374. The interval includes zero.</small></p></div><div class="footer"><span><a href="https://github.com/Ni-zav/terra-lens/actions/runs/43579062738">Independent NumPy/SciPy verification</a> · Paired difference not established · No causal attribution.</span><span>06 / 07</span></div></section>
-<section class="slide" aria-label="Slide 7 of 7"><div class="kicker">Explore the evidence</div><h2>A question-to-evidence workflow anyone can inspect.</h2><div class="end-links"><div><span>Interactive application</span><a href="https://ni-zav.github.io/terra-lens/">ni-zav.github.io/terra-lens</a></div><div><span>Code and methods</span><a href="https://github.com/Ni-zav/terra-lens">github.com/Ni-zav/terra-lens</a></div><div><span>Independent analysis</span><a href="https://github.com/Ni-zav/terra-lens/blob/main/notebooks/nasa_power_case_study.ipynb">SciPy notebook</a></div></div><p class="disclosure">For students, educators and citizen researchers: explore a real Earth-system question, trace NASA data, and export reproducible evidence. AI-assisted research, code, tests and presentation drafting are disclosed; values are computed deterministically.</p><div class="footer"><span>Terra-Lens · NASA Space Apps 2026</span><span>07 / 07</span></div></section>
-</main><nav class="controls" aria-label="Slide navigation"><div class="control-left"><button id="prev" type="button">Previous</button><button id="next" type="button">Next</button><span id="counter" aria-live="polite">Slide 1 of 7</span></div><button type="button" onclick="window.print()">Print / save PDF</button></nav>
-<script>const slides=[...document.querySelectorAll('.slide')],prev=document.getElementById('prev'),next=document.getElementById('next'),counter=document.getElementById('counter');let index=Math.min(slides.length-1,Math.max(0,Number(location.hash.replace('#slide-',''))-1||0));function show(n){index=Math.min(slides.length-1,Math.max(0,n));slides.forEach((slide,i)=>{slide.classList.toggle('active',i===index);slide.setAttribute('aria-hidden',String(i!==index))});prev.disabled=index===0;next.disabled=index===slides.length-1;counter.textContent='Slide '+(index+1)+' of '+slides.length;history.replaceState(null,'','#slide-'+(index+1))}prev.addEventListener('click',()=>show(index-1));next.addEventListener('click',()=>show(index+1));addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(index+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(index-1)}else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1)});show(index);</script></body></html>
+:root {
+  color-scheme: dark;
+  --bg: #071019;
+  --surface: #0d1a26;
+  --surface-alt: #142432;
+  --border: #20374c;
+  --border-strong: #2c4b66;
+  --ink: #f1f7f9;
+  --muted: #b2c8d6;
+  --dim: #8aa6b8;
+  --a: #62d6e4;
+  --b: #f6b975;
+  --c: #a5b4fc;
+  --ok: #5dd39e;
+  --sans: 'IBM Plex Sans', 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #040a10;
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: var(--a);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.num, code {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.deck {
+  width: min(96vw, 1440px);
+  margin: 1.5vh auto 0;
+}
+.slide {
+  display: none;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 2.6% 3.6% 2.2%;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.4%;
+}
+.slide.active {
+  display: flex;
+}
+.slide-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+}
+.kicker-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+.kicker {
+  font-family: var(--mono);
+  font-size: clamp(11.5px, 0.96vw, 14px);
+  color: var(--a);
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+.kicker-tag {
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 0.88vw, 12.5px);
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+}
+.slide h1, .slide h2 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--ink);
+}
+.slide h1 {
+  font-size: clamp(32px, 3.4vw, 50px);
+}
+.slide h2 {
+  font-size: clamp(23px, 2.25vw, 33px);
+}
+.lead {
+  font-size: clamp(14px, 1.22vw, 18px);
+  line-height: 1.4;
+  color: var(--muted);
+  margin: 0;
+  max-width: 1080px;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  color: var(--dim);
+  font-size: clamp(10.5px, 0.86vw, 12.5px);
+  line-height: 1.3;
+  position: relative;
+  z-index: 2;
+}
+.footer a { color: var(--muted); }
+.slide-num {
+  font-family: var(--mono);
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Slide 1: Cover + Indonesian Locator */
+.cover {
+  background: linear-gradient(110deg, #071019 0%, #071019 56%, rgba(7, 16, 25, 0.84) 100%);
+}
+.cover::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 44%;
+  background: radial-gradient(circle at 65% 50%, rgba(7, 16, 25, 0.25) 0%, #071019 78%), url('nasa-blue-marble.jpg') center/cover no-repeat;
+  opacity: 0.36;
+  pointer-events: none;
+}
+.cover-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.22fr 1fr;
+  gap: 2.2%;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+.cover-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+.question-box {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--a);
+  padding: 14px 16px;
+}
+.question-label {
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 0.86vw, 12.5px);
+  color: var(--a);
+  margin-bottom: 5px;
+}
+.question-text {
+  font-size: clamp(16px, 1.48vw, 22px);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.32;
+  margin: 0;
+}
+.context-box {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 12px 15px;
+  font-size: clamp(12.5px, 1.05vw, 15px);
+  line-height: 1.42;
+  color: var(--muted);
+}
+.context-box strong { color: var(--ink); }
+.pill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.meta-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+}
+.meta-pill span {
+  display: block;
+  font-family: var(--mono);
+  font-size: clamp(10px, 0.8vw, 11.5px);
+  color: var(--a);
+}
+.meta-pill strong {
+  display: block;
+  margin-top: 4px;
+  font-size: clamp(12px, 1vw, 14.5px);
+  line-height: 1.32;
+  color: var(--ink);
+}
+.locator-card {
+  background: rgba(13, 26, 38, 0.94);
+  border: 1px solid var(--border-strong);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+.locator-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.locator-head strong {
+  font-size: clamp(13px, 1.08vw, 15.5px);
+  color: var(--ink);
+}
+.locator-head span {
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 0.84vw, 12px);
+  color: var(--dim);
+}
+.locator-svg {
+  width: 100%;
+  height: auto;
+  max-height: 210px;
+  background: #060d15;
+  border: 1px solid var(--border);
+}
+.point-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pt-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 9px 11px;
+  font-size: clamp(11.5px, 0.94vw, 13.5px);
+  line-height: 1.35;
+}
+.pt-card.pt-a { border-left: 3px solid var(--a); }
+.pt-card.pt-b { border-left: 3px solid var(--b); }
+.pt-card strong { display: block; color: var(--ink); font-family: var(--mono); }
+.pt-card span { color: var(--muted); display: block; margin-top: 3px; }
+
+/* Slide 2: User Problem, Workflow & Annotated Authentic UI */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 0.94fr 1.46fr;
+  gap: 2%;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+.workflow-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--a);
+  padding: 10px 13px;
+}
+.step-card:nth-child(2) { border-left-color: var(--b); }
+.step-card:nth-child(3) { border-left-color: var(--c); }
+.step-card:nth-child(4) { border-left-color: var(--ok); }
+.step-card strong {
+  display: block;
+  font-size: clamp(13px, 1.08vw, 15.5px);
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.step-card strong code {
+  color: var(--a);
+  margin-right: 5px;
+}
+.step-card p {
+  margin: 0;
+  font-size: clamp(11.5px, 0.95vw, 13.8px);
+  line-height: 1.36;
+  color: var(--muted);
+}
+.shot-frame {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  padding: 9px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+}
+.shot-callouts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.shot-callout {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 5px 8px;
+  font-size: clamp(10px, 0.82vw, 12px);
+  line-height: 1.25;
+  color: var(--muted);
+}
+.shot-callout strong {
+  display: block;
+  font-family: var(--mono);
+  color: var(--ink);
+}
+.app-shot {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  object-fit: contain;
+  object-position: center;
+  border: 1px solid var(--border);
+  background: #071019;
+}
+
+/* Slide 3: Source-to-Evidence Pipeline */
+.pipeline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.4%;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--a);
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+.stage-card:nth-child(2) { border-top-color: var(--b); }
+.stage-card:nth-child(3) { border-top-color: var(--c); }
+.stage-card:nth-child(4) { border-top-color: var(--ok); }
+.stage-num {
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 0.85vw, 12px);
+  color: var(--a);
+}
+.stage-card:nth-child(2) .stage-num { color: var(--b); }
+.stage-card:nth-child(3) .stage-num { color: var(--c); }
+.stage-card:nth-child(4) .stage-num { color: var(--ok); }
+.stage-card h3 {
+  margin: 4px 0 6px;
+  font-size: clamp(15px, 1.25vw, 18.5px);
+  color: var(--ink);
+}
+.stage-card p {
+  margin: 0;
+  font-size: clamp(12px, 1vw, 14.5px);
+  line-height: 1.42;
+  color: var(--muted);
+}
+.stage-list {
+  margin: 8px 0 0;
+  padding-left: 16px;
+  font-size: clamp(11.5px, 0.94vw, 13.5px);
+  line-height: 1.4;
+  color: var(--muted);
+}
+.stage-list li { margin-bottom: 3px; }
+.stage-spec {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 9px 10px;
+  font-family: var(--mono);
+  font-size: clamp(10.8px, 0.88vw, 12.6px);
+  line-height: 1.42;
+  color: var(--ink);
+}
+.guardrail-strip {
+  background: var(--surface-alt);
+  border: 1px solid var(--border-strong);
+  padding: 9px 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: clamp(11.5px, 0.94vw, 13.5px);
+  color: var(--muted);
+}
+.guardrail-strip strong { color: var(--ink); }
+
+/* Slide 4 & 5: Data Evidence + Plot + Metric Cards */
+.evidence-layout {
+  display: grid;
+  grid-template-columns: 1.38fr 1.02fr;
+  gap: 2%;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+.plot-card {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+}
+.plot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-family: var(--mono);
+  font-size: clamp(10.8px, 0.88vw, 12.8px);
+  color: var(--muted);
+}
+.plot {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  object-fit: contain;
+  object-position: center;
+}
+.plot-caption {
+  margin-top: 6px;
+  font-size: clamp(10.8px, 0.88vw, 12.6px);
+  color: var(--dim);
+  font-family: var(--mono);
+}
+.stats-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 9px;
+}
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 11px 14px;
+}
+.stat-box.stat-a { border-left: 4px solid var(--a); }
+.stat-box.stat-b { border-left: 4px solid var(--b); }
+.stat-box.stat-diff { border-left: 4px solid var(--ok); background: var(--surface-alt); }
+.stat-label {
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 0.86vw, 12.4px);
+  color: var(--a);
+  margin-bottom: 2px;
+}
+.stat-box.stat-b .stat-label { color: var(--b); }
+.stat-box.stat-diff .stat-label { color: var(--ok); }
+.stat-val {
+  font-family: var(--mono);
+  font-size: clamp(20px, 1.75vw, 26px);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 2px 0 4px;
+}
+.stat-sub {
+  font-size: clamp(11.5px, 0.96vw, 13.8px);
+  line-height: 1.4;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Slide 6: Multi-Source Cases + Limitations + Next Verification Steps */
+.cases-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.6%;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+.case-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--a);
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 9px;
+}
+.case-panel:nth-child(2) { border-top-color: var(--c); }
+.case-panel:nth-child(3) { border-top-color: var(--b); }
+.case-panel h3 {
+  margin: 3px 0 5px;
+  font-size: clamp(15px, 1.22vw, 18px);
+  color: var(--ink);
+}
+.case-panel p {
+  margin: 0;
+  font-size: clamp(12px, 0.98vw, 14.2px);
+  line-height: 1.4;
+  color: var(--muted);
+}
+.case-metrics {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 9px 11px;
+  font-family: var(--mono);
+  font-size: clamp(10.8px, 0.88vw, 12.6px);
+  line-height: 1.45;
+  color: var(--ink);
+}
+.limit-note {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  font-size: clamp(11.2px, 0.92vw, 13.2px);
+  line-height: 1.38;
+  color: var(--dim);
+}
+.limit-note strong { color: var(--muted); }
+
+/* Slide 7: Links, Citations, AI Disclosure & Verification Roadmap */
+.closing-grid {
+  display: grid;
+  grid-template-columns: 1.12fr 1fr;
+  gap: 2%;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+.end-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.link-card {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--a);
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.link-card:nth-child(2) { border-top-color: var(--b); }
+.link-card:nth-child(3) { border-top-color: var(--c); }
+.link-card:nth-child(4) { border-top-color: var(--ok); }
+.link-card span {
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 0.85vw, 12px);
+  color: var(--dim);
+}
+.link-card a {
+  font-family: var(--mono);
+  font-size: clamp(12.5px, 1.05vw, 15px);
+  font-weight: 600;
+  color: var(--a);
+  margin: 4px 0;
+  word-break: break-word;
+}
+.link-card small {
+  font-size: clamp(11.5px, 0.94vw, 13.5px);
+  color: var(--muted);
+  line-height: 1.38;
+}
+.governance-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+.gov-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+}
+.gov-box h3 {
+  margin: 0 0 6px;
+  font-family: var(--mono);
+  font-size: clamp(12px, 0.98vw, 14px);
+  color: var(--a);
+}
+.gov-box p, .disclosure {
+  margin: 0;
+  font-size: clamp(11.5px, 0.95vw, 13.6px);
+  line-height: 1.42;
+  color: var(--muted);
+}
+
+/* Navigation Controls */
+.controls {
+  width: min(96vw, 1440px);
+  margin: 10px auto 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.control-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+button {
+  font: inherit;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+button:hover { background: var(--surface-alt); border-color: var(--a); }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Responsive Reflow (<= 1050px) */
+@media screen and (max-width: 1050px) {
+  .deck { width: 100%; margin: 0; }
+  .slide, .slide.active {
+    aspect-ratio: auto;
+    min-height: calc(100svh - 76px);
+    height: auto;
+    overflow: visible;
+    padding: 20px 16px;
+    gap: 16px;
+    border-left: 0;
+    border-right: 0;
+  }
+  .cover::before { inset: 0; opacity: 0.18; }
+  .kicker-row, .locator-head, .plot-header, .guardrail-strip, .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .cover-grid, .workspace-grid, .pipeline-grid, .evidence-layout, .cases-grid, .closing-grid, .end-links, .pill-grid, .point-cards, .shot-callouts {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .app-shot, .plot {
+    flex: none;
+    width: 100%;
+    height: auto;
+    max-height: none;
+  }
+  .controls {
+    width: 100%;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    margin: 0;
+  }
+  .control-left { flex-wrap: wrap; }
+}
+
+/* Print / PDF (Fixed 16in x 9in per slide) */
+@media print {
+  @page { size: 16in 9in; margin: 0; }
+  body {
+    background: var(--bg);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .deck { width: 100%; margin: 0; }
+  .slide, .slide.active {
+    display: flex;
+    flex-direction: column;
+    width: 16in;
+    height: 9in;
+    aspect-ratio: auto;
+    padding: 0.4in 0.56in 0.36in;
+    break-after: page;
+    border: 0;
+  }
+  .slide:last-child { break-after: auto; }
+  .controls { display: none; }
+}
+</style>
+</head>
+<body>
+<main class="deck" aria-label="Terra-Lens seven-slide scientific demonstration">
+
+  <!-- SLIDE 1: Question, Identity & Indonesian Locator -->
+  <section class="slide cover active" aria-label="Slide 1 of 7">
+    <div class="slide-head">
+      <div class="kicker-row">
+        <p class="kicker">NASA Space Apps Challenge 2026 · Be An Earth System Trend Detective</p>
+        <span class="kicker-tag">Java, Indonesia · 2001–2024 (24 Complete Years)</span>
+      </div>
+      <h1>Terra-Lens: Paired Earth-System Trend Detective</h1>
+      <p class="lead">An interactive scientific observatory that turns raw NASA Earth-observation archives into auditable multi-point trend comparisons and honest uncertainty intervals.</p>
+    </div>
+
+    <div class="cover-grid">
+      <div class="cover-left">
+        <div class="question-box">
+          <div class="question-label">CENTRAL SCIENTIFIC QUESTION</div>
+          <p class="question-text">Did the Jakarta NASA POWER model-grid point warm at a statistically distinguishable rate from the Yogyakarta model-grid point across 2001–2024?</p>
+        </div>
+
+        <div class="context-box">
+          <strong>Who struggles with this question:</strong> Educators, students, and regional analysts frequently compare two climate time series by eyeing separate trend lines or checking whether each location has <span class="num">p &lt; 0.05</span>. Terra-Lens pairs aligned years directly so shared El Niño/monsoon variance does not masquerade as a local divergence.
+        </div>
+
+        <div class="pill-grid">
+          <div class="meta-pill">
+            <span>WHY SINGLE SERIES MISLEAD</span>
+            <strong>Two significant p-values never test whether Slope B ≠ Slope A.</strong>
+          </div>
+          <div class="meta-pill">
+            <span>PRIMARY NASA RECORD</span>
+            <strong>NASA POWER / MERRA-2 monthly T2M (2 m air temp, 0.5° × 0.625° grid).</strong>
+          </div>
+          <div class="meta-pill">
+            <span>HEADLINE FINDING</span>
+            <strong>Both warmed (+0.18 vs +0.22 °C/dec), but paired B − A spans zero (p ≈ 0.374).</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="locator-card">
+        <div class="locator-head">
+          <strong>Study Locator · Island of Java, Indonesia</strong>
+          <span>~430 km great-circle separation · 288 valid months/pt</span>
+        </div>
+        <svg class="locator-svg" viewBox="0 0 460 185" role="img" aria-label="Map of Java showing Point A Yogyakarta and Point B Jakarta grid cells">
+          <rect x="0" y="0" width="460" height="185" fill="#060d15"/>
+          <g stroke="#16293b" stroke-width="1">
+            <line x1="0" y1="35" x2="460" y2="35"/><line x1="0" y1="90" x2="460" y2="90"/><line x1="0" y1="145" x2="460" y2="145"/>
+            <line x1="80" y1="0" x2="80" y2="185"/><line x1="190" y1="0" x2="190" y2="185"/><line x1="300" y1="0" x2="300" y2="185"/><line x1="410" y1="0" x2="410" y2="185"/>
+          </g>
+          <text x="12" y="24" fill="#8aa6b8" font-family="IBM Plex Mono, monospace" font-size="10.5">5°S · Java Sea</text>
+          <text x="12" y="172" fill="#8aa6b8" font-family="IBM Plex Mono, monospace" font-size="10.5">9°S · Indian Ocean</text>
+          <!-- Stylized Java island silhouette -->
+          <path d="M 48,78 L 105,72 L 160,80 L 215,86 L 270,92 L 330,96 L 395,102 L 405,118 L 335,120 L 260,116 L 195,108 L 135,102 L 68,96 Z" fill="#132638" stroke="#2c4b66" stroke-width="1.5"/>
+          <!-- Paired comparison vector -->
+          <line x1="118" y1="78" x2="246" y2="108" stroke="#8aa6b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <!-- Jakarta Point B (diamond + grid box) -->
+          <rect x="106" y="66" width="24" height="24" fill="rgba(246,185,117,0.16)" stroke="#f6b975" stroke-width="1.2"/>
+          <polygon points="118,71 125,78 118,85 111,78" fill="#f6b975"/>
+          <text x="138" y="48" fill="#f6b975" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="600">◆ Point B · Jakarta (-6.21°, 106.85°)</text>
+          <text x="138" y="62" fill="#b2c8d6" font-family="IBM Plex Mono, monospace" font-size="10.5">OLS +0.224 °C/dec · 24 complete yrs</text>
+          <!-- Yogyakarta Point A (circle + grid box) -->
+          <rect x="234" y="96" width="24" height="24" fill="rgba(98,214,228,0.16)" stroke="#62d6e4" stroke-width="1.2"/>
+          <circle cx="246" cy="108" r="6" fill="#62d6e4"/>
+          <text x="190" y="142" fill="#62d6e4" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="600">● Point A · Yogyakarta (-7.80°, 110.37°)</text>
+          <text x="190" y="156" fill="#b2c8d6" font-family="IBM Plex Mono, monospace" font-size="10.5">OLS +0.179 °C/dec · 24 complete yrs</text>
+        </svg>
+        <div class="point-cards">
+          <div class="pt-card pt-a">
+            <strong>● Point A · Yogyakarta Grid Cell</strong>
+            <span class="num">-7.7956°, 110.3695° · OLS +0.179 °C/dec (p = 0.0173)</span>
+          </div>
+          <div class="pt-card pt-b">
+            <strong>◆ Point B · Jakarta Grid Cell</strong>
+            <span class="num">-6.2088°, 106.8456° · OLS +0.224 °C/dec (p = 0.00145)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Imagery context: <a href="https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/">NASA Blue Marble (Reto Stöckli / NASA Earth Observatory, 2001)</a> · Data: NASA POWER MERRA-2</span>
+      <span class="slide-num">01 / 07</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: User Problem, Workflow & Annotated Authentic UI -->
+  <section class="slide" aria-label="Slide 2 of 7">
+    <div class="slide-head">
+      <div class="kicker-row">
+        <p class="kicker">User Need &amp; Interactive Workspace</p>
+        <span class="kicker-tag">Live Browser Capture · Equal A/B Prominence + Paired Inference</span>
+      </div>
+      <h2>From raw NASA API tables to an auditable side-by-side comparison.</h2>
+      <p class="lead">Students, educators, and regional analysts often eyeball two separate trend charts or download raw `-999`-padded tables without testing the paired difference or tracking spatial support.</p>
+    </div>
+
+    <div class="workspace-grid">
+      <div class="workflow-col">
+        <div class="step-card">
+          <strong><code>01</code> Configure Multi-Point Query (A/B/C/D)</strong>
+          <p>Select variable (<span class="num">T2M</span>, <span class="num">PRECTOTCORR</span>, <span class="num">RH2M</span>, <span class="num">WS2M</span>, <span class="num">ALLSKY_SFC_SW_DWN</span>), year range, and up to 4 coordinates.</p>
+        </div>
+        <div class="step-card">
+          <strong><code>02</code> Read Equal-Prominence Top Strip</strong>
+          <p>Point A (<span class="num">+0.18 °C/dec</span>), Point B (<span class="num">+0.22 °C/dec</span>), and the Paired B − A contrast (<span class="num">+0.04 °C/dec</span>) appear at equal hierarchy above the chart.</p>
+        </div>
+        <div class="step-card">
+          <strong><code>03</code> Explore 7 Views &amp; 3D Globe Context</strong>
+          <p>Switch between Annual, Monthly, Seasonal, Compare (B − A series), 8-Point Contrast Finder, Multi-source (SWOT &amp; GISTEMP), and Giovanni CSV import.</p>
+        </div>
+        <div class="step-card">
+          <strong><code>04</code> Export Reproducible Evidence</strong>
+          <p>Download the 576-row monthly CSV or full Evidence JSON containing exact NASA API URLs, slopes, CIs, and limitations.</p>
+        </div>
+      </div>
+
+      <div class="shot-frame">
+        <div class="shot-callouts">
+          <div class="shot-callout"><strong>1 · Left Rail</strong>A/B/C/D coordinates &amp; variable controls</div>
+          <div class="shot-callout"><strong>2 · Top Strip</strong>A (+0.18), B (+0.22) &amp; B−A (+0.04 °C/dec)</div>
+          <div class="shot-callout"><strong>3 · Center Stage</strong>24-yr annual series + 7 analysis tabs</div>
+          <div class="shot-callout"><strong>4 · Right Rail</strong>3D Blue Marble globe + HAC inference</div>
+        </div>
+        <img class="app-shot" src="../docs/screenshots/nasa-real-desktop.png" alt="Real NASA POWER data displayed in Terra-Lens for Yogyakarta and Jakarta">
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Authentic Playwright capture of live NASA POWER responses (`docs/screenshots/nasa-real-desktop.png`) · Zero synthetic fixture data</span>
+      <span class="slide-num">02 / 07</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: Source-to-Evidence Pipeline -->
+  <section class="slide" aria-label="Slide 3 of 7">
+    <div class="slide-head">
+      <div class="kicker-row">
+        <p class="kicker">Methodology &amp; Data Hygiene</p>
+        <span class="kicker-tag">Deterministic Client Pipeline + Independent SciPy Verification</span>
+      </div>
+      <h2>How monthly NASA records become an auditable trend and paired test.</h2>
+      <p class="lead">Every number on screen follows a four-stage statistical pipeline with explicit missing-value rules, calendar-day weighting, and serial-correlation checks.</p>
+    </div>
+
+    <div class="pipeline-grid">
+      <div class="stage-card">
+        <div>
+          <div class="stage-num">STAGE 01 · SOURCE &amp; SUPPORT</div>
+          <h3>NASA POWER / MERRA-2</h3>
+          <p>Queries the NASA Langley POWER monthly point API (<span class="num">community=RE</span>). Each coordinate resolves to a <span class="num">0.5° × 0.625°</span> (~55 × 69 km) atmospheric reanalysis grid cell.</p>
+          <ul class="stage-list">
+            <li>Direct NASA API fetch + Cloudflare Pages cache</li>
+            <li>Explicit model-grid vs. thermometer distinction</li>
+          </ul>
+        </div>
+        <div class="stage-spec">
+          Param: T2M (°C at 2 m)<br>
+          Span: 2001–2024 (24 yrs)<br>
+          Support: Grid cell, not station
+        </div>
+      </div>
+
+      <div class="stage-card">
+        <div>
+          <div class="stage-num">STAGE 02 · HYGIENE &amp; AGGREGATION</div>
+          <h3>Complete-Year Day Weighting</h3>
+          <p>Drops NASA fill sentinels (<span class="num">-999</span>) and annual summary key <span class="num">YYYY13</span>. Requires all 12 valid months per calendar year—zero interpolation across gaps.</p>
+          <ul class="stage-list">
+            <li>Weights Jan (31d), Feb (28/29d), Apr (30d)</li>
+            <li>Incomplete years excluded from regression</li>
+          </ul>
+        </div>
+        <div class="stage-spec">
+          A_y = Σ(v_{y,m}·d_{y,m}) / Σd_{y,m}<br>
+          Gregorian leap years honored<br>
+          288 / 288 valid months per point
+        </div>
+      </div>
+
+      <div class="stage-card">
+        <div>
+          <div class="stage-num">STAGE 03 · DUAL &amp; PAIRED INFERENCE</div>
+          <h3>OLS, Theil–Sen &amp; Paired HAC</h3>
+          <p>Computes classical OLS (<span class="num">10·β</span>/decade, Student-<span class="num">t</span> 95% CI, lag-1 <span class="num">r₁</span>) alongside rank-based Theil–Sen &amp; Mann–Kendall, plus aligned-year <span class="num">D_y = B_y − A_y</span>.</p>
+          <ul class="stage-list">
+            <li>Removes shared ENSO interannual variance</li>
+            <li>Bartlett kernel accounts for serial correlation</li>
+          </ul>
+        </div>
+        <div class="stage-spec">
+          Paired: D_y = B_y − A_y (n = 24)<br>
+          Bartlett Newey–West HAC (lag 2)<br>
+          Tests β_{B−A} = 0 directly
+        </div>
+      </div>
+
+      <div class="stage-card">
+        <div>
+          <div class="stage-num">STAGE 04 · AUDIT &amp; PROVENANCE</div>
+          <h3>SciPy Parity &amp; Evidence JSON</h3>
+          <p>Browser calculations are cross-checked against Python/NumPy/SciPy to <span class="num">1e-9</span> tolerance and exported with source URLs and SHA-256 snapshot hashes.</p>
+          <ul class="stage-list">
+            <li>4 Python verification scripts (POWER, SWOT, GISS)</li>
+            <li>One-click CSV &amp; Evidence JSON download</li>
+          </ul>
+        </div>
+        <div class="stage-spec">
+          scripts/verify-scipy.py: PASS<br>
+          41 / 41 Node unit tests: PASS<br>
+          CSV + Evidence JSON export
+        </div>
+      </div>
+    </div>
+
+    <div class="guardrail-strip">
+      <span><strong>Spatial Guardrail:</strong> Grid-cell estimates smooth out street-level urban canyon heat islands; verify local extremes with BMKG ground stations.</span>
+      <span><strong>Temporal Guardrail:</strong> Selecting the `10Y` chart zoom updates the visual window without silently mutating full-period statistical slopes.</span>
+    </div>
+
+    <div class="footer">
+      <span>Source docs: <a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/">NASA POWER Monthly API</a> · <a href="https://github.com/Ni-zav/terra-lens/blob/main/docs/METHODOLOGY.md">docs/METHODOLOGY.md</a></span>
+      <span class="slide-num">03 / 07</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: 24-Year Historical Evidence (Yogyakarta vs Jakarta) -->
+  <section class="slide" aria-label="Slide 4 of 7">
+    <div class="slide-head">
+      <div class="kicker-row">
+        <p class="kicker">Primary Empirical Evidence · 2001–2024</p>
+        <span class="kicker-tag">NASA POWER T2M · 24 Complete Years · 576 Valid Monthly Records</span>
+      </div>
+      <h2>Both Indonesian model-grid points warmed significantly over 2001–2024.</h2>
+      <p class="lead">Day-weighted annual mean 2 m air temperatures (<span class="num">°C</span>) show consistent upward trajectories at both the Yogyakarta and Jakarta MERRA-2 grid locations.</p>
+    </div>
+
+    <div class="evidence-layout">
+      <div class="plot-card">
+        <div class="plot-header">
+          <span>Annual Mean 2 m Air Temperature (°C) &amp; Full-Period OLS Fit</span>
+          <span>Solid: Day-weighted annual mean · Dashed: OLS trend</span>
+        </div>
+        <img class="plot" src="annual-temperature.png" alt="Annual mean temperature at the Yogyakarta and Jakarta NASA POWER grid points with linear trend lines, 2001 through 2024">
+        <div class="plot-caption">Source: NASA POWER / MERRA-2 (`T2M`, 0.5° × 0.625° grid). Shared 2016 El Niño and 2023–2024 peaks appear at both points.</div>
+      </div>
+
+      <div class="stats-col">
+        <div class="stat-box stat-a">
+          <div class="stat-label">● POINT A · YOGYAKARTA GRID (-7.7956°, 110.3695°)</div>
+          <div class="stat-val">+0.1791 °C / decade</div>
+          <p class="stat-sub">
+            Classical 95% CI: <span class="num">+0.0348 to +0.3235 °C/dec</span> (<span class="num">p = 0.0173</span>, <span class="num">R² = 0.232</span>)<br>
+            Robust Theil–Sen: <span class="num">+0.1426 °C/dec</span> (Mann–Kendall <span class="num">p = 0.0189</span>)<br>
+            24-yr mean: <span class="num">25.88 °C</span> · Net fitted change: <span class="num">+0.41 °C</span> · <span class="num">r₁ = 0.064</span>
+          </p>
+        </div>
+
+        <div class="stat-box stat-b">
+          <div class="stat-label">◆ POINT B · JAKARTA GRID (-6.2088°, 106.8456°)</div>
+          <div class="stat-val">+0.2238 °C / decade</div>
+          <p class="stat-sub">
+            Classical 95% CI: <span class="num">+0.0962 to +0.3515 °C/dec</span> (<span class="num">p = 0.00145</span>, <span class="num">R² = 0.375</span>)<br>
+            Robust Theil–Sen: <span class="num">+0.1947 °C/dec</span> (Mann–Kendall <span class="num">p = 0.0028</span>)<br>
+            24-yr mean: <span class="num">27.39 °C</span> · Net fitted change: <span class="num">+0.51 °C</span> · <span class="num">r₁ = 0.145</span>
+          </p>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-label">COVARIATION &amp; INTERPRETATION GUARDRAIL</div>
+          <p class="stat-sub">
+            Because both locations share regional ENSO/monsoon interannual variance, comparing their individual p-values (<span class="num">0.0173</span> vs <span class="num">0.00145</span>) cannot answer whether Jakarta warmed faster. Slide 5 tests the paired difference directly.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Full tabular breakdown: <a href="https://github.com/Ni-zav/terra-lens/blob/main/docs/CASE_STUDY.md">docs/CASE_STUDY.md</a> · Verified against `scripts/verify-scipy.py`</span>
+      <span class="slide-num">04 / 07</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: Answering the Question (Individual Intervals vs Paired B - A Test) -->
+  <section class="slide" aria-label="Slide 5 of 7">
+    <div class="slide-head">
+      <div class="kicker-row">
+        <p class="kicker">Answering the Central Question · Paired B − A Inference</p>
+        <span class="kicker-tag">Aligned-Year Difference Series D_y = B_y − A_y (n = 24 Complete Years)</span>
+      </div>
+      <h2>Individual slopes are positive, but the paired B − A difference is inconclusive.</h2>
+      <p class="lead">Testing the year-by-year temperature difference removes shared regional anomalies and directly evaluates whether the two warming rates diverge.</p>
+    </div>
+
+    <div class="evidence-layout">
+      <div class="plot-card">
+        <div class="plot-header">
+          <span>Individual Slope Estimates &amp; Classical 95% Confidence Intervals (°C / decade)</span>
+          <span>Dashed line at 0.0 °C/dec</span>
+        </div>
+        <img class="plot" src="slope-intervals.png" alt="Yogyakarta and Jakarta estimated slopes and classical 95 percent confidence intervals">
+        <div class="plot-caption">IMPORTANT: These two intervals test each location's slope against zero—they do NOT test the Jakarta minus Yogyakarta difference.</div>
+      </div>
+
+      <div class="stats-col">
+        <div class="stat-box stat-diff">
+          <div class="stat-label">PAIRED DIFFERENCE TEST · JAKARTA MINUS YOGYAKARTA (B − A)</div>
+          <div class="stat-val">+0.0447 °C / decade</div>
+          <p class="stat-sub">
+            Approx. Newey–West HAC 95% CI (lag 2): <span class="num">−0.0574 to +0.1468 °C/dec</span><br>
+            Classical OLS 95% CI on <span class="num">D_y</span>: <span class="num">−0.0681 to +0.1575 °C/dec</span><br>
+            Two-sided HAC <span class="num">t = +0.908</span> (<span class="num">df = 22</span>), <span class="num">p ≈ 0.374</span> · Durbin–Watson <span class="num">2.07</span>
+          </p>
+        </div>
+
+        <div class="stat-box stat-a">
+          <div class="stat-label">SCIENTIFIC ANSWER TO THE CENTRAL QUESTION</div>
+          <p class="stat-sub">
+            <strong>No statistically distinguishable difference is established.</strong> Across 24 matched complete years (2001–2024), the paired 95% confidence interval spans zero—compatible with Yogyakarta warming slightly faster (<span class="num">−0.06 °C/dec</span>) up to Jakarta warming faster (<span class="num">+0.15 °C/dec</span>).
+          </p>
+        </div>
+
+        <div class="stat-box stat-b">
+          <div class="stat-label">WHY THIS DISTINCTION MATTERS FOR USERS</div>
+          <p class="stat-sub">
+            Without a paired test, a user seeing <span class="num">+0.224</span> vs <span class="num">+0.179 °C/decade</span> might falsely claim a 25% faster warming rate in Jakarta. Terra-Lens surfaces the paired interval automatically so over-interpretation is prevented at the UI level.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Independent verification: `python3 scripts/verify-scipy.py` · Newey–West Bartlett lag-2 SE = `0.004922 °C/yr`</span>
+      <span class="slide-num">05 / 07</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: Multi-Source Context, Limitations & Next Verification Steps -->
+  <section class="slide" aria-label="Slide 6 of 7">
+    <div class="slide-head">
+      <div class="kicker-row">
+        <p class="kicker">Multi-Source NASA Context &amp; Methodological Boundaries</p>
+        <span class="kicker-tag">Connected in `#tab-cases` (`Multi-source`) &amp; `#tab-finder` (`Finder`)</span>
+      </div>
+      <h2>Extending the detective workflow across satellite passes, global indices, and 8-point screens.</h2>
+      <p class="lead">Terra-Lens connects verified multi-source NASA snapshots while enforcing strict visual and statistical separation when spatial or temporal supports differ.</p>
+    </div>
+
+    <div class="cases-grid">
+      <div class="case-panel">
+        <div>
+          <div class="stage-num">CASE A · RIVER SATELLITE VS. MODELED RAIN</div>
+          <h3>NASA SWOT RiverSP + POWER Rain</h3>
+          <p>Compares Ohio River SWORD Reach <span class="num">74267300251</span> (near Louisville, KY) from NASA PO.DAAC Hydrocron against Louisville POWER <span class="num">PRECTOTCORR</span> (<span class="num">38.2527°, -85.7585°</span>).</p>
+        </div>
+        <div class="case-metrics">
+          SWOT RiverSP vD: 12 irregular passes<br>
+          Span: Mar–May 2025 · WSE: 120.68–131.25 m<br>
+          QA flags: 10 suspect (Q1), 2 degraded (Q2)<br>
+          POWER Apr 2025 rain: 7.08 mm/day (+3.01 anom)
+        </div>
+        <div class="limit-note">
+          <strong>Support Boundary:</strong> Only 3 overlapping months exist; SWOT measures geoid elevation (m) with QA flags, not flood stage. No correlation p-value is computed.
+        </div>
+      </div>
+
+      <div class="case-panel">
+        <div>
+          <div class="stage-num">CASE B · LOCAL GRID VS. GLOBAL INDEX</div>
+          <h3>Yogyakarta POWER + GISS GISTEMP v4</h3>
+          <p>Places Yogyakarta's 2001–2024 MERRA-2 temperature trajectory alongside the official NASA GISS Surface Temperature Analysis (<span class="num">GLB.Ts+dSST</span>, dated <span class="num">2026-11-14</span>).</p>
+        </div>
+        <div class="case-metrics">
+          Shared rebase baseline: 2001–2020 normals<br>
+          Yogyakarta POWER: +0.1791 °C/dec (p = 0.0173)<br>
+          GISS Global Index: +0.2500 °C/dec (p = 1.98e-7)<br>
+          Descriptive context gap: −0.0709 °C/dec
+        </div>
+        <div class="limit-note">
+          <strong>Support Boundary:</strong> GISTEMP v4 is a global land-ocean area average (1951–1980 native base), not a point peer; no point-vs-globe significance test is claimed.
+        </div>
+      </div>
+
+      <div class="case-panel">
+        <div>
+          <div class="stage-num">REGIONAL SCREEN &amp; NEXT VERIFICATION</div>
+          <h3>8-Point Sentinel Scan &amp; Limitations</h3>
+          <p>Predeclared 8-point Indonesian POWER screen (2001–2024 <span class="num">T2M</span>) spans <span class="num">+0.140 °C/dec</span> (Surabaya) to <span class="num">+0.291 °C/dec</span> (Medan), with post-selected HAC intervals marked exploratory.</p>
+        </div>
+        <div class="case-metrics">
+          Max contrast: Medan vs Surabaya (+0.151 °C/dec)<br>
+          Post-selected HAC 95% CI: +0.025 to +0.278<br>
+          Giovanni CSV: Local user-file parser<br>
+          Catalog: GPM/GLDAS/MODIS/FIRMS = planned
+        </div>
+        <div class="limit-note">
+          <strong>Verify Next:</strong> Compare against BMKG thermometer stations, USGS/local stream gauges, and confirm official Space Apps Resources-tab dataset eligibility.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Verified snapshots: `data/cases/ohio-river-swot-power.json` &amp; `data/cases/yogyakarta-global-gistemp-power.json` · Python parity checks pass</span>
+      <span class="slide-num">06 / 07</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: Demonstrable Links, Citations, AI Disclosure & Verification Roadmap -->
+  <section class="slide" aria-label="Slide 7 of 7">
+    <div class="slide-head">
+      <div class="kicker-row">
+        <p class="kicker">Reproducible Artifacts, Citations &amp; Transparency</p>
+        <span class="kicker-tag">Open Source · Auditable Provenance · Explicit AI Disclosure</span>
+      </div>
+      <h2>Inspect the live observatory, verify the math, and audit the NASA sources.</h2>
+      <p class="lead">Every dataset, statistical script, and browser regression check is publicly accessible for independent verification.</p>
+    </div>
+
+    <div class="closing-grid">
+      <div class="end-links">
+        <div class="link-card">
+          <span>01 · LIVE WEB APPLICATION</span>
+          <a href="https://ni-zav.github.io/terra-lens/">https://ni-zav.github.io/terra-lens/</a>
+          <small>Interactive multi-point NASA POWER workspace, 3D Blue Marble globe, Contrast Finder, Multi-source tab, and Giovanni CSV tool.</small>
+        </div>
+        <div class="link-card">
+          <span>02 · INTERACTIVE 7-SLIDE DECK</span>
+          <a href="https://ni-zav.github.io/terra-lens/demo/">https://ni-zav.github.io/terra-lens/demo/</a>
+          <small>Responsive HTML presentation &amp; print-verified 16:9 PDF (`Terra-Lens_Seven_Slide_Demo.pdf`).</small>
+        </div>
+        <div class="link-card">
+          <span>03 · SOURCE CODE &amp; METHODOLOGY</span>
+          <a href="https://github.com/Ni-zav/terra-lens">https://github.com/Ni-zav/terra-lens</a>
+          <small>Full source, `docs/METHODOLOGY.md`, `docs/CASE_STUDY.md`, and automated Playwright + Node test suites.</small>
+        </div>
+        <div class="link-card">
+          <span>04 · INDEPENDENT PYTHON / SCIPY AUDIT</span>
+          <a href="https://github.com/Ni-zav/terra-lens/blob/main/notebooks/nasa_power_case_study.ipynb">notebooks/nasa_power_case_study.ipynb</a>
+          <small>Recomputes OLS, Theil–Sen, Mann–Kendall, Newey–West HAC, GISTEMP rebasing, and SWOT pass summaries.</small>
+        </div>
+      </div>
+
+      <div class="governance-col">
+        <div class="gov-box">
+          <h3>OFFICIAL NASA DATA CITATIONS</h3>
+          <p>
+            • <strong>NASA POWER / GMAO MERRA-2:</strong> NASA Langley Research Center POWER Project (`temporal/monthly/point`, `T2M` &amp; `PRECTOTCORR`).<br>
+            • <strong>NASA SWOT Hydrocron:</strong> PO.DAAC SWOT Level-2 River Single-Pass Vector Product vD (Reach `74267300251`).<br>
+            • <strong>NASA GISS GISTEMP v4:</strong> GISS Surface Temperature Analysis (`GLB.Ts+dSST`, table retrieved `2026-11-14`).<br>
+            • <strong>NASA Earth Observatory:</strong> Blue Marble Next Generation (`2001`, Reto Stöckli) visual globe context.
+          </p>
+        </div>
+
+        <div class="gov-box">
+          <h3>TRANSPARENT AI &amp; ELIGIBILITY DISCLOSURE</h3>
+          <p class="disclosure">
+            <strong>AI Disclosure:</strong> AI tools assisted with software engineering, UI/slide layout refinement, and documentation drafting. No scientific values are AI-generated: all climate metrics are computed deterministically from NASA records and verified against SciPy.<br>
+            <strong>Eligibility Note:</strong> Uses authentic NASA APIs/archives; official challenge Resources-tab mandatory dataset enumeration requires final organizer-portal verification.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Terra-Lens · NASA Space Apps 2026 · Built for transparent, statistically rigorous Earth-system exploration</span>
+      <span class="slide-num">07 / 07</span>
+    </div>
+  </section>
+
+</main>
+
+<nav class="controls" aria-label="Slide navigation">
+  <div class="control-left">
+    <button id="prev" type="button">Previous</button>
+    <button id="next" type="button">Next</button>
+    <span id="counter" aria-live="polite">Slide 1 of 7</span>
+  </div>
+  <button type="button" onclick="window.print()">Print / save PDF</button>
+</nav>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+const prev = document.getElementById('prev');
+const next = document.getElementById('next');
+const counter = document.getElementById('counter');
+let index = Math.min(slides.length - 1, Math.max(0, Number(location.hash.replace('#slide-', '')) - 1 || 0));
+function show(n) {
+  index = Math.min(slides.length - 1, Math.max(0, n));
+  slides.forEach((slide, i) => {
+    slide.classList.toggle('active', i === index);
+    slide.setAttribute('aria-hidden', String(i !== index));
+  });
+  prev.disabled = index === 0;
+  next.disabled = index === slides.length - 1;
+  counter.textContent = 'Slide ' + (index + 1) + ' of ' + slides.length;
+  history.replaceState(null, '', '#slide-' + (index + 1));
+}
+prev.addEventListener('click', () => show(index - 1));
+next.addEventListener('click', () => show(index + 1));
+addEventListener('keydown', e => {
+  if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(index + 1); }
+  else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(index - 1); }
+  else if (e.key === 'Home') show(0);
+  else if (e.key === 'End') show(slides.length - 1);
+});
+show(index);
+</script>
+</body>
+</html>
