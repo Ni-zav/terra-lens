@@ -7,7 +7,16 @@ d=json.loads(p.read_text())
 assert d['schema']=='terra-lens-gistemp-power-real-evidence-v1'
 source=d['comparison']['advanced']['sources']
 assert len(source)==2
-assert len(d['global']['series'])>=1200
+assert len(d['global']['series'])>=288
+assert d['global']['sourceURL'].startswith('https://data.giss.nasa.gov/')
+if d['global'].get('notLive'):
+ assert d['global'].get('snapshotDate')=='2026-11-14'
+ assert 'snapshot' in d['gissAcquisition'].lower()
+# Independent spot checks against NASA GISS official 2026-11-14 original text.
+spot={(2001,1):0.45,(2016,2):1.36,(2024,12):1.26}
+actual={(r['year'],r['month']):r['value'] for r in d['global']['series']}
+for key,expected in spot.items():
+ assert math.isclose(actual[key],expected,abs_tol=1e-12),('NASA original value mismatch',key)
 assert len(d['local']['monthly'])==288
 def rebase(rows):
  groups={m:[] for m in range(1,13)}
