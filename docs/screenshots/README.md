@@ -1,6 +1,6 @@
 # Verified LIVE NASA browser screenshots
 
-Captured: 2026-11-14T06:16:34.157Z (UTC).
+Captured: 2026-11-14T06:21:03.422Z (UTC).
 
 These images were produced by a real Chromium browser running the application against actual NASA POWER API responses via the project Cloudflare Pages Function code served locally. They are NOT generated from test fixtures, AI image generation, or a deployed Cloudflare site.
 
