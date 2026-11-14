@@ -7,6 +7,7 @@
 <title>Terra-Lens — Follow the evidence</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./styles/observatory.css">
 <script type="module" src="./src/app.js"></script>
 </head>
 <body>
@@ -22,7 +23,7 @@
 <p class="eyebrow"><span class="pulse"></span> EARTH SYSTEM INTELLIGENCE <span class="muted">/ 2026</span></p>
 <h1>Our planet is<br><em>always changing.</em><br>Find the signal.</h1>
 <p class="lead">Turn NASA's open Earth science data into an investigation. Discover historical patterns, compare places, and test whether the changes are statistically significant.</p>
-<div class="hero-links"><a href="#explore" class="button-primary">Start investigating ↗</a><a href="#method">How does it work? ↓</a></div>
+<div class="hero-links"><a href="#explore" class="button-primary">Start investigating <span aria-hidden="true">↗</span></a><a href="#explore" id="example-button" class="example-link">See the verified Indonesian case study ↓</a></div>
 <p class="micro">✓ NASA model-derived data &nbsp; / &nbsp; No synthetic observations &nbsp; / &nbsp; Reproducible</p>
 </div>
 <div class="hero-art" aria-hidden="true"><div class="orbital orbital-one"></div><div class="orbital orbital-two"></div><div class="planet"><div class="grid-overlay"></div></div><div class="float-label top-label">● LIVE DATA PIPELINE<br><strong>EARTH SYSTEM / 01</strong></div><div class="float-label lower-label">TREND DETECTION<br><strong>Δ / DECADE</strong></div></div>
@@ -58,15 +59,20 @@
 <div class="metric"><div class="metric-label">STATISTICAL TEST <span>◇</span></div><strong id="metric-significance">—</strong><p id="metric-significance-detail">Two-sided t-test · α = 0.05</p></div>
 <div class="metric"><div class="metric-label">YEARS ANALYZED <span>▤</span></div><strong id="metric-years">—</strong><p id="metric-years-detail">Complete calendar years only</p></div>
 </div>
+<section class="comparison-panel" id="comparison-panel" aria-label="Point-by-point statistical results" hidden>
+<div class="comparison-topline"><div><span class="overline">POINT-BY-POINT EVIDENCE</span><h3>Compare the results</h3></div><span class="comparison-hint">Separate OLS fits · descriptive comparison only</span></div>
+<div class="comparison-rows" id="comparison-rows"></div>
+<p class="comparison-note">Each location is one NASA model grid-point sample. Differences between slopes are descriptive, not evidence that the slopes differ statistically. All tests assume classical OLS residual independence.</p>
+</section>
 <div class="finding"><span>✦</span><div><small>THE INVESTIGATION</small><p id="finding-text">Findings will appear here after we retrieve NASA data. Nothing is simulated.</p></div></div>
 <article class="panel chart-panel">
 <div class="chart-heading"><div><small>EVIDENCE / 01</small><h3>Annual trend</h3><p>Day-weighted annual averages and fitted linear trend.</p></div><span class="chip" id="unit-chip">NASA POWER</span></div>
 <div class="legend" id="annual-legend"></div><div class="svg-scroll"><svg id="annual-chart" viewBox="0 0 960 320" role="img" aria-label="Annual data chart"><text x="480" y="160" fill="#8299aa" text-anchor="middle">Run an investigation to see annual trends.</text></svg></div>
-<div class="chart-foot">Solid line: annual values &nbsp; / &nbsp; Dashed line: fitted trend</div>
+<div class="chart-foot">Solid = observed annual mean &nbsp; / &nbsp; Dashed = fitted OLS trend &nbsp; / &nbsp; Hover a point to inspect its value.</div>
 </article>
 <div class="subcharts">
 <article class="panel chart-panel"><div class="chart-heading"><div><small>EVIDENCE / 02</small><h3>Monthly variability</h3><p>Seasonal and interannual observations.</p></div></div><div class="legend" id="monthly-legend"></div><div class="svg-scroll"><svg id="monthly-chart" viewBox="0 0 960 270" role="img" aria-label="Monthly data chart"><text x="480" y="140" fill="#8299aa" text-anchor="middle">Monthly observations appear here.</text></svg></div></article>
-<article class="panel chart-panel"><div class="chart-heading"><div><small>EVIDENCE / 03</small><h3>Coordinates</h3><p>Selected NASA grid-point locations.</p></div></div><svg id="coordinate-chart" viewBox="0 0 620 270" role="img" aria-label="Schematic latitude-longitude plot"></svg><p class="hint">Latitude–longitude graticule, not a detailed geographic basemap.</p><div id="coordinate-list" class="coordinate-list"></div></article>
+<article class="panel chart-panel"><div class="chart-heading"><div><small>EVIDENCE / 03</small><h3>Coordinates</h3><p>Selected NASA grid-point locations.</p></div></div><svg id="coordinate-chart" viewBox="0 0 620 270" role="img" aria-label="Schematic latitude-longitude plot"></svg><p class="hint">Schematic latitude–longitude coordinates only. This is not a basemap, spatial trend map, or city-wide average.</p><div id="coordinate-list" class="coordinate-list"></div></article>
 </div>
 <article class="panel sources-card" id="sources"><div><small>RESEARCH INTEGRITY</small><h3>Follow the source, not the hype.</h3><p id="provenance-text">Results come from NASA POWER's public meteorological reanalysis service, with source links and transparent limitations.</p><p id="source-link"><a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noopener">NASA POWER documentation ↗</a></p></div><div class="source-actions"><button id="download" disabled>↓ Download observations CSV</button><button id="share">⤴ Copy investigation link</button></div></article>
 </div></div></section>
