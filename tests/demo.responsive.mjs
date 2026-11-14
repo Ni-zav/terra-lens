@@ -37,5 +37,20 @@ try {
     assert.equal(errs.length,0,'Browser errors at '+width+': '+errs.join('; '));
     await page.close();
   }
+  // Print renders every slide at once, including slides that are not active on
+  // screen. A missing flex direction previously produced a seven-page PDF
+  // with narrow, overlapping columns despite all screen checks passing.
+  const printPage = await browser.newPage({viewport:{width:1536,height:864}});
+  await printPage.goto(url,{waitUntil:'load'});
+  await printPage.emulateMedia({media:'print'});
+  const printLayout = await printPage.locator('.slide').evaluateAll(slides => slides.map(slide => ({
+    direction:getComputedStyle(slide).flexDirection,
+    overflow:slide.scrollHeight - slide.clientHeight
+  })));
+  for (const [index, layout] of printLayout.entries()) {
+    assert.equal(layout.direction,'column','Print slide '+(index+1)+' must flow vertically');
+    assert.ok(layout.overflow <= 5,'Print slide '+(index+1)+' overflows: '+JSON.stringify(layout));
+  }
+  await printPage.close();
   console.log('Seven-slide browser story passed at 360/390/430/768/1024/1280/1440px; screenshot loaded, no page overflow or desktop clipping.');
 } finally {await browser?.close();}
