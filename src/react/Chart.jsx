@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import * as echarts from 'echarts/core';
 import {LineChart} from 'echarts/charts';
 import {GridComponent, TooltipComponent, DataZoomComponent, AriaComponent, MarkLineComponent} from 'echarts/components';
@@ -12,7 +12,10 @@ export function TimeChart({results, monthly, unit, range, setRange}) {
   const container=useRef(null), chart=useRef(null);
   const [cursor,setCursor]=useState(0);
   const model=useMemo(()=>buildChartModel(results,monthly,range),[results,monthly,range]);
-  useEffect(()=>{setCursor(Math.max(0,model.dates.length-1));},[model]);
+  // Reset the cursor before paint when the dataset/range changes. A passive effect
+  // can run after a user begins dragging the freshly mounted slider and overwrite
+  // their choice, causing intermittent UI flicker and browser-test races.
+  useLayoutEffect(()=>{setCursor(Math.max(0,model.dates.length-1));},[model]);
   useEffect(()=>{
     if (!container.current) return;
     const instance=echarts.init(container.current,undefined,{renderer:'canvas',devicePixelRatio:Math.min(window.devicePixelRatio||1,2)});
