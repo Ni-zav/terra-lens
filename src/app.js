@@ -253,11 +253,66 @@ function renderPlot(id, series, monthly, unit) {
   }
 }
 
+function renderConfidencePlot(series, variable) {
+  const svg = $('confidence-chart');
+  clearSvg(svg, 'Classical OLS slope estimates and 95 percent confidence intervals, in ' +
+    VARIABLES[variable].unit + ' per decade. Each interval is a separate point estimate.');
+  const valid = series.filter(item => item.trend && Number.isFinite(item.trend.ciLowPerDecade)
+    && Number.isFinite(item.trend.ciHighPerDecade));
+  if (!valid.length) {
+    svg.append(svgNode('text',{x:480,y:92,'text-anchor':'middle',fill:'#aac4ce'},
+      'Insufficient complete years to compute trend intervals.'));
+    return;
+  }
+  const values = valid.flatMap(item => [
+    item.trend.slopePerDecade, item.trend.ciLowPerDecade, item.trend.ciHighPerDecade
+  ]).concat(0);
+  let min = Math.min(...values), max = Math.max(...values);
+  const spread = max - min || 0.5;
+  min -= spread * 0.13; max += spread * 0.13;
+  const left = 256, right = 896, top = 43, bottom = 171;
+  const sx = v => left + (v-min)/(max-min)*(right-left);
+  for (let i=0; i<=4; i++) {
+    const v = min + (max-min)*i/4, xpos = sx(v);
+    svg.append(svgNode('line',{x1:xpos,y1:top,x2:xpos,y2:bottom,stroke:'#284252'}));
+    svg.append(svgNode('text',{x:xpos,y:187,fill:'#acbdc8','text-anchor':'middle','font-size':11},
+      format(v,Math.abs(max-min)<2?2:1)));
+  }
+  if (min<=0 && max>=0) {
+    const x0=sx(0);
+    svg.append(svgNode('line',{x1:x0,y1:top,x2:x0,y2:bottom,
+      stroke:'#b4d4dc','stroke-dasharray':'5 6','stroke-width':1.5}));
+  }
+  valid.forEach((item,index) => {
+    const y = valid.length === 1 ? 98 : 80 + index * 63;
+    const t = item.trend, color = item.color;
+    const label = svgNode('text',{x:22,y:y+4,fill:'#e4f2f5','font-size':15,
+      'font-weight':600},item.id+' · '+item.label);
+    svg.append(label);
+    svg.append(svgNode('line',{x1:sx(t.ciLowPerDecade),y1:y,
+      x2:sx(t.ciHighPerDecade),y2:y,
+      stroke:color,'stroke-width':7,'stroke-linecap':'round'}));
+    for (const value of [t.ciLowPerDecade,t.ciHighPerDecade]) {
+      svg.append(svgNode('line',{x1:sx(value),y1:y-10,x2:sx(value),y2:y+10,
+        stroke:color,'stroke-width':2}));
+    }
+    const dot=svgNode('circle',{cx:sx(t.slopePerDecade),cy:y,r:9,
+      fill:color,stroke:'#0a1b28','stroke-width':2});
+    dot.append(svgNode('title',{},item.label+': '+signed(t.slopePerDecade,3)+' '+
+      VARIABLES[variable].unit+'/decade; classical 95% slope CI '+
+      signed(t.ciLowPerDecade,3)+' to '+signed(t.ciHighPerDecade,3)));
+    svg.append(dot);
+  });
+  svg.append(svgNode('text',{x:580,y:18,'text-anchor':'middle',
+    fill:'#b7c9d3','font-size':12},'Classical 95% slope intervals · '+VARIABLES[variable].unit+'/decade'));
+}
+
 function renderComparison(series, variable) {
   const container = $('comparison-panel');
   const rows = $('comparison-rows');
   rows.replaceChildren();
   container.hidden = false;
+  renderConfidencePlot(series, variable);
   const unit = VARIABLES[variable].unit;
   for (const item of series) {
     const card = document.createElement('article');
@@ -384,6 +439,7 @@ function resetResultsUI() {
   $('monthly-legend').replaceChildren();
   $('comparison-panel').hidden = true;
   $('comparison-rows').replaceChildren();
+  clearSvg($('confidence-chart'), 'Awaiting NASA trend results');
 }
 
 async function runAnalysis() {
