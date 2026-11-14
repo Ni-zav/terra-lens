@@ -28,3 +28,30 @@ body{background:#11161b;color:#e5e9eb}
 .finding p{color:#c2cbcf}.sources-card{border-top:1px solid #293137}.source-actions button{background:#293239;border:0;border-radius:4px;color:#e5ebec}.source-actions button:hover:not(:disabled){background:#3a464d}
 .confidence-wrap{background:transparent;border:0;border-radius:0}.comparison-point{background:transparent;border:0;border-top:1px solid #30393f;border-radius:0;padding-left:0;padding-right:0}.comparison-location strong{font-weight:600}.comparison-badge{background:none;border:0;border-radius:0;padding:0;color:var(--series-color)}.comparison-stat span,.comparison-note{color:#a3afb5}
 @media(max-width:799px){.controls,.globe-panel,.insight-card{border-bottom:1px solid #293137}}
+
+/* Controls share a quiet surface, with emphasis reserved for the main action. */
+.controls select,.controls input[type=number]{appearance:none;background-color:#1d2429;border:1px solid #313a40;border-radius:5px;color:#e8eced;font-size:12px;font-weight:400;line-height:1.2;transition:background-color .15s,border-color .15s}
+.controls select{padding-right:28px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3 4.5 3 3 3-3' stroke='%239eaaaf' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+.controls select:hover,.controls input[type=number]:hover{background-color:#242c31;border-color:#4b565d}
+.controls select:focus-visible,.controls input[type=number]:focus-visible{border-color:#bdcbcd;outline:2px solid #bdcbcd;outline-offset:1px}
+.controls input[type=number]{font-variant-numeric:tabular-nums}
+.controls input[type=number]::-webkit-inner-spin-button,.controls input[type=number]::-webkit-outer-spin-button{appearance:none;margin:0}
+.compare-label input{appearance:none;display:grid;place-content:center;width:16px;height:16px;margin:0;flex:none;border:1px solid #738087;border-radius:4px;background:#1d2429;cursor:pointer}
+.compare-label input:checked{background:#d6dfe0;border-color:#d6dfe0}
+.compare-label input:checked::before{content:'';width:7px;height:4px;border-left:1.5px solid #172024;border-bottom:1.5px solid #172024;transform:translateY(-1px) rotate(-45deg)}
+.compare-label input:hover{border-color:#d6dfe0}
+.chart-range,.globe-controls{gap:2px}
+.chart-range button,.globe-controls button{min-height:27px;border:0;border-radius:4px;background:transparent;color:#aab5b9;font-size:11px;font-weight:500;transition:background-color .15s,color .15s}
+.chart-range button:hover:not(:disabled),.globe-controls button:hover{background:#252e33;color:#edf1f2}
+.chart-range button[aria-pressed=true],.globe-controls button[aria-pressed=true]{background:#323c41;color:#f4f6f6}
+.chart-tabs button:hover:not([aria-selected=true]){color:#e4e9ea;background:#1b2226}
+.analyze{font-weight:600;transition:background-color .15s}.analyze:disabled{background:#30393e;color:#89959a;cursor:not-allowed}
+.source-actions button{background:#252e33;color:#dbe2e3;font-weight:500;transition:background-color .15s,color .15s}.source-actions button:hover:not(:disabled){background:#374247;color:#fff}
+.chart-inspector input[type=range]{appearance:none;height:20px;margin:0;background:transparent;cursor:pointer}
+.chart-inspector input[type=range]::-webkit-slider-runnable-track{height:3px;background:#59666c;border-radius:2px}
+.chart-inspector input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;margin-top:-4.5px;border:0;border-radius:50%;background:#dce4e4}
+.chart-inspector input[type=range]::-moz-range-track{height:3px;background:#59666c;border-radius:2px}
+.chart-inspector input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:#dce4e4}
+.chart-inspector input[type=range]:hover::-webkit-slider-thumb{background:#fff}
+.chart-inspector input[type=range]:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #bdcbcd;outline-offset:2px}
