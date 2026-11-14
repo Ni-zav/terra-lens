@@ -259,3 +259,7 @@ h1 em,.method h2 em { color: #8de7ec; }
   .confidence-wrap svg {min-width:620px;}
   .confidence-wrap {scrollbar-color:#406378 #102433;}
 }
+
+.chart-scroll-hint {display:none; color:#a6c2ce; font-size:12px; margin:8px 0;}
+.svg-scroll:focus-visible,.confidence-wrap:focus-visible {outline:2px solid #62d6e4; outline-offset:2px;}
+@media (max-width:700px) {.chart-scroll-hint {display:block;}}
