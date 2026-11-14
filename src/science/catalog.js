@@ -14,7 +14,7 @@ export const SCIENCE_CATALOG=Object.freeze([
    variables:['wse','wse_u','width','reach_q'],
    cadence:'irregular satellite overpasses',spatialSupport:'SWORD river reach ID',
    url:'https://podaac.github.io/hydrocron/timeseries/',
-   challengeResourceStatus:'SWOT mission appears in independently reported challenge Resources list; official tab direct confirmation still needed'},
+   challengeResourceStatus:'Real NASA-led SWOT science, but listed under Partner Agency resources in available challenge reproductions; does NOT certify required NASA-source eligibility'},
   {id:'nasa-giss-global',label:'NASA GISS GISTEMP v4 global land-ocean temperature anomalies',
    provider:'NASA GISS',access:'anonymous original public table; CI host may block direct download',
    integration:'dated-official-snapshot',
