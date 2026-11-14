@@ -29,7 +29,7 @@ python3 -m http.server 4173
 # visit http://localhost:4173
 ```
 
-Then select a variable, 10+ calendar years, and one or two locations; press **Analyze NASA data**. The application requests the NASA API through `/api/power` when a Cloudflare Pages Function is available, otherwise tries NASA POWER directly.
+The default Yogyakarta/Jakarta investigation loads from NASA on entry. Select a variable, 10+ calendar years, and one or two locations, then press **Analyze NASA data** to request a new investigation. The application requests the NASA API through `/api/power` when a Cloudflare Pages Function is available, otherwise tries NASA POWER directly.
 
 **Production hosting:** Cloudflare Pages with the bundled proxy is recommended, because a browser may be blocked by NASA upstream CORS. Connect the repository to Cloudflare Pages with framework preset **None**, no build step, and output directory **.**. A local static server does not provide the Pages Function.
 

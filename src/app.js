@@ -185,6 +185,16 @@ function renderLegend(container, series) {
   }
 }
 
+function sizeChartLabels(svg) {
+  const width=svg.getBoundingClientRect().width;
+  if (!width) return;
+  const scale=width / 960;
+  for (const text of svg.querySelectorAll('text')) {
+    if (!text.dataset.baseSize) text.dataset.baseSize=text.getAttribute('font-size') || '12';
+    text.setAttribute('font-size',String(Math.min(24,Math.max(Number(text.dataset.baseSize),10 / scale))));
+  }
+}
+
 function renderPlot(id, series, monthly, unit) {
   const svg = $(id);
   const height = monthly ? 270 : 320;
@@ -290,6 +300,7 @@ function renderPlot(id, series, monthly, unit) {
     slider.value=String(best); showAt(best);
   };
   showAt(dates.length-1);
+  sizeChartLabels(svg);
 }
 
 function renderConfidencePlot(series, variable) {
@@ -344,6 +355,7 @@ function renderConfidencePlot(series, variable) {
   });
   svg.append(svgNode('text',{x:580,y:18,'text-anchor':'middle',
     fill:'#b7c9d3','font-size':12},'Classical 95% slope intervals · '+VARIABLES[variable].unit+'/decade'));
+  sizeChartLabels(svg);
 }
 
 function renderComparison(series, variable) {
@@ -430,26 +442,28 @@ function updateResults(config, series, warnings) {
     $('metric-significance-detail').textContent = 'Incomplete time-series coverage';
   }
   let finding = trend
-    ? 'At ' + main.label + ', the fitted ' + varInfo.label.toLowerCase() + ' slope is ' +
-      signed(trend.slopePerDecade) + ' ' + varInfo.unit + ' per decade (' +
-      trend.start + '–' + trend.end + '). ' +
-      (trend.significant ? 'The classical OLS test crosses the 5% significance threshold.' :
-        'It does not cross the 5% significance threshold.')
-    : 'The selected location has too few complete calendar years for our minimum 10-year analysis.';
+    ? main.label + ': ' + signed(trend.slopePerDecade) + ' ' + varInfo.unit + '/decade'
+    : main.label + ': too few complete years for a trend';
   if (series.length > 1 && series[1].trend) {
-    finding += ' ' + series[1].label + ' has a fitted slope of ' +
-      signed(series[1].trend.slopePerDecade) + ' ' + varInfo.unit + ' per decade.';
-    finding += ' Differences between point slopes are descriptive, not a formal test of their difference.';
+    finding += ' · ' + series[1].label + ': ' + signed(series[1].trend.slopePerDecade) + ' ' + varInfo.unit + '/decade';
+    finding += '. The difference is descriptive, not a formal test.';
+  } else {
+    finding += '.';
   }
-  finding += ' *The t-test assumes independent residuals; serial correlation and repeated searches can overstate confidence.';
+  finding += ' Classical OLS assumes independent residuals; serial correlation and repeated searches can overstate confidence.';
   $('finding-text').textContent = finding;
-  $('provenance-text').textContent = 'Live NASA POWER monthly point API (meteorological reanalysis), retrieved ' +
-    new Date(main.fetchedAt).toLocaleString('en-US') + '. ' + main.monthly.length +
-    ' valid monthly observations at point A. Inference is exploratory and does not establish causation.';
-  const link = document.createElement('a');
-  link.href = main.url; link.target = '_blank'; link.rel='noopener noreferrer';
-  link.textContent = 'Inspect original NASA API request ↗';
-  $('source-link').replaceChildren(link);
+  const sources = Array.isArray(main.metadata.sources) ? main.metadata.sources.join(', ') : '';
+  $('provenance-text').textContent = 'NASA POWER' + (sources ? ' / ' + sources : '') + ' · retrieved ' +
+    new Date(main.fetchedAt).toLocaleString('en-US') + ' · ' +
+    series.map(item => item.id + ': ' + item.monthly.length + ' months').join(' · ') +
+    '. Model-derived point estimates.';
+  const links = series.map(item => {
+    const link = document.createElement('a');
+    link.href = item.url; link.target = '_blank'; link.rel='noopener noreferrer';
+    link.textContent = 'NASA request ' + item.id + ' ↗';
+    return link;
+  });
+  $('source-link').replaceChildren(...links.flatMap((link,index) => index ? [' · ',link] : [link]));
   $('download').disabled = false;
   renderComparison(series, config.variable);
   renderLegend('annual-legend', series);
@@ -499,6 +513,8 @@ async function runAnalysis() {
   if (activeRequest) activeRequest.abort();
   activeRequest = new AbortController();
   const controller = activeRequest;
+  let timedOut = false;
+  const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 30000);
   const button = $('analyze');
   button.disabled = true; button.firstChild.textContent = 'Querying NASA POWER… ';
   setStatus('Retrieving real monthly records. NASA may take a few moments.');
@@ -514,6 +530,7 @@ async function runAnalysis() {
         trend:linearTrend(annual)};
     });
     const settled = await Promise.allSettled(tasks);
+    if (timedOut) throw new Error('NASA POWER did not respond within 30 seconds. Please retry.');
     if (controller.signal.aborted) return;
     if (settled[0].status === 'rejected') throw settled[0].reason;
     const series = settled.filter(s=>s.status==='fulfilled').map(s=>s.value);
@@ -521,11 +538,12 @@ async function runAnalysis() {
       ['Point '+config.points[index].id+' could not load: '+s.reason.message]:[]);
     updateResults(config,series,warnings);
   } catch (error) {
-    if (controller.signal.aborted) return;
+    if (controller.signal.aborted && !timedOut) return;
     $('data-label').textContent='REQUEST FAILED';
     setStatus('Could not retrieve verified NASA observations: '+error.message,'error');
     $('finding-text').textContent='No NASA observations loaded. The app will not substitute fabricated or estimated records.';
   } finally {
+    clearTimeout(timer);
     if (activeRequest===controller) {
       button.disabled=false;
       button.firstChild.textContent='Analyze NASA data ';
@@ -603,6 +621,31 @@ $('example-button').addEventListener('click', event => {
 
 fillLocationOptions('a','Yogyakarta');
 fillLocationOptions('b','Jakarta');
+const chartTabs=[...document.querySelectorAll('.chart-tabs [role="tab"]')];
+function activateChart(tab, focus = false) {
+  for (const item of chartTabs) {
+    const active=item===tab;
+    item.setAttribute('aria-selected',String(active)); item.tabIndex=active ? 0 : -1;
+    $(item.getAttribute('aria-controls')).hidden=!active;
+  }
+  if (focus) tab.focus();
+}
+for (const tab of chartTabs) {
+  tab.addEventListener('click',()=>activateChart(tab));
+  tab.addEventListener('keydown',event=>{
+    const index=chartTabs.indexOf(tab);
+    let next;
+    if (event.key==='ArrowRight') next=(index+1)%chartTabs.length;
+    else if (event.key==='ArrowLeft') next=(index+chartTabs.length-1)%chartTabs.length;
+    else if (event.key==='Home') next=0;
+    else if (event.key==='End') next=chartTabs.length-1;
+    if (next!==undefined) {event.preventDefault();activateChart(chartTabs[next],true);}
+  });
+}
+const chartLabelObserver = new ResizeObserver(entries => {
+  for (const entry of entries) sizeChartLabels(entry.target);
+});
+for (const id of ['annual-chart','monthly-chart','confidence-chart']) chartLabelObserver.observe($(id));
 for (const side of ['a','b']) {
   $('city-'+side).addEventListener('change',()=>selectLocation(side));
   for (const axis of ['lat','lon']) {
@@ -616,6 +659,24 @@ $('compare').addEventListener('change',setCompareEnabled);
 $('variable').addEventListener('change',()=>{
   $('variable-description').textContent=VARIABLES[$('variable').value].description;
 });
+function markInputsChanged() {
+  if (activeRequest && !activeRequest.signal.aborted) {
+    activeRequest.abort();
+    resetResultsUI();
+    $('download').disabled=true;
+    $('finding-text').textContent='Inputs changed while loading. Run the analysis again.';
+  }
+  if (results.length || activeRequest) {
+    $('data-label').textContent='INPUTS CHANGED';
+    $('data-label').classList.remove('live');
+    if (results.length && !$('result-context').textContent.startsWith('Previous result: ')) {
+      $('result-context').textContent='Previous result: '+$('result-context').textContent;
+    }
+    setStatus('Inputs changed. Run analysis to update the results.');
+  }
+}
+$('investigation-form').addEventListener('input',markInputsChanged);
+$('investigation-form').addEventListener('change',markInputsChanged);
 $('investigation-form').addEventListener('submit',event=>{event.preventDefault();runAnalysis();});
 for (const button of document.querySelectorAll('.chart-range button')) {
   button.addEventListener('click',()=>{
@@ -639,6 +700,7 @@ $('share').addEventListener('click',async()=>{
 });
 renderCoordinates(readLocationPreview());
 restoreURL();
+if (new URLSearchParams(location.search).get('auto')!=='1') runAnalysis();
 const globeHost = $('earth-globe');
 function chooseGlobeTarget(side) {
   globeTarget=side;
@@ -668,8 +730,7 @@ const globeObserver = new IntersectionObserver(async entries => {
       $('lat-'+side).value=lat.toFixed(4); $('lon-'+side).value=lon.toFixed(4);
       renderCoordinates(readLocationPreview());
       $('globe-status').textContent='Point '+side.toUpperCase()+' set to '+lat.toFixed(4)+'°, '+lon.toFixed(4)+'°. Run analysis to load the new location.';
-      $('data-label').textContent='INPUTS CHANGED'; $('data-label').classList.remove('live');
-      setStatus('Coordinates changed. Run analysis to update the results.');
+      markInputsChanged();
     });
     globe.setPoints(readLocationPreview());
   } catch {

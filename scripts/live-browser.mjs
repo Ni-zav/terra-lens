@@ -46,12 +46,11 @@ try{
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:'+port,{waitUntil:'domcontentloaded'});
-  await page.locator('#analyze').click();
   await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA DATA LOADED',
     null,{timeout:125000});
   assert.match(await page.locator('#metric-slope').textContent(),/\+0\.18 °C/);
   assert.equal((await page.locator('#metric-years').textContent()).trim(),'24');
-  assert.match(await page.locator('#finding-text').textContent(),/Jakarta has a fitted slope/);
+  assert.match(await page.locator('#finding-text').textContent(),/Jakarta:/);
   assert.equal(calls.filter(c=>c.parameters==='T2M').length,2,'Both points must fetch real NASA T2M');
   assert.equal(errors.length,0,errors.join('; '));
   await mkdir(join(ROOT,'docs','screenshots'),{recursive:true});

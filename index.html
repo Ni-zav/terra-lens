@@ -2,90 +2,86 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#071521">
-<meta name="description" content="Terra-Lens: explore NASA Earth science observations and quantify environmental trends.">
-<title>Terra-Lens — Follow the evidence</title>
+<meta name="theme-color" content="#071521"><meta name="description" content="Explore NASA POWER Earth system data and investigate historical trends.">
+<title>Terra-Lens — Earth trend workspace</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="./styles.css">
-<link rel="stylesheet" href="./styles/observatory.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./styles/observatory.css"><link rel="stylesheet" href="./styles/workspace.css">
 <script type="module" src="./src/app.js"></script>
 </head>
 <body>
-<a class="skip" href="#explore">Skip to explorer</a>
+<a class="skip" href="#explore">Skip to workspace</a>
 <header class="topbar"><div class="shell nav">
-<a href="#top" class="brand"><span class="brand-icon">◉</span>terra<span>-lens</span></a>
-<nav aria-label="Main navigation"><a href="#explore">Explorer</a><a href="#method">Our method</a><a href="#sources">Data sources</a></nav>
-<a class="nav-action" href="#explore">Open explorer ↗</a>
+<a href="./" class="brand"><span class="brand-icon">◉</span>terra<span>-lens</span></a>
+<span class="nav-subtitle">EARTH TREND WORKSPACE</span>
+<div class="nav-right"><span class="source-indicator"><span class="pulse"></span>NASA POWER</span><a href="./docs/METHODOLOGY.md" target="_blank" rel="noopener">Methodology ↗</a><a href="https://github.com/Ni-zav/terra-lens" target="_blank" rel="noopener">Source ↗</a></div>
 </div></header>
-<main id="top">
-<section class="hero"><div class="shell hero-grid">
-<div class="hero-text">
-<p class="eyebrow"><span class="pulse"></span> EARTH SYSTEM INTELLIGENCE <span class="muted">/ 2026</span></p>
-<h1>Our planet is<br><em>always changing.</em><br>Find the signal.</h1>
-<p class="lead">Turn NASA's open Earth science data into an investigation. Discover historical patterns, compare places, and test whether the changes are statistically significant.</p>
-<div class="hero-links"><a href="#explore" class="button-primary">Start investigating <span aria-hidden="true">↗</span></a><a href="#explore" id="example-button" class="example-link">See the verified Indonesian case study ↓</a></div>
-<p class="micro">✓ NASA model-derived data &nbsp; / &nbsp; No synthetic observations &nbsp; / &nbsp; Reproducible</p>
-</div>
-<div class="hero-art" aria-hidden="true"><div class="orbital orbital-one"></div><div class="orbital orbital-two"></div><div class="planet"><div class="grid-overlay"></div></div><div class="float-label top-label">● LIVE DATA PIPELINE<br><strong>EARTH SYSTEM / 01</strong></div><div class="float-label lower-label">TREND DETECTION<br><strong>Δ / DECADE</strong></div></div>
-</div></section>
-<div class="process-bar"><div class="shell"><span>01 — SELECT</span><span>02 — COMPARE</span><span>03 — ANALYZE</span><span>04 — VERIFY</span></div></div>
-<section class="shell explorer" id="explore">
-<div class="section-heading"><div><p class="overline">THE OBSERVATORY / INVESTIGATION 001</p><h2>Earth trend explorer<span class="accent">.</span></h2><p>Ask a question. Get a reproducible answer from real NASA data.</p></div><div class="live-source"><span class="pulse"></span> SOURCE: NASA POWER</div></div>
-<section class="globe-panel" aria-labelledby="globe-heading">
-<div class="globe-copy"><span class="overline">GEOGRAPHIC PICKER / 01</span><h3 id="globe-heading">Choose a place on Earth.</h3><p>Drag to rotate. Select a point, then run your analysis. You can also enter exact coordinates below.</p><div class="globe-controls" role="group" aria-label="Point to place on the globe"><button type="button" id="globe-a" aria-pressed="true">● Point A</button><button type="button" id="globe-b" aria-pressed="false">● Point B</button><button type="button" id="globe-center">Center on selection</button></div><p id="globe-status" class="globe-status" role="status">Selecting point A. Click the globe to set coordinates.</p><p class="globe-credit">Historical imagery for location context only · <a href="https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/" target="_blank" rel="noopener">NASA Blue Marble</a>, 2001 composite; Reto Stöckli, NASA Earth Observatory. Not a live climate map.</p></div><div id="earth-globe" class="earth-globe" aria-label="Interactive Earth globe"></div>
-</section>
+<main class="shell explorer" id="explore">
+<h1 class="sr-only">Earth trend workspace</h1>
 <div class="workspace">
-<aside class="panel controls">
-<div class="panel-title"><span class="section-number">01</span><h3>Configure analysis</h3><span class="mini-muted">INPUTS</span></div>
+<aside class="panel controls" aria-label="Analysis settings">
+<div class="panel-title"><div><span class="section-kicker">INVESTIGATION</span><h2>Configure analysis</h2></div><a href="#" id="example-button">Reset example</a></div>
 <form id="investigation-form">
-<label for="variable">Earth system variable</label>
+<label for="variable">Variable</label>
 <select id="variable"><option value="T2M">Air temperature · T2M</option><option value="RH2M">Relative humidity · RH2M</option><option value="PRECTOTCORR">Precipitation rate · PRECTOTCORR</option></select>
 <p class="hint" id="variable-description">Near-surface air temperature at 2 meters.</p>
-<hr>
-<label>Time horizon</label><div class="year-row"><div><small>FROM</small><input id="start" type="number" min="1981" max="2025" step="1" value="2001" required></div><span>—</span><div><small>TO</small><input id="end" type="number" min="1981" max="2025" step="1" value="2024" required></div></div>
-<p class="hint">Full calendar years. Longer series improve inference.</p>
-<hr>
-<h4><span class="pin a">A</span> Primary location</h4><label class="small-label" for="city-a">PRESET OR CUSTOM</label><select id="city-a"></select>
+<div class="field-heading">PERIOD <span>Complete calendar years</span></div>
+<div class="year-row"><div><label class="small-label" for="start">FROM</label><input id="start" type="number" min="1981" max="2025" step="1" value="2001" required></div><div><label class="small-label" for="end">TO</label><input id="end" type="number" min="1981" max="2025" step="1" value="2024" required></div></div>
+<div class="field-heading"><span><span class="pin a">A</span> LOCATION</span></div>
+<label class="sr-only" for="city-a">Primary location</label><select id="city-a"></select>
 <div class="coord-row"><div><label class="small-label" for="lat-a">LATITUDE</label><input id="lat-a" type="number" min="-90" max="90" step="any" value="-7.7956" required></div><div><label class="small-label" for="lon-a">LONGITUDE</label><input id="lon-a" type="number" min="-180" max="180" step="any" value="110.3695" required></div></div>
-<hr>
-<label class="compare-label" for="compare"><span><span class="pin b">B</span> Compare a second point</span><input id="compare" type="checkbox" checked></label>
-<div id="secondary-location"><label class="small-label" for="city-b">PRESET OR CUSTOM</label><select id="city-b"></select><div class="coord-row"><div><label class="small-label" for="lat-b">LATITUDE</label><input id="lat-b" type="number" min="-90" max="90" step="any" value="-6.2088" required></div><div><label class="small-label" for="lon-b">LONGITUDE</label><input id="lon-b" type="number" min="-180" max="180" step="any" value="106.8456" required></div></div></div>
+<label class="compare-label" for="compare"><span><span class="pin b">B</span> COMPARE LOCATION</span><input id="compare" type="checkbox" checked></label>
+<div id="secondary-location"><label class="sr-only" for="city-b">Second location</label><select id="city-b"></select><div class="coord-row"><div><label class="small-label" for="lat-b">LATITUDE</label><input id="lat-b" type="number" min="-90" max="90" step="any" value="-6.2088" required></div><div><label class="small-label" for="lon-b">LONGITUDE</label><input id="lon-b" type="number" min="-180" max="180" step="any" value="106.8456" required></div></div></div>
 <button id="analyze" class="analyze" type="submit">Analyze NASA data <span>↗</span></button>
-<p class="status" id="status" role="status" aria-live="polite">Ready to investigate.</p>
+<p class="status" id="status" role="status" aria-live="polite">Ready to retrieve NASA data.</p>
 </form>
-<p class="aside-note">Each location refers to a NASA model grid point, not an entire city or a ground sensor.</p>
+<p class="aside-note">Locations are NASA model grid-point estimates, not city-wide measurements.</p>
 </aside>
-<div class="results">
-<div class="result-heading"><span class="section-number">02</span><div><strong>Investigation results</strong><p id="result-context">Waiting for observations</p></div><span class="data-state" id="data-label">NOT LOADED</span></div>
+<section class="results" aria-label="Analysis results">
+<div class="result-heading"><div><span class="section-kicker">DATA EXPLORER</span><strong>Historical trends</strong><p id="result-context">Select parameters and run an analysis</p></div><span class="data-state" id="data-label">NOT LOADED</span></div>
 <div class="metrics">
-<div class="metric"><div class="metric-label">TREND / DECADE <span>↗</span></div><strong id="metric-slope">—</strong><p id="metric-slope-detail">Calculated from complete annual data</p></div>
-<div class="metric"><div class="metric-label">STATISTICAL TEST <span>◇</span></div><strong id="metric-significance">—</strong><p id="metric-significance-detail">Two-sided t-test · α = 0.05</p></div>
-<div class="metric"><div class="metric-label">YEARS ANALYZED <span>▤</span></div><strong id="metric-years">—</strong><p id="metric-years-detail">Complete calendar years only</p></div>
+<div class="metric"><div class="metric-label">A · TREND / DECADE</div><strong id="metric-slope">—</strong><p id="metric-slope-detail">Waiting for NASA data</p></div>
+<div class="metric"><div class="metric-label">OLS TEST</div><strong id="metric-significance">—</strong><p id="metric-significance-detail">Two-sided t-test</p></div>
+<div class="metric"><div class="metric-label">YEARS ANALYZED</div><strong id="metric-years">—</strong><p id="metric-years-detail">Complete calendar years</p></div>
 </div>
-<section class="comparison-panel" id="comparison-panel" aria-label="Point-by-point statistical results" hidden>
-<div class="comparison-topline"><div><span class="overline">POINT-BY-POINT EVIDENCE</span><h3>Compare the results</h3></div><span class="comparison-hint">Separate OLS fits · descriptive comparison only</span></div>
-<p class="chart-scroll-hint">Swipe or use arrow keys to view the full chart.</p><div class="confidence-wrap" tabindex="0" role="region" aria-label="Scrollable confidence interval chart"><svg id="confidence-chart" viewBox="0 0 960 194" role="img" aria-label="Slope estimates and classical 95 percent confidence intervals for sample points"></svg></div>
-<div class="comparison-rows" id="comparison-rows"></div>
-<p class="comparison-note">Each location is one NASA model grid-point sample. Differences between slopes are descriptive, not evidence that the slopes differ statistically. All tests assume classical OLS residual independence.</p>
-</section>
-<div class="finding"><span>✦</span><div><small>THE INVESTIGATION</small><p id="finding-text">Findings will appear here after we retrieve NASA data. Nothing is simulated.</p></div></div>
-<article class="panel chart-panel">
-<div class="chart-heading"><div><small>EVIDENCE / 01</small><h3>Annual trend</h3><p>Day-weighted annual averages and fitted linear trend.</p></div><span class="chip" id="unit-chip">NASA POWER</span></div>
-<div class="legend" id="annual-legend"></div><div class="chart-range" role="group" aria-label="Annual chart displayed period"><span>DISPLAY</span><button type="button" data-chart="annual" data-years="all" aria-pressed="true" disabled>All years</button><button type="button" data-chart="annual" data-years="10" aria-pressed="false" disabled>Last 10 years</button><small>Trend uses full analysis period</small></div><div class="chart-inspector"><label for="annual-cursor">Inspect year</label><input type="range" id="annual-cursor" min="0" max="0" value="0" disabled><output id="annual-readout">Run an investigation to inspect values.</output></div><p class="chart-scroll-hint">Swipe or use arrow keys to view the full chart.</p><div class="svg-scroll" tabindex="0" role="region" aria-label="Scrollable annual data chart"><svg id="annual-chart" viewBox="0 0 960 320" role="img" aria-label="Annual data chart"><text x="480" y="160" fill="#8299aa" text-anchor="middle">Run an investigation to see annual trends.</text></svg></div>
-<div class="chart-foot">Solid = observed annual mean &nbsp; / &nbsp; Dashed = fitted OLS trend &nbsp; / &nbsp; Hover a point to inspect its value.</div>
+<div class="chart-shell" data-active-chart="annual">
+<div class="chart-tabs" role="tablist" aria-label="Analysis views"><button type="button" role="tab" id="tab-annual" data-view="annual" aria-selected="true" aria-controls="panel-annual">Annual trend</button><button type="button" role="tab" id="tab-monthly" data-view="monthly" aria-selected="false" aria-controls="panel-monthly" tabindex="-1">Monthly data</button><button type="button" role="tab" id="tab-comparison" data-view="comparison" aria-selected="false" aria-controls="panel-comparison" tabindex="-1">Compare slopes</button></div>
+<div class="chart-views">
+<article class="chart-panel" id="panel-annual" data-chart-panel="annual" role="tabpanel" aria-labelledby="tab-annual">
+<div class="chart-heading"><div><h3>Annual mean &amp; fitted trend</h3><p>Complete-year, day-weighted averages</p></div><span class="chip" id="unit-chip">NASA POWER</span></div>
+<div class="chart-toolbar"><div class="legend" id="annual-legend"></div><div class="chart-range" role="group" aria-label="Annual chart displayed period"><button type="button" data-chart="annual" data-years="all" aria-pressed="true" disabled>All</button><button type="button" data-chart="annual" data-years="10" aria-pressed="false" disabled>10Y</button></div></div>
+<p class="chart-scroll-hint">Swipe or use arrow keys to view the full chart.</p><div class="svg-scroll" tabindex="0" role="region" aria-label="Scrollable annual data chart"><svg id="annual-chart" viewBox="0 0 960 320" role="img" aria-label="Annual data chart"><text x="480" y="160" fill="#8299aa" text-anchor="middle">Loading NASA data…</text></svg></div>
+<div class="chart-inspector"><label for="annual-cursor">YEAR</label><input type="range" id="annual-cursor" min="0" max="0" value="0" disabled><output id="annual-readout">Waiting for NASA data.</output></div>
+<div class="chart-foot">Solid: annual mean · Dashed: full-period OLS fit · 10Y changes display only</div>
 </article>
-<div class="subcharts">
-<article class="panel chart-panel"><div class="chart-heading"><div><small>EVIDENCE / 02</small><h3>Monthly variability</h3><p>Seasonal and interannual observations.</p></div></div><div class="legend" id="monthly-legend"></div><div class="chart-range" role="group" aria-label="Monthly chart displayed period"><span>DISPLAY</span><button type="button" data-chart="monthly" data-years="all" aria-pressed="true" disabled>All years</button><button type="button" data-chart="monthly" data-years="10" aria-pressed="false" disabled>Last 10 years</button><small>Trend uses full analysis period</small></div><div class="chart-inspector"><label for="monthly-cursor">Inspect month</label><input type="range" id="monthly-cursor" min="0" max="0" value="0" disabled><output id="monthly-readout">Run an investigation to inspect values.</output></div><p class="chart-scroll-hint">Swipe or use arrow keys to view the full chart.</p><div class="svg-scroll" tabindex="0" role="region" aria-label="Scrollable monthly data chart"><svg id="monthly-chart" viewBox="0 0 960 270" role="img" aria-label="Monthly data chart"><text x="480" y="140" fill="#8299aa" text-anchor="middle">Monthly observations appear here.</text></svg></div></article>
-<article class="panel chart-panel"><div class="chart-heading"><div><small>EVIDENCE / 03</small><h3>Coordinates</h3><p>Selected NASA grid-point locations.</p></div></div><div id="map-stack" class="map-stack"><div id="geo-map" class="geo-map" aria-label="Geographic context map with selected NASA sample coordinates"></div><svg id="coordinate-chart" viewBox="0 0 620 270" role="img" aria-label="Fallback schematic latitude-longitude plot"></svg></div><p class="hint">OpenStreetMap basemap appears when tiles are available; otherwise coordinates are plotted schematically. Pins identify NASA grid-point samples, not spatial trend coverage or city averages.</p><div id="coordinate-list" class="coordinate-list"></div></article>
+<article class="chart-panel" id="panel-monthly" data-chart-panel="monthly" role="tabpanel" aria-labelledby="tab-monthly" hidden>
+<div class="chart-heading"><div><h3>Monthly values</h3><p>NASA POWER monthly values, without gap filling</p></div></div>
+<div class="chart-toolbar"><div class="legend" id="monthly-legend"></div><div class="chart-range" role="group" aria-label="Monthly chart displayed period"><button type="button" data-chart="monthly" data-years="all" aria-pressed="true" disabled>All</button><button type="button" data-chart="monthly" data-years="10" aria-pressed="false" disabled>10Y</button></div></div>
+<p class="chart-scroll-hint">Swipe or use arrow keys to view the full chart.</p><div class="svg-scroll" tabindex="0" role="region" aria-label="Scrollable monthly data chart"><svg id="monthly-chart" viewBox="0 0 960 270" role="img" aria-label="Monthly data chart"><text x="480" y="140" fill="#8299aa" text-anchor="middle">Loading NASA data…</text></svg></div>
+<div class="chart-inspector"><label for="monthly-cursor">MONTH</label><input type="range" id="monthly-cursor" min="0" max="0" value="0" disabled><output id="monthly-readout">Waiting for NASA data.</output></div>
+<div class="chart-foot">Missing months break the line · Use the slider to inspect exact values</div>
+</article>
+<section id="panel-comparison" data-chart-panel="comparison" role="tabpanel" aria-labelledby="tab-comparison" hidden>
+<div class="comparison-panel" id="comparison-panel" aria-label="Point-by-point statistical results" hidden>
+<div class="comparison-topline"><div><h3>Classical slope intervals</h3><p>95% intervals for each point independently</p></div></div>
+<div class="confidence-wrap" tabindex="0" role="region" aria-label="Scrollable confidence interval chart"><svg id="confidence-chart" viewBox="0 0 960 194" role="img" aria-label="Slope estimates and classical 95 percent confidence intervals for sample points"></svg></div><div class="comparison-rows" id="comparison-rows"></div><p class="comparison-note">Differences between slopes are descriptive. Separate tests do not establish a significant difference. Classical intervals assume independent residuals.</p>
+</div><p class="comparison-empty" id="comparison-empty">Run an analysis to compare slope estimates.</p>
+</section>
 </div>
-<article class="panel sources-card" id="sources"><div><small>RESEARCH INTEGRITY</small><h3>Follow the source, not the hype.</h3><p id="provenance-text">Results come from NASA POWER's public meteorological reanalysis service, with source links and transparent limitations.</p><p id="source-link"><a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noopener">NASA POWER documentation ↗</a></p></div><div class="source-actions"><button id="download" disabled>↓ Download observations CSV</button><button id="share">⤴ Copy investigation link</button></div></article>
-</div></div></section>
-<section class="method" id="method"><div class="shell"><p class="overline">OUR SCIENTIFIC APPROACH</p><h2>Questions deserve<br><em>evidence, not guesses.</em></h2><div class="method-grid">
-<div><small>01 / DATA</small><h3>Observe</h3><p>Fetch real NASA POWER monthly meteorological series derived from NASA MERRA-2. Grid-cell estimates are not direct local sensor observations.</p></div>
-<div><small>02 / ANALYSIS</small><h3>Measure</h3><p>Aggregate only complete calendar years, fit a least-squares trend, and report the change per decade with a confidence interval.</p></div>
-<div><small>03 / INFERENCE</small><h3>Question</h3><p>Use a two-sided classical t-test with transparent assumptions. Statistical significance is not proof of causation or a forecast.</p></div></div><div class="method-end"><span>NO FABRICATED EARTH MEASUREMENTS</span><a href="./docs/METHODOLOGY.md">Read the method ↗</a></div></div></section>
+</div>
+</section>
+<aside class="location-column" aria-label="Location and data source">
+<section class="globe-panel" aria-labelledby="globe-heading">
+<div class="globe-copy"><div class="globe-title"><div><span class="section-kicker">LOCATION PICKER</span><h2 id="globe-heading">Explore Earth</h2></div><button type="button" id="globe-center">Center ↗</button></div>
+<div class="globe-controls" role="group" aria-label="Point to place on the globe"><button type="button" id="globe-a" aria-pressed="true">● Point A</button><button type="button" id="globe-b" aria-pressed="false">● Point B</button></div>
+<p id="globe-status" class="globe-status" role="status">Drag to rotate · Click to place point A</p></div>
+<div id="earth-globe" class="earth-globe" aria-label="Interactive Earth globe"></div>
+<p class="globe-credit">Historical <a href="https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/" target="_blank" rel="noopener">NASA Blue Marble</a> imagery (2001) · Context only, not live data.</p>
+</section>
+<section class="insight-card"><span class="section-kicker">INTERPRETATION</span><div class="finding"><p id="finding-text">Results will appear after the NASA request completes.</p></div><a href="./docs/METHODOLOGY.md" target="_blank" rel="noopener">Assumptions and limitations ↗</a></section>
+<section class="sources-card" id="sources"><div><span class="section-kicker">SOURCE &amp; PROVENANCE</span><p id="provenance-text">Waiting for NASA POWER monthly data.</p><p id="source-link"><a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noopener">NASA POWER documentation ↗</a></p></div><div class="source-actions"><button id="download" disabled>↓ CSV</button><button id="share">↗ Share</button></div></section>
+</aside>
+</div>
+<!-- The schematic remains available to the coordinate renderer without loading a second map. -->
+<div id="map-stack" hidden><div id="geo-map"></div><svg id="coordinate-chart" viewBox="0 0 620 270" aria-hidden="true"></svg><div id="coordinate-list"></div></div>
 </main>
-<footer><div class="shell footer-inner"><a class="brand" href="#top"><span class="brand-icon">◉</span>terra<span>-lens</span></a><p>NASA Space Apps 2026 project. Independent; not affiliated with or endorsed by NASA.</p><a href="https://github.com/Ni-zav/terra-lens">GitHub source ↗</a></div></footer>
 </body></html>
