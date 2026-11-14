@@ -10,7 +10,11 @@ import math
 import statistics
 from datetime import datetime
 from pathlib import Path
-e=json.loads((Path(__file__).resolve().parents[1]/'artifacts'/'swot-nasa-water-case.json').read_text())
+root=Path(__file__).resolve().parents[1]
+p=root/'artifacts'/'swot-nasa-water-case.json'
+if not p.exists():
+    p=root/'data'/'cases'/'ohio-river-swot-power.json'
+e=json.loads(p.read_text())
 assert e['schema']=='terra-lens-swot-nasa-water-evidence-v1'
 swot,power=e['swot'],e['power']
 assert swot['sourceURL'].startswith('https://soto.podaac.earthdatacloud.nasa.gov/')

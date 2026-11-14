@@ -29,7 +29,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
   return <div className="giovanni-workspace" aria-labelledby="giovanni-heading">
     <div className="giovanni-head">
       <div className="pane-title-group">
-        <span className="section-kicker">06 // SOURCE</span>
+        <span className="section-kicker">Area-Average Import</span>
         <h2 id="giovanni-heading">Add a NASA Giovanni monthly series</h2>
       </div>
       <p className="giovanni-links"><a href="https://giovanni.gsfc.nasa.gov/giovanni/" target="_blank" rel="noreferrer">Open NASA Giovanni</a> · <a href="https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GiC_Time_Series_Service.ipynb" target="_blank" rel="noreferrer">NASA CSV workflow example</a></p>

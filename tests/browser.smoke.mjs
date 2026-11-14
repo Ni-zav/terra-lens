@@ -92,12 +92,19 @@ try{
   await page.locator('#tab-finder').click();
   await page.locator('#finder-run').waitFor({timeout:20000});
   await page.screenshot({path:join(ROOT,'artifacts','react-fixture-finder.png')});
+  await page.locator('#tab-cases').click();
+  await page.locator('#science-cases-title').waitFor({timeout:20000});
+  assert.match(await page.locator('#sc-snapshot-badge').textContent(),/Verified Snapshot/);
+  await page.locator('#case-btn-giss').click();
+  assert.equal(await page.locator('#case-btn-giss').getAttribute('aria-pressed'),'true');
+  await page.locator('#case-btn-swot').click();
+  await page.screenshot({path:join(ROOT,'artifacts','react-fixture-cases.png')});
   await page.locator('#tab-giovanni').click();
   await page.locator('#giovanni-heading').waitFor({timeout:20000});
   await page.screenshot({path:join(ROOT,'artifacts','react-fixture-giovanni.png')});
   for(const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660],[820,700],[800,660]]){
     await page.setViewportSize({width,height});
-    for(const name of ['annual','monthly','seasonal','comparison','finder','giovanni']){
+    for(const name of ['annual','monthly','seasonal','comparison','finder','cases','giovanni']){
       await page.locator('#tab-'+name).click();
       const d=await page.evaluate(()=>{
         const boxes=['.controls','.location-column','.results','.chart-shell','[role="tabpanel"]'].map(selector=>{
@@ -110,9 +117,15 @@ try{
       for(const item of d.inside)assert.ok(item.bottom<=item.parentBottom+1,'Desktop panel overlap '+JSON.stringify({width,height,name,item}));
     }
   }
+  for(const [mw,mh] of [[768,1024],[390,844],[360,800]]){
+    await page.setViewportSize({width:mw,height:mh});
+    for(const t of ['annual','comparison','cases']){
+      await page.locator(`#tab-${t}`).click();
+      assert.ok((await page.evaluate(()=>document.documentElement.scrollWidth))<=mw+2,`Mobile/tablet overflow at ${mw}x${mh} (${t})`);
+    }
+  }
   await page.setViewportSize({width:390,height:844});await page.locator('#tab-comparison').click();
   assert.ok(await page.locator('.comparison-point').first().isVisible());
-  assert.ok((await page.evaluate(()=>document.documentElement.scrollWidth))<=392);
   await mkdir(join(ROOT,'artifacts'),{recursive:true});await page.screenshot({path:join(ROOT,'artifacts','react-fixture-mobile.png'),fullPage:true});
   const noWebGL=await browser.newPage({viewport:{width:390,height:844}});
   await noWebGL.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args)}});

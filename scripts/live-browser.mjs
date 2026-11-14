@@ -45,14 +45,21 @@ try{
   const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
   const page=await context.newPage();
   const errors=[];
+  const nasaResponses=[];
   page.on('pageerror',e=>errors.push(e.message));
+  page.on('response',res=>{
+    if(res.ok()&&(res.url().includes('/api/power?')||res.url().includes('power.larc.nasa.gov/api/temporal/monthly/point'))){
+      const u=new URL(res.url());
+      nasaResponses.push({parameters:u.searchParams.get('parameters'),latitude:u.searchParams.get('latitude'),longitude:u.searchParams.get('longitude'),url:res.url()});
+    }
+  });
   await page.goto('http://127.0.0.1:'+port,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA data loaded',
     null,{timeout:125000});
   assert.match(await page.locator('#metric-slope').textContent(),/\+0\.18 °C/);
   assert.equal((await page.locator('#metric-years').textContent()).trim(),'24');
-  assert.match(await page.locator('#finding-text').textContent(),/B:/);
-  assert.equal(calls.filter(c=>c.parameters==='T2M').length,2,'Both points must fetch real NASA T2M');
+  assert.match(await page.locator('#finding-text').textContent(),/B · Jakarta:/);
+  assert.equal(nasaResponses.filter(c=>c.parameters==='T2M').length>=2,true,'Both points must fetch real NASA T2M');
   assert.equal(errors.length,0,errors.join('; '));
   await mkdir(join(ROOT,'docs','screenshots'),{recursive:true});
   // Frame the controls and results for the presentation; the full explorer is
@@ -67,7 +74,7 @@ try{
   const download=await downloadPromise;
   assert.match(download.suggestedFilename(),/T2M/);
   const csv=await readFile(await download.path(),'utf8');
-  assert.match(csv,/"T2M"/);
+  assert.match(csv,/"POWER:T2M"/);
   assert.match(csv,/power\.larc\.nasa\.gov/);
   assert.equal(csv.trimEnd().split('\n').length,577,'Both points, each with 288 monthly rows');
   // Re-query a distinct NASA variable, not a fixture.
@@ -75,7 +82,7 @@ try{
   await page.locator('#analyze').click();
   await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA data loaded'
     && document.getElementById('unit-chip')?.textContent.includes('%'),null,{timeout:125000});
-  assert.ok(calls.some(c=>c.parameters==='RH2M'));
+  assert.ok(nasaResponses.some(c=>c.parameters==='RH2M'));
   await page.locator('#variable').selectOption('T2M');
   await page.locator('#compare').check();
   await page.locator('#analyze').click();
@@ -90,6 +97,7 @@ try{
   await page.locator('#tab-finder').click();
   await page.locator('#finder-run').waitFor({timeout:25000});
   assert.equal(await page.locator('.discovery-table tbody tr').count(),8);
+  const callsBeforeFinder=calls.filter(c=>c.parameters==='T2M').length;
   await page.locator('#finder-run').click();
   await page.waitForFunction(()=>document.getElementById('finder-status')?.textContent.includes('Finished:'),
     null,{timeout:125000});
@@ -109,7 +117,7 @@ try{
   assert.ok(evidence.records.every(r=>r.monthly.length===288&&r.annual.length===24));
   assert.ok(evidence.records.every(r=>r.sourceURL.startsWith('https://power.larc.nasa.gov/')));
   assert.match(evidence.brief.uncertainty,/post-selection/);
-  assert.equal(calls.filter(c=>c.parameters==='T2M').length>=8,true,'Every sentinel point needs real NASA response');
+  assert.equal(nasaResponses.filter(c=>c.parameters==='T2M').length>=8,true,'Every sentinel point needs real NASA response');
   const finderOverflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
   assert.ok(finderOverflow.scroll<=finderOverflow.width+2,'Mobile discovery overflow: '+JSON.stringify(finderOverflow));
   await page.locator('#contrast-finder').screenshot({

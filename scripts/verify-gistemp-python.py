@@ -2,7 +2,10 @@
 """Independent Python check from actual NASA GISS+POWER downloaded records."""
 import json,math,calendar,statistics
 from pathlib import Path
-p=Path(__file__).resolve().parents[1]/'artifacts'/'gistemp-power-global-local.json'
+root=Path(__file__).resolve().parents[1]
+p=root/'artifacts'/'gistemp-power-global-local.json'
+if not p.exists():
+ p=root/'data'/'cases'/'yogyakarta-global-gistemp-power.json'
 d=json.loads(p.read_text())
 assert d['schema']=='terra-lens-gistemp-power-real-evidence-v1'
 source=d['comparison']['advanced']['sources']

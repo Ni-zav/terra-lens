@@ -68,7 +68,6 @@
   margin-right: 6px;
   border-radius: 50%;
   background: var(--cyan);
-  box-shadow: 0 0 0 2px rgba(98, 214, 228, 0.2);
 }
 
 /* Main Docked Terminal Grid */
@@ -878,7 +877,7 @@
   min-height: 0;
   padding: 0 0 6px;
   border-bottom: 1px solid var(--border-strong);
-  background: radial-gradient(circle at 50% 58%, #102a3b, #08131d 72%);
+  background: #08131d;
 }
 .globe-title {
   display: flex;

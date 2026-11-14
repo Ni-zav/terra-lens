@@ -1,6 +1,6 @@
 # Terra-Lens data/science engine — frontend integration contract
 
-**Branch:** `feat/nasa-multisource-science-20261114` in `Ni-zav/terra-lens`. This branch adds **NO React/CSS/visualization edits** and must not be merged to `main` without the user's approval. The UI/design work can proceed on a different branch in parallel.
+**Status (2026-11-15):** Merged and connected to the user-facing React UI in `src/react/ScienceCases.jsx` (`#tab-cases`, **Multi-source** tab) on branch `feat/terminal-layout-multi-point`, with automated Playwright coverage in `tests/browser.smoke.mjs`.
 
 ## Why this is better than more standalone charts
 

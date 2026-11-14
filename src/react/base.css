@@ -1,22 +1,26 @@
 :root {
   color-scheme: dark;
-  --bg: #060e16;
-  --panel: #09141f;
-  --panel-alt: #0c1a27;
-  --header-bg: #0d1d2c;
-  --input-bg: #061019;
-  --border: #1e3346;
+  --bg: #071019;
+  --panel: #0d1a26;
+  --panel-alt: #142432;
+  --header-bg: #10202e;
+  --input-bg: #050c14;
+  --border: #1c3144;
   --border-strong: #2d4a63;
-  --text: #e6f0f5;
-  --muted: #8fa9b8;
-  --dim: #688394;
+  --focus-ring: #62d6e4;
+  --text: #f1f7f9;
+  --muted: #b2c8d6;
+  --dim: #8aa6b8;
   --cyan: #62d6e4;
   --amber: #f6b975;
-  --violet: #a38cf8;
-  --emerald: #56d39a;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
-  --head: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
-  --body: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  --violet: #b29efa;
+  --emerald: #5ce0a8;
+  --status-ok: #6ee7b7;
+  --status-warn: #fcd34d;
+  --status-err: #fca5a5;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  --head: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  --body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }

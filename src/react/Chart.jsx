@@ -8,10 +8,10 @@ echarts.use([LineChart, BarChart, GridComponent, TooltipComponent, DataZoomCompo
 import {buildChartModel, buildSeasonalModel} from './chart-model.js';
 const fmt = n => Number.isFinite(n) ? new Intl.NumberFormat('en-US',{maximumFractionDigits:3}).format(n) : '—';
 const signed = n => Number.isFinite(n) ? (n > 0 ? '+' : '') + new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n) : null;
-const monoFont = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace";
-const axisText = {color:'#8eaab8',fontSize:10,fontFamily:monoFont};
-const tooltipBase = {backgroundColor:'rgba(7, 17, 27, 0.96)',borderColor:'#2c4a5e',borderWidth:1,padding:[6,10],
-  textStyle:{color:'#e7f1f4',fontSize:11,fontFamily:monoFont}};
+const monoFont = "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace";
+const axisText = {color:'#b2c8d6',fontSize:11,fontFamily:monoFont};
+const tooltipBase = {backgroundColor:'rgba(7, 16, 25, 0.96)',borderColor:'#2d4a63',borderWidth:1,padding:[6,10],
+  textStyle:{color:'#f1f7f9',fontSize:11,fontFamily:monoFont}};
 
 function useEChart() {
   const container=useRef(null), chart=useRef(null);
@@ -26,9 +26,13 @@ function useEChart() {
 }
 
 function Legend({series, unit, showSlope, excluded}) {
-  return <div className="legend">{series.map(s=><span className="legend-item" key={s.id}><i className="legend-dot" style={{background:s.color}}/><strong className="legend-id" style={{color:s.color}}>{s.id}</strong><span>{s.label}</span>{showSlope&&s.slopePerDecade!==null&&<em className="legend-slope">{signed(s.slopePerDecade)} {unit}/dec</em>}</span>)}
+  const markerGlyph = id => id === 'B' ? '◆' : id === 'C' ? '▲' : id === 'D' ? '■' : id === 'G' ? '○' : '●';
+  return <div className="legend">{series.map(s=><span className="legend-item" key={s.id}><span className="legend-glyph" style={{color:s.color}} aria-hidden="true">{markerGlyph(s.id)}</span><strong className="legend-id" style={{color:s.color}}>{s.id}</strong><span>{s.label}</span>{showSlope&&s.slopePerDecade!==null&&<em className="legend-slope">{signed(s.slopePerDecade)} {unit}/dec</em>}</span>)}
     {excluded?.length>0&&<span className="legend-item legend-excluded" title="Different unit; shown in anomaly (σ) view">{excluded.map(s=>s.id).join(', ')} hidden · different unit</span>}</div>;
 }
+
+const symbolFor = id => id === 'B' ? 'diamond' : id === 'C' ? 'triangle' : id === 'D' ? 'rect' : id === 'G' ? 'emptyCircle' : 'circle';
+const dashFor = id => id === 'B' ? [2, 3] : id === 'C' ? [7, 3, 2, 3] : [5, 4];
 
 /** Annual, monthly-value and monthly-anomaly time series share one renderer. */
 export function TimeChart({series, mode, range, setRange, setMode}) {
@@ -42,10 +46,10 @@ export function TimeChart({series, mode, range, setRange, setMode}) {
     const instance=chart.current; if(!instance)return;
     const dataSeries=model.series.flatMap(s=>[
       {id:s.id,name:`${s.id} · ${s.label}`,type:'line',data:s.values,connectNulls:false,showSymbol:!monthly,
-        symbol:'circle',symbolSize:4.5,lineStyle:{width:monthly?1.35:2,color:s.color},itemStyle:{color:s.color,borderColor:'#071019',borderWidth:1},
-        emphasis:{focus:'series',lineStyle:{width:monthly?2:2.6}}},
+        symbol:symbolFor(s.id),symbolSize:s.id==='B'?6:5,lineStyle:{width:monthly?1.45:2.1,color:s.color},itemStyle:{color:s.color,borderColor:'#071019',borderWidth:1},
+        emphasis:{focus:'series',lineStyle:{width:monthly?2.1:2.7}}},
       ...(!monthly&&s.fit.some(v=>v!==null)?[{name:`${s.id} · ${s.label} OLS`,type:'line',data:s.fit,
-        connectNulls:true,showSymbol:false,silent:true,lineStyle:{width:1.4,type:[5,4],color:s.color,opacity:.85}}]:[])
+        connectNulls:true,showSymbol:false,silent:true,lineStyle:{width:1.5,type:dashFor(s.id),color:s.color,opacity:.88}}]:[])
     ]);
     instance.setOption({animation:false,backgroundColor:'transparent',aria:{enabled:true,description:
       `${anomaly?'Monthly anomaly':monthly?'Monthly':'Annual'} NASA values in ${unit}. Use the date slider for exact values.`},
@@ -121,8 +125,8 @@ export function SeasonalChart({series}) {
       series:model.series.map(s=>trend
         ?{id:s.id,name:`${s.id} · ${s.label}`,type:'bar',data:s.slopes,barMaxWidth:12,itemStyle:{color:s.color,borderRadius:[2,2,0,0]},
           markLine:{silent:true,symbol:'none',label:{show:false},lineStyle:{color:'#5d7f90',type:'solid'},data:[{yAxis:0}]}}
-        :{id:s.id,name:`${s.id} · ${s.label}`,type:'line',data:s.climatology,symbol:'circle',symbolSize:5,connectNulls:false,
-          lineStyle:{width:2,color:s.color},itemStyle:{color:s.color,borderColor:'#071019',borderWidth:1}})},true);
+        :{id:s.id,name:`${s.id} · ${s.label}`,type:'line',data:s.climatology,symbol:symbolFor(s.id),symbolSize:s.id==='B'?6:5,connectNulls:false,
+          lineStyle:{width:2.1,color:s.color},itemStyle:{color:s.color,borderColor:'#071019',borderWidth:1}})},true);
     const onAxis=params=>{const value=params.axesInfo?.[0]?.value;const i=typeof value==='number'?value:model.months.indexOf(value);if(i>=0&&i<12)setCursor(i);};
     instance.on('updateAxisPointer',onAxis);
     return ()=>instance.off('updateAxisPointer',onAxis);
