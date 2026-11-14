@@ -1,8 +1,8 @@
 # Verified LIVE NASA browser screenshots
 
-Captured: 2026-11-14T07:14:03.030Z (UTC).
+Captured: 2026-11-14T07:23:37.410Z (UTC).
 
-These images were produced by a real Chromium browser running the application against actual NASA POWER API responses via the project Cloudflare Pages Function code served locally. They are NOT generated from test fixtures, AI image generation, or a deployed Cloudflare site.
+These images were produced by a real Chromium browser running the application against actual NASA POWER API responses via the project Cloudflare Pages Function code served locally. The desktop image frames the workspace with the sticky navigation hidden to avoid covering data. They are NOT generated from test fixtures, AI image generation, or a deployed Cloudflare site.
 
 Initial investigation: T2M, 2001–2024, Yogyakarta (-7.7956, 110.3695) and Jakarta (-6.2088, 106.8456).
 Secondary integration check: RH2M at Yogyakarta.
