@@ -1,0 +1,47 @@
+name: Build Seven-Slide Demo PDF
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'demo/index.html'
+      - 'scripts/build-demo.mjs'
+      - '.github/workflows/demo-pdf.yml'
+      - 'docs/screenshots/nasa-real-desktop.png'
+permissions:
+  contents: write
+jobs:
+  create-pdf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Browser dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          python -m pip install pypdf
+      - name: Render evidence-backed HTML as PDF
+        run: node scripts/build-demo.mjs
+      - name: Enforce the official 7 slide limit
+        run: |
+          python - <<'PY'
+          from pypdf import PdfReader
+          p='demo/Terra-Lens_Seven_Slide_Demo.pdf'
+          count=len(PdfReader(p).pages)
+          print(f"Demo PDF pages: {count}")
+          assert count==7, f"Official demo limit: 7 slides; generated {count}"
+          PY
+      - name: Publish downloadable public demo PDF
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add demo/Terra-Lens_Seven_Slide_Demo.pdf
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'docs: publish seven-slide NASA demo PDF with real screenshot'
+          git push origin HEAD:main
