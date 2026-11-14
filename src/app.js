@@ -2,7 +2,7 @@ import {annualMeans, linearTrend} from './stats.js';
 import {VARIABLES, LOCATIONS, fetchNASA, requestURL} from './power.js';
 
 const $ = id => document.getElementById(id);
-const COLORS = ['#63e5bc', '#bba9ff'];
+const COLORS = ['#62d6e4', '#f6b975'];
 let results = [];
 let activeRequest = null;
 
@@ -163,9 +163,15 @@ function renderPlot(id, series, monthly, unit) {
     svg.append(svgNode('line',{x1:left,y1:py,x2:right,y2:py,stroke:'#244357','stroke-width':1}));
     svg.append(svgNode('text',{x:left-10,y:py+4,'text-anchor':'end',fill:'#799aac','font-size':12},format(v,range<3?2:1)));
   }
+  const yearTicks = new Set();
   for (let i=0;i<=4;i++) {
-    const v=minX+(maxX-minX)*i/4, px=sx(v);
-    svg.append(svgNode('text',{x:px,y:height-14,'text-anchor':'middle',fill:'#799aac','font-size':12},String(Math.round(v))));
+    const year = Math.round(minX+(maxX-minX)*i/4);
+    yearTicks.add(year);
+  }
+  for (const year of [...yearTicks].sort((a,b)=>a-b)) {
+    const px = sx(year);
+    svg.append(svgNode('line', {x1:px,y1:bottom,x2:px,y2:bottom+5,stroke:'#526a7b'}));
+    svg.append(svgNode('text',{x:px,y:height-14,'text-anchor':'middle',fill:'#9db4c3','font-size':12},String(year)));
   }
   svg.append(svgNode('text',{x:left,y:12,fill:'#819cab','font-size':11},unit));
   for (const group of groups) {
@@ -180,12 +186,17 @@ function renderPlot(id, series, monthly, unit) {
       return command + sx(p.x).toFixed(2) + ',' + sy(p.y).toFixed(2);
     }).join(' ');
     svg.append(svgNode('path',{d,fill:'none',stroke:group.color,'stroke-width':monthly?1.7:2.8,'stroke-linecap':'round','stroke-linejoin':'round'}));
-    if (!monthly) {
-      for (const point of points) {
-        const circle = svgNode('circle',{cx:sx(point.x),cy:sy(point.y),r:3,fill:group.color});
-        circle.append(svgNode('title',{},group.label+' '+point.year+': '+format(point.y,3)+' '+unit));
-        svg.append(circle);
-      }
+    for (const point of points) {
+      const circle = svgNode('circle',{
+        cx:sx(point.x),cy:sy(point.y),r:monthly?5:4.1,
+        fill:monthly?'transparent':group.color,
+        stroke:monthly?'transparent':'#071521','stroke-width':1.2,
+        tabindex:monthly?'-1':'0'
+      });
+      const date = monthly
+        ? point.year + '-' + String(point.month).padStart(2, '0') : String(point.year);
+      circle.append(svgNode('title',{},group.label+' · '+date+': '+format(point.y,3)+' '+unit));
+      svg.append(circle);
     }
     if (group.fit.length) {
       const first = group.fit[0], last = group.fit.at(-1);
@@ -193,6 +204,59 @@ function renderPlot(id, series, monthly, unit) {
         x2:sx(last.year),y2:sy(last.value),stroke:group.color,
         'stroke-width':2,'stroke-dasharray':'8 6',opacity:.8}));
     }
+  }
+}
+
+function renderComparison(series, variable) {
+  const container = $('comparison-panel');
+  const rows = $('comparison-rows');
+  rows.replaceChildren();
+  container.hidden = false;
+  const unit = VARIABLES[variable].unit;
+  for (const item of series) {
+    const card = document.createElement('article');
+    card.className = 'comparison-point';
+    card.style.setProperty('--series-color', item.color);
+    const label = document.createElement('div');
+    label.className = 'comparison-location';
+    const badge = document.createElement('span');
+    badge.className = 'comparison-badge';
+    badge.textContent = item.id;
+    const title = document.createElement('strong');
+    title.textContent = item.label;
+    const coords = document.createElement('small');
+    coords.textContent = format(item.lat, 4) + '°, ' + format(item.lon, 4) + '°';
+    label.append(badge, title, coords);
+    const cells = document.createElement('div');
+    cells.className = 'comparison-numbers';
+    const add = (title, value, detail) => {
+      const part = document.createElement('div');
+      part.className = 'comparison-stat';
+      const caption = document.createElement('span');
+      caption.textContent = title;
+      const prominent = document.createElement('strong');
+      prominent.textContent = value;
+      part.append(caption, prominent);
+      if (detail) {
+        const small = document.createElement('small');
+        small.textContent = detail;
+        part.append(small);
+      }
+      cells.append(part);
+    };
+    add('Complete years', String(item.annual.length), item.monthly.length + ' valid months');
+    if (item.trend) {
+      add('Linear trend', signed(item.trend.slopePerDecade, 3) + ' ' + unit + '/decade',
+        '2001 is not assumed; actual years ' + item.trend.start + '–' + item.trend.end);
+      add('Classical 95% slope interval',
+        signed(item.trend.ciLowPerDecade, 3) + ' to ' + signed(item.trend.ciHighPerDecade, 3), unit + '/decade');
+      add('Classical two-sided p', pLabel(item.trend.pValue),
+        item.trend.significant ? 'Below 0.05 if assumptions hold' : 'Not below 0.05');
+    } else {
+      add('Linear trend', 'Not estimated', 'At least 10 complete years required');
+    }
+    card.append(label, cells);
+    rows.append(card);
   }
 }
 
@@ -241,6 +305,7 @@ function updateResults(config, series, warnings) {
   link.textContent = 'Inspect original NASA API request ↗';
   $('source-link').replaceChildren(link);
   $('download').disabled = false;
+  renderComparison(series, config.variable);
   renderLegend('annual-legend', series);
   renderLegend('monthly-legend', series);
   renderPlot('annual-chart', series, false, varInfo.unit);
@@ -271,6 +336,8 @@ function resetResultsUI() {
   }
   $('annual-legend').replaceChildren();
   $('monthly-legend').replaceChildren();
+  $('comparison-panel').hidden = true;
+  $('comparison-rows').replaceChildren();
 }
 
 async function runAnalysis() {
@@ -369,6 +436,18 @@ function exportCSV() {
   document.body.append(link); link.click(); link.remove();
   setTimeout(()=>URL.revokeObjectURL(href),1500);
 }
+
+$('example-button').addEventListener('click', event => {
+  event.preventDefault();
+  $('variable').value = 'T2M';
+  $('variable-description').textContent = VARIABLES.T2M.description;
+  $('start').value = '2001'; $('end').value = '2024';
+  $('city-a').value = 'Yogyakarta'; selectLocation('a');
+  $('city-b').value = 'Jakarta'; selectLocation('b');
+  $('compare').checked = true; setCompareEnabled();
+  $('explore').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  runAnalysis();
+});
 
 fillLocationOptions('a','Yogyakarta');
 fillLocationOptions('b','Jakarta');
