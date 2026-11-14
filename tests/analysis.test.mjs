@@ -44,6 +44,12 @@ test('NASA monthly shape ignores fill values and synthetic annual month 13', () 
     '202403': null, '202404': 27, '202413': 26, 'invalid': 90}}}};
   assert.deepEqual(parseMonthly(data, 'T2M').map(p => p.month), [1, 4]);
 });
+test('NASA records outside the requested period and non-numeric values cannot enter analysis', () => {
+  const data = {properties: {parameter: {T2M: {'200001': 5, '200101': 6,
+    '200102': true, '200103': ' ', '200104': [], '200201': 7}}}};
+  assert.deepEqual(parseMonthly(data, 'T2M', {start: 2001, end: 2001}).map(p => p.value), [6]);
+  assert.throws(() => parseMonthly({properties:{parameter:{T2M:[]}}}, 'T2M'), /requested variable/);
+});
 test('request validation uses allowlisted parameters and years', () => {
   const url = new URL(requestURL({lat: -7.8, lon: 110.37, start: 2001, end: 2024, variable: 'T2M'}));
   assert.equal(url.searchParams.get('parameters'), 'T2M');

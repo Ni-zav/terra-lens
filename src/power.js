@@ -31,15 +31,15 @@ export function requestURL({lat, lon, variable, start, end}) {
   return NASA_ENDPOINT + '?' + params.toString();
 }
 
-export function parseMonthly(json, variable) {
+export function parseMonthly(json, variable, {start = 1981, end = 2025} = {}) {
   const dictionary = json?.properties?.parameter?.[variable];
-  if (!dictionary || typeof dictionary !== 'object') throw new Error('NASA response does not contain the requested variable.');
+  if (!dictionary || typeof dictionary !== 'object' || Array.isArray(dictionary)) throw new Error('NASA response does not contain the requested variable.');
   const rows = [];
   for (const [key, raw] of Object.entries(dictionary)) {
     if (!/^\d{6}$/.test(key)) continue;
     const year = Number(key.slice(0, 4)), month = Number(key.slice(4, 6));
-    const value = raw === null || raw === '' ? NaN : Number(raw);
-    if (month < 1 || month > 12 || !Number.isFinite(value) || value <= -990) continue;
+    const value = (typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '')) ? Number(raw) : NaN;
+    if (year < start || year > end || month < 1 || month > 12 || !Number.isFinite(value) || value <= -990) continue;
     rows.push({ year, month, value, date: key });
   }
   rows.sort((a, b) => a.year - b.year || a.month - b.month);
@@ -61,7 +61,7 @@ export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
   }
   if (!response.ok) throw new Error('NASA POWER request failed (HTTP ' + response.status + '). Please try again.');
   const payload = await response.json();
-  const monthly = parseMonthly(payload, options.variable);
+  const monthly = parseMonthly(payload, options.variable, options);
   if (!monthly.length) throw new Error('NASA returned no valid observations for this location and range.');
   return {
     monthly, url: nasaUrl, fetchedAt: new Date().toISOString(),
