@@ -86,6 +86,35 @@ try{
   await offline.route('**/power.larc.nasa.gov/**',route=>route.fulfill({status:503,body:'unavailable'}));
   await offline.goto(`http://127.0.0.1:${port}/`);await offline.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='Request failed');
   assert.equal((await offline.locator('#metric-slope').textContent()).trim(),'—');assert.equal(await offline.locator('#download').isDisabled(),true);await offline.close();
+  // Experimental regional finder: synthetic fixture is allowed for UI tests ONLY.
+  const finderPage=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});
+  const finderErrors=[];finderPage.on('pageerror',e=>finderErrors.push(e.message));
+  await finderPage.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
+  await finderPage.locator('#finder-run').waitFor({timeout:25000});
+  assert.equal(await finderPage.locator('.discovery-table tbody tr').count(),8,'All eight declared sites must be shown before scanning');
+  await finderPage.locator('#finder-run').click();
+  await finderPage.waitForFunction(()=>document.getElementById('finder-status')?.textContent.includes('Finished:'),
+    null,{timeout:45000});
+  assert.match(await finderPage.locator('#finder-status').textContent(),/8 trends/);
+  assert.equal(await finderPage.locator('.discovery-table tbody tr').count(),8);
+  assert.equal(await finderPage.locator('.discovery-table [aria-pressed=true]').count(),2);
+  assert.ok((await finderPage.evaluate(()=>document.documentElement.scrollWidth))<=392,
+    'Discovery screen must not cause mobile page overflow');
+  const expectedHref=await finderPage.locator('.discovery-inspect').getAttribute('href');
+  assert.match(expectedHref,/auto=1/);
+  assert.match(expectedHref,/compare=1/);
+  const finderDownloaded=finderPage.waitForEvent('download');
+  await finderPage.locator('#finder-download').click();
+  const downloadResult=await finderDownloaded;
+  const evidence=JSON.parse(await readFile(await downloadResult.path(),'utf8'));
+  assert.equal(evidence.schema,'terra-lens-sentinel-screen-v1');
+  assert.equal(evidence.records.length,8);
+  assert.equal(evidence.count.successes,8);
+  assert.equal(evidence.protocol.maxConcurrency,3);
+  assert.match(evidence.brief.uncertainty,/post-selection/);
+  assert.ok(evidence.records.every(r=>r.sourceURL?.includes('power.larc.nasa.gov')));
+  assert.equal(finderErrors.length,0,finderErrors.join('; '));
+  await finderPage.close();
   assert.equal(errors.length,0,errors.join('; '));
   console.log('React/ECharts browser smoke passed: fixture-only data, globe, tabs, values, layout and offline failure.');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
