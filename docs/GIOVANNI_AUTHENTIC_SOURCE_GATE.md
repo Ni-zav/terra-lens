@@ -45,3 +45,63 @@ A genuine NASA Giovanni monthly dataset could be connected via the existing `src
 - Do not replace a missing Giovanni CSV with a fabricated one or a NASA GISS snapshot and relabel it as Giovanni.
 - Do not label the local source-file checker as an authenticated NASA downloader.
 - The source's official list membership may need organizer confirmation; NASA mission authenticity and event eligibility are separate requirements.
+
+## New secure source-acquisition path (15 November 2026)
+
+The project now has an **opt-in, participant-authenticated source fetcher**:
+[\`scripts/fetch-authentic-giovanni.mjs\`](../scripts/fetch-authentic-giovanni.mjs).
+It requests NASA's official \`https://api.giovanni.earthdata.nasa.gov/timeseries\`
+endpoint with an Earthdata bearer token in an HTTP header, and writes the
+**unaltered response bytes outside the repository**. It refuses unlabeled,
+sparse or duplicate-month data and invokes the independent JavaScript evidence
+pipeline; its analysis output remains a *source claim pending manual NASA review*.
+
+**Select the exact variable identifier in NASA's authoritative
+[configured-variables](https://api.giovanni.earthdata.nasa.gov/configured-variables)
+catalog before running.** A scientifically suitable candidate is the NASA
+MERRA-2 monthly model product **M2IMNXASM v5.12.4**, \`T2M\` in Kelvin,
+[DOI 10.5067/5ESKGQTZG7FO](https://doi.org/10.5067/5ESKGQTZG7FO).
+The *collection ID*, *API variable identifier*, and *collection DOI* are
+different metadata fields. Do not guess the API variable ID or substitute
+NASA POWER data under the same label. This is a single-grid-point time series,
+not automatically an area-averaged regional observation.
+
+On a laptop with Earthdata Login **already authorized**, set the following
+values locally (never paste the token into GitHub, logs, ChatGPT or a PR):
+
+\`\`\`bash
+cd terra-lens
+# Source a bearer token from your own authenticated Earthdata environment
+# into EARTHDATA_TOKEN without saving it to files or shell history.
+export GIOVANNI_VARIABLE_ID="EXACT_ID_FROM_NASA_CONFIGURED_VARIABLES"
+export GIOVANNI_PRODUCT_ID="M2IMNXASM_5.12.4"
+export GIOVANNI_PRODUCT_DOI="10.5067/5ESKGQTZG7FO"
+export GIOVANNI_LAT="-7.7956"
+export GIOVANNI_LON="110.3695"
+export GIOVANNI_START="2001-01-01"
+export GIOVANNI_END="2024-12-31"
+export GIOVANNI_DOWNLOAD_DIR="$HOME/Documents/terra-lens-original-nasa"
+node scripts/fetch-authentic-giovanni.mjs
+unset EARTHDATA_TOKEN
+\`\`\`
+
+The script prints an original-file path, result evidence path, NASA request URL,
+monthly-row count, and SHA-256. The data and generated evidence are **private
+local artifacts**, not already included on GitHub. If the API returns a 401/403,
+redirect, timeout, quota error, a nonmonthly CSV or fewer than 10 complete
+years, correct the genuine NASA access/data request; do not create synthetic
+results or edit the downloaded response into an allegedly original file.
+
+Then run the independent numerical check using the printed paths:
+
+\`\`\`bash
+GIOVANNI_EVIDENCE_FILE="/absolute/path/to/giovanni-evidence-....json" \
+GIOVANNI_CSV_FILE="/absolute/path/to/giovanni-original-....csv" \
+python3 scripts/verify-giovanni-source-python.py
+\`\`\`
+
+Confirm the original NASA collection DOI, spatial method and CSV metadata;
+test in the \`Giovanni\` tab, preserve the untouched original and use the evidence
+only after external source review. **No one has performed this real authenticated
+download as part of these code changes.** It cannot be called Global Award
+eligibility satisfied on that basis.
