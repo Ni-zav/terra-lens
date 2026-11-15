@@ -103,7 +103,7 @@ try{
   await page.locator('#giovanni-heading').waitFor({timeout:20000});
   assert.match(await page.locator('#giovanni-example-heading').textContent(),/NASA Giovanni tutorial/);
   const tutorialCard=page.locator('.giovanni-tutorial').filter({has:page.locator('#giovanni-example-heading')});
-  assert.match(await tutorialCard.textContent(),/original Giovanni job URL and quality flags are not documented/);
+  assert.match(await tutorialCard.textContent(),/original Giovanni job URL and quality flags are also undocumented/);
   assert.equal(await tutorialCard.locator('details tbody tr').count(),44);
   assert.equal(await page.locator('#nasa-source-case').count(),1);
   const regionalDownload=page.waitForEvent('download');
@@ -202,6 +202,11 @@ try{
   await area.goto(`http://127.0.0.1:${port}/`);
   await area.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
   await area.locator('#tab-giovanni').click();
+  await area.getByRole('heading',{name:'Explore NASA Giovanni cases'}).waitFor();
+  assert.match(await area.locator('#panel-giovanni').textContent(),/no upload needed/i);
+  assert.match(await area.locator('#panel-giovanni').textContent(),/separate NASA POWER point investigation/i);
+  assert.match(await area.locator('#panel-giovanni').textContent(),/cannot be confidently translated into extra heatwave days per summer/i);
+  assert.match(await area.locator('#panel-giovanni').textContent(),/reprocessed September 2020 and June–September 2021/i);
   await area.locator('#region-west').fill('-123');await area.locator('#region-east').fill('-121');
   await area.locator('#region-south').fill('35');await area.locator('#region-north').fill('37');
   const query=await area.locator('#giovanni-region-query').getAttribute('href');
@@ -222,6 +227,11 @@ try{
   await area.getByText(/119 monthly records, 9 complete years/).waitFor();
   assert.match(await area.locator('.giovanni-summary').textContent(),/Not enough complete years/i);
   await area.close();
+  const deepLink=await browser.newPage({viewport:{width:1280,height:720}});
+  await deepLink.goto(`http://127.0.0.1:${port}/#giovanni`);
+  await deepLink.getByRole('heading',{name:'Explore NASA Giovanni cases'}).waitFor();
+  assert.equal(await deepLink.locator('#tab-giovanni').getAttribute('aria-selected'),'true');
+  await deepLink.close();
   const offline=await browser.newPage({viewport:{width:1280,height:720}});
   await offline.route('**/api/power?**',route=>route.fulfill({status:503,body:'unavailable'}));
   await offline.route('**/power.larc.nasa.gov/**',route=>route.fulfill({status:503,body:'unavailable'}));

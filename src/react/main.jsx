@@ -71,6 +71,7 @@ function makeShare(inputs){
   if(inputs.compareD)url.searchParams.set('compareD','1');
   url.searchParams.set('auto','1');return url.href;
 }
+const linkedTabs={'#giovanni':'giovanni','#science-cases':'cases','#contrast-finder':'finder'};
 function download(name,type,text){
   const url=URL.createObjectURL(new Blob([text],{type}));
   const link=document.createElement('a');link.href=url;link.download=name;
@@ -201,7 +202,8 @@ function Comparison({series,findings}){
 function App(){
   const [inputs,setInputs]=useState(initialInputs), [results,setResults]=useState([]), [query,setQuery]=useState(null);
   const [state,setState]=useState('loading'),[status,setStatus]=useState('Retrieving NASA POWER records…'),[dirty,setDirty]=useState(false);
-  const [activeTab,setActiveTab]=useState('annual'),[annualRange,setAnnualRange]=useState('all'),[monthlyRange,setMonthlyRange]=useState('all'),[monthlyMode,setMonthlyMode]=useState('monthly');
+  const [activeTab,setActiveTab]=useState(()=>linkedTabs[location.hash]||'annual'),[annualRange,setAnnualRange]=useState('all'),[monthlyRange,setMonthlyRange]=useState('all'),[monthlyMode,setMonthlyMode]=useState('monthly');
+  useEffect(()=>{const followHash=()=>{const tab=linkedTabs[location.hash];if(tab)setActiveTab(tab)};window.addEventListener('hashchange',followHash);return()=>window.removeEventListener('hashchange',followHash)},[]);
   const [imported,setImported]=useState(null);
   const request=useRef(null), latestInputs=useRef(inputs), resultsRef=useRef(results);latestInputs.current=inputs;resultsRef.current=results;
   const run=useCallback(async input=>{
@@ -240,7 +242,7 @@ function App(){
   const tabItems=[['annual','Annual'],['monthly','Monthly'],['seasonal','Seasonal'],['comparison','Compare'],['finder','Finder'],['cases','Multi-source'],['giovanni','Giovanni']];
   const T=tabItems.length;
   function keyboardTab(e,index){let n;if(e.key==='ArrowRight')n=(index+1)%T;else if(e.key==='ArrowLeft')n=(index+T-1)%T;else if(e.key==='Home')n=0;else if(e.key==='End')n=T-1;if(n!==undefined){e.preventDefault();setActiveTab(tabItems[n][0]);document.getElementById('tab-'+tabItems[n][0])?.focus();}}
-  return <><a className="skip" href="#explore">Skip to workspace</a><header className="topbar"><div className="shell nav"><a href="./" className="brand">Terra-Lens</a><span className="nav-subtitle">Earth system trend observatory · NASA POWER / SWOT / GISS</span><div className="nav-right"><span className="source-indicator"><i className="pulse"/>NASA POWER</span><a href="#contrast-finder" onClick={e=>{e.preventDefault();setActiveTab('finder');}}>Contrast finder</a><a href="#science-cases" onClick={e=>{e.preventDefault();setActiveTab('cases');}}>Cross-source cases</a><a href="#giovanni" onClick={e=>{e.preventDefault();setActiveTab('giovanni');}}>Giovanni CSV</a><a href="./docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Methodology</a><a href="https://github.com/Ni-zav/terra-lens" target="_blank" rel="noreferrer">Source</a></div></div></header>
+  return <><a className="skip" href="#explore">Skip to workspace</a><header className="topbar"><div className="shell nav"><a href="./" className="brand">Terra-Lens</a><span className="nav-subtitle">Earth system trend observatory · NASA POWER / SWOT / GISS</span><div className="nav-right"><span className="source-indicator"><i className="pulse"/>NASA POWER</span><a href="#contrast-finder" onClick={e=>{e.preventDefault();setActiveTab('finder');}}>Contrast finder</a><a href="#science-cases" onClick={e=>{e.preventDefault();setActiveTab('cases');}}>Cross-source cases</a><a href="#giovanni" onClick={e=>{e.preventDefault();setActiveTab('giovanni');}}>Giovanni cases &amp; CSV</a><a href="./docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Methodology</a><a href="https://github.com/Ni-zav/terra-lens" target="_blank" rel="noreferrer">Source</a></div></div></header>
   <main className="shell explorer" id="explore"><h1 className="sr-only">Earth trend workspace</h1><div className="workspace">
   <aside className="panel controls" aria-label="Analysis settings"><div className="panel-title"><div className="pane-title-group"><span className="section-kicker">Configuration</span><h2>Configure analysis</h2></div><button className="link-button" id="example-button" type="button" onClick={()=>{setInputs({...defaults});run({...defaults})}}>Reset example</button></div>
   <form id="investigation-form" onSubmit={e=>{e.preventDefault();run(inputs)}}>
@@ -286,7 +288,7 @@ function App(){
     })}
   </div>
   <p className="aside-note">Locations are NASA model grid-point estimates, not city-wide measurements.</p></aside>
-  <section className="results" aria-label="Analysis results"><div className="result-heading"><div className="result-title-bar"><span className="section-kicker">Time series</span><strong>Historical trends</strong><p id="result-context">{query?`${dirty?'Previous result: ':''}${info.label} · ${query.start}–${query.end}`:'Waiting for NASA data'}</p></div><span className={'data-state '+(state==='success'&&!dirty?'live':'')} id="data-label">{dirty?'Inputs changed':state==='success'?'NASA data loaded':state==='loading'?'Loading':state==='error'?'Request failed':'Not loaded'}</span></div>
+  <section className="results" aria-label="Analysis results"><div className="result-heading"><div className="result-title-bar"><span className="section-kicker">NASA POWER point results</span><strong>Historical trends</strong><p id="result-context">{query?`${dirty?'Previous result: ':''}${info.label} · ${query.start}–${query.end}`:'Waiting for NASA data'}</p></div><span className={'data-state '+(state==='success'&&!dirty?'live':'')} id="data-label">{dirty?'Inputs changed':state==='success'?'NASA data loaded':state==='loading'?'Loading':state==='error'?'Request failed':'Not loaded'}</span></div>
   <div className="metrics">
     <div className="metric metric-pt-a"><div className="metric-label">● A · {active?active.label:pointName(inputs,'A')} · OLS / dec</div><strong id="metric-slope">{trend?`${signed(trend.slopePerDecade)} ${info.unit}`:'—'}</strong><p id="metric-slope-detail">{trend?`95% CI: ${signed(trend.ciLowPerDecade)} to ${signed(trend.ciHighPerDecade)} · p ${pValue(trend.pValue)}`:'Complete-year OLS fit'}</p></div>
     {secondary ? <div className="metric metric-pt-b"><div className="metric-label">◆ B · {results[1].label} · OLS / dec</div><strong id="metric-slope-b" className="metric-secondary-val">{trendB?`${signed(trendB.slopePerDecade)} ${info.unit}`:'—'}</strong><p id="metric-slope-b-detail">{trendB?`95% CI: ${signed(trendB.ciLowPerDecade)} to ${signed(trendB.ciHighPerDecade)} · Sen ${robustB?signed(robustB.senSlopePerDecade):'—'}`:'Second grid point'}</p><span id="metric-robust" className="sr-only">{robust?`${signed(robust.senSlopePerDecade)} ${info.unit}`:'—'}</span></div>

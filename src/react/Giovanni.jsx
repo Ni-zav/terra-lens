@@ -42,10 +42,11 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
     <div className="giovanni-head">
       <div className="pane-title-group">
         <span className="section-kicker">NASA Source Import · Local File</span>
-        <h2 id="giovanni-heading">Add a NASA Giovanni monthly series</h2>
+        <h2 id="giovanni-heading">Explore NASA Giovanni cases</h2>
       </div>
       <p className="giovanni-links"><a href="https://giovanni.gsfc.nasa.gov/giovanni/" target="_blank" rel="noreferrer">Open NASA Giovanni</a> · <a href="https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GiC_Time_Series_Service.ipynb" target="_blank" rel="noreferrer">NASA CSV workflow example</a></p>
     </div>
+    <p className="giovanni-note">The regional case below is ready to explore—no upload needed. The cards and sidebar outside this panel describe the separate NASA POWER point investigation; they are not the Giovanni area average.</p>
     <GiovanniCase />
     <GiovanniTutorial/>
     <section className="giovanni-card giovanni-tutorial" aria-labelledby="giovanni-query-title">
