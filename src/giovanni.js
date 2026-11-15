@@ -17,18 +17,34 @@ export function parseGiovanniMonthlyCSV(text) {
     if (comma < 1) continue;
     const key = line.slice(0,comma).trim().replace(/^"|"$/g,'');
     const raw = line.slice(comma+1).trim().replace(/^"|"$/g,'');
-    if (/^[A-Za-z][\w-]*$/.test(key) && !['time','timestamp','date'].includes(key.toLowerCase())) {
+    if (/^[A-Za-z_][\w-]*$/.test(key) && !['time','timestamp','date'].includes(key.toLowerCase())) {
       if (!rows.length) metadata[key.toLowerCase()] = raw;
       continue;
     }
-    if (!/^\d{4}-\d{2}(?:-\d{2})?(?:T.*)?$/.test(key)) continue;
+    // NASA's Giovanni in the Cloud CSV examples use "YYYY-MM-DD HH:mm:ss"
+    // timestamps (a space, not a T). Do not silently discard every data row.
+    if (!/^\d{4}-\d{2}(?:-\d{2})?(?:[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z)?)?$/.test(key)) continue;
     const year=Number(key.slice(0,4)), month=Number(key.slice(5,7));
     if (month<1 || month>12 || year<1850 || year>2100) throw new Error('Invalid monthly timestamp.');
+    if (key.length>=10) {
+      const day=Number(key.slice(8,10));
+      const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
+      if(day<1 || day>daysInMonth) throw new Error('Invalid calendar date in monthly CSV.');
+    }
     const date=key.slice(0,4)+key.slice(5,7);
     if (seen.has(date)) throw new Error('Multiple samples per month: use a monthly Giovanni time series, not daily or 3-hourly data.');
     seen.add(date);
     const value=raw===''?NaN:Number(raw);
-    if (!Number.isFinite(value)||value<=-990) continue;
+    // Declared source sentinels are product-specific: a large positive fill
+    // is possible, and a blanket threshold can discard valid negative data.
+    const declared = ['_fillvalue', 'fillvalue', 'fill_value', 'missing_value']
+      .filter(name => Object.hasOwn(metadata, name))
+      .map(name => {
+        const value = Number(metadata[name]);
+        if (metadata[name].trim() === '' || !Number.isFinite(value)) throw new Error(`Invalid ${name} metadata.`);
+        return value;
+      });
+    if (!Number.isFinite(value) || declared.includes(value) || (!declared.length && value === -999)) continue;
     rows.push({year,month,value,date});
   }
   if (!metadata.param_name || !metadata.unit) throw new Error('Giovanni CSV metadata must include param_name and unit. This importer does not accept unlabeled CSV.');
@@ -38,20 +54,28 @@ export function parseGiovanniMonthlyCSV(text) {
 }
 
 /**
- * Adapter: an imported Giovanni CSV becomes a canonical Series. Treated as an
- * area-averaged product (Giovanni time-series service), so it is never paired
- * directly with a POWER grid-point estimate.
+ * Adapter: an imported Giovanni CSV becomes a canonical Series. NASA Giovanni
+ * supports distinct spatial products: point-service output with lat/lon is a
+ * grid-point sample, while area-average exports must explicitly say so.
+ * Absent sufficient metadata, do not guess the spatial support.
  */
-export function giovanniSeries(parsed, {id = 'G', color = '#e79bc0', fileName, sha256, product, doi, sourceURL} = {}) {
+export function giovanniSeries(parsed, {id = 'G', color = '#8f2d56', fileName, sha256, product, doi, sourceURL} = {}) {
   const md = parsed.metadata;
+  const hasCoordinates = md.lat !== undefined && md.lon !== undefined &&
+    md.lat !== '' && md.lon !== '';
   const lat = Number(md.lat), lon = Number(md.lon);
+  const isPoint = hasCoordinates && Number.isFinite(lat) && Number.isFinite(lon) &&
+    lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+  // Labels describe the spatial support, not whether the imported source
+  // resembles an unrelated POWER model grid cell.
+  const support = isPoint ? SUPPORT.GRID_POINT : SUPPORT.UNKNOWN;
   return makeSeries({
-    id, color, monthly: parsed.monthly, support: SUPPORT.AREA_AVERAGE,
+    id, color, monthly: parsed.monthly, support,
     label: product ? `${product} (Giovanni)` : `${md.param_name} (Giovanni)`,
-    geo: Number.isFinite(lat) && Number.isFinite(lon) ? {lat, lon} : null,
+    geo: isPoint ? {lat, lon} : null,
     variable: {code: 'GIOVANNI:' + md.param_name, label: md.param_name, unit: md.unit},
     provenance: {kind: 'giovanni-import', fileName, sha256, product: product || null, doi: doi || null,
       url: sourceURL || null, metadata: md, authenticated: false,
-      warning: 'User-supplied file; provenance fields are not independently authenticated.'}
+      warning: 'User-supplied file; provenance, source quality and temporal aggregation are not independently authenticated. Annual values are day-weighted averages of monthly values, not annual totals or annual extremes; verify that averaging is meaningful for this product. Check product-specific missing-value markers; declared numeric fill/missing values are excluded, or -999 when none is declared.'}
   });
 }

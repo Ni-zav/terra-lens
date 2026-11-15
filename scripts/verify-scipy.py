@@ -40,7 +40,9 @@ const annual = name => annualMeans(parseMonthly(
 const result=pairedContrast(annual(process.argv[1]),annual(process.argv[2]));
 console.log(JSON.stringify({n:result.n,lag:result.hac.lag,slope:result.hac.slopePerDecade,
   se:result.hac.sePerDecade,lower:result.hac.ciLowPerDecade,
-  upper:result.hac.ciHighPerDecade,p:result.hac.pValue}));
+  upper:result.hac.ciHighPerDecade,p:result.hac.pValue,dw:result.hac.durbinWatson,
+  ols_lower:result.classical.ciLowPerDecade,ols_upper:result.classical.ciHighPerDecade,
+  ols_p:result.classical.pValue}));
 """
 def verify_paired_slope(records, artifacts):
     left={row["year"]:row["value"] for row in records["results"]["Yogyakarta"]["annual_series"]}
@@ -61,8 +63,14 @@ def verify_paired_slope(records, artifacts):
     se=math.sqrt(max(0,variance*(n/(n-2))/(float(np.dot(x,x))**2)))
     critical=float(t.ppf(.975,n-2))
     p=float(2*t.sf(abs(slope/se),n-2)) if se>0 else (1.0 if abs(slope)<1e-12 else 0.0)
+    dw=float(np.sum(np.diff(residual)**2)/np.sum(residual**2))
+    ols_fit=linregress(years,values)
+    ols_margin=critical*float(ols_fit.stderr)
     py={"n":n,"lag":lag,"slope":slope*10,"se":se*10,
-        "lower":(slope-critical*se)*10,"upper":(slope+critical*se)*10,"p":p}
+        "lower":(slope-critical*se)*10,"upper":(slope+critical*se)*10,"p":p,"dw":dw,
+        "ols_lower":(float(ols_fit.slope)-ols_margin)*10,
+        "ols_upper":(float(ols_fit.slope)+ols_margin)*10,
+        "ols_p":float(ols_fit.pvalue)}
     js=json.loads(subprocess.run(
         ["node","--input-type=module","-e",JS_PAIR,
          str(artifacts/"power-yogyakarta.json"),str(artifacts/"power-jakarta.json")],
@@ -73,10 +81,11 @@ def verify_paired_slope(records, artifacts):
             f"Paired contrast {metric}: NumPy/SciPy={py[metric]!r}, JS={js[metric]!r}"
         )
     print(f"Paired B−A NASA contrast: n={n}; slope={py['slope']:+.6f} °C/decade; "
-          f"HAC {lag=}, CI [{py['lower']:+.6f},{py['upper']:+.6f}]; p={p:.8g}; PASS")
+          f"HAC {lag=}, CI [{py['lower']:+.6f},{py['upper']:+.6f}], p={p:.8g}, DW={dw:.4f}; "
+          f"Classical OLS CI [{py['ols_lower']:+.6f},{py['ols_upper']:+.6f}], p={py['ols_p']:.8g}; PASS")
     records["paired_B_minus_A"]={
         "definition":"Jakarta minus Yogyakarta, aligned complete calendar years",
-        "method":"Exploratory Bartlett Newey-West HAC, HC1 scaling, approximate t(n-2)",
+        "method":"Exploratory Bartlett Newey-West HAC, HC1 scaling, approximate t(n-2), plus classical OLS reference",
         "numpy_scipy":py,"javascript":js,"caveat":"Same NASA response, independent numerical implementation; not observational accuracy validation or a causal test."
     }
 

@@ -1,26 +1,26 @@
 :root {
-  color-scheme: dark;
-  --bg: #071019;
-  --panel: #0d1a26;
-  --panel-alt: #142432;
-  --header-bg: #10202e;
-  --input-bg: #050c14;
-  --border: #1c3144;
-  --border-strong: #2d4a63;
-  --focus-ring: #62d6e4;
-  --text: #f1f7f9;
-  --muted: #b2c8d6;
-  --dim: #8aa6b8;
-  --cyan: #62d6e4;
-  --amber: #f6b975;
-  --violet: #b29efa;
-  --emerald: #5ce0a8;
-  --status-ok: #6ee7b7;
-  --status-warn: #fcd34d;
-  --status-err: #fca5a5;
-  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
-  --head: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
-  --body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  color-scheme: light;
+  --bg: #ffffff;
+  --panel: #f5f5f3;
+  --panel-alt: #ecebe7;
+  --header-bg: #f0efeb;
+  --input-bg: #ffffff;
+  --border: #dfdeda;
+  --border-strong: #c5c4be;
+  --focus-ring: #1a4be0;
+  --text: #111111;
+  --muted: #4a4a48;
+  --dim: #5e5e5b;
+  --cyan: #1a4be0;
+  --amber: #b84314;
+  --violet: #0d6e66;
+  --emerald: #1f6b3b;
+  --status-ok: #1f6b3b;
+  --status-warn: #9a3412;
+  --status-err: #b91c1c;
+  --mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  --head: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  --body: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -45,7 +45,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   top: -60px;
   left: 8px;
   background: var(--cyan);
-  color: #04151f;
+  color: #ffffff;
   padding: 6px 10px;
   font: 700 11px var(--mono);
   z-index: 30;

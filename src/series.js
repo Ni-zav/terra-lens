@@ -40,7 +40,7 @@ export function makeSeries({id, label, color, variable, support = SUPPORT.UNKNOW
     .sort((a, b) => a.year - b.year || a.month - b.month)
     .filter(p => { const k = p.year * 100 + p.month; if (seen.has(k)) return false; seen.add(k); return true; });
   return Object.freeze({
-    id, label: label || id, color: color || '#9fb3bf',
+    id, label: label || id, color: color || '#1a4be0',
     variable: Object.freeze({code: variable.code || null, label: variable.label || variable.code || 'Variable', unit: variable.unit, description: variable.description || ''}),
     support, geo: geo ? Object.freeze({lat: geo.lat, lon: geo.lon}) : null,
     provenance: Object.freeze({...provenance}),
@@ -70,10 +70,17 @@ export function coverageOf(s) {
   return derive(s, 'coverage', x => {
     if (!x.monthly.length) return {firstYear: null, lastYear: null, months: 0, expectedMonths: 0, completeYears: 0, incompleteYears: [], missingMonths: 0};
     const first = x.monthly[0].year, last = x.monthly.at(-1).year;
+    const requested = x.provenance.requestedPeriod;
+    const validRequest = Number.isInteger(requested?.start) && Number.isInteger(requested?.end) &&
+      requested.start >= 1850 && requested.end <= 2100 && requested.start <= first && requested.end >= last;
+    const expectedFirstYear = validRequest ? requested.start : first;
+    const expectedLastYear = validRequest ? requested.end : last;
     const complete = new Set(annualOf(x).map(r => r.year));
-    const years = [...new Set(x.monthly.map(r => r.year))];
-    const expected = (last - first + 1) * 12;
-    return {firstYear: first, lastYear: last, months: x.monthly.length, expectedMonths: expected,
+    // Count every year in a known request, otherwise the observed span only.
+    const years = Array.from({length: expectedLastYear - expectedFirstYear + 1}, (_, i) => expectedFirstYear + i);
+    const expected = years.length * 12;
+    return {firstYear: first, lastYear: last, expectedFirstYear, expectedLastYear,
+      expectedSpan: validRequest ? 'requested' : 'observed', months: x.monthly.length, expectedMonths: expected,
       completeYears: complete.size, incompleteYears: years.filter(y => !complete.has(y)),
       missingMonths: expected - x.monthly.length};
   });
@@ -85,6 +92,8 @@ export function dependenceOf(s) {
     const trend = trendOf(x);
     if (!trend) return null;
     const annual = annualOf(x);
+    if (annual.some((row, i) => i > 0 && row.year !== annual[i - 1].year + 1))
+      return {r1: null, bound: null, flagged: false, reason: 'Missing calendar years; lag-1 diagnostic unavailable.'};
     const r1 = lag1Autocorrelation(annual.map((row, i) => row.value - trend.fitted[i].value));
     const bound = 1.96 / Math.sqrt(annual.length);
     return {r1, bound, flagged: r1 !== null && Math.abs(r1) > bound};
@@ -130,13 +139,16 @@ export function analyzeSeries(s) {
 
 /**
  * Are two series directly comparable by paired difference? Same physical
- * variable, unit and spatial support are required; otherwise only
+ * variable, unit and known matching spatial support are required; otherwise only
  * standardized-anomaly shape comparison is offered.
  */
 export function compatibility(a, b) {
   const reasons = [];
   if (a.variable.unit !== b.variable.unit) reasons.push(`units differ (${a.variable.unit} vs ${b.variable.unit})`);
   if (!a.variable.code || a.variable.code !== b.variable.code) reasons.push('different source variables');
+  if (a.support === SUPPORT.UNKNOWN || b.support === SUPPORT.UNKNOWN ||
+      !Object.values(SUPPORT).includes(a.support) || !Object.values(SUPPORT).includes(b.support))
+    reasons.push('spatial support is not established for both series');
   if (a.support !== b.support) reasons.push(`spatial support differs (${supportLabel(a.support)} vs ${supportLabel(b.support)})`);
   return {paired: reasons.length === 0, reasons};
 }
@@ -169,6 +181,7 @@ export function describeComparison(cmp, byId) {
   if (!cmp.paired) return `${other.id} vs ${ref.id}: no paired test — ${cmp.reasons.join('; ')}.`;
   if (!cmp.contrast) return `${other.id} vs ${ref.id}: fewer than 10 shared complete years.`;
   const h = cmp.contrast.hac;
+  if (!h) return `${other.id} − ${ref.id}: ${fmt(cmp.contrast.classical.slopePerDecade)} ${ref.variable.unit}/decade fitted trend difference; HAC inference unavailable because shared complete years have gaps.`;
   const excludesZero = h.ciLowPerDecade > 0 || h.ciHighPerDecade < 0;
   return `${other.id} − ${ref.id}: ${fmt(h.slopePerDecade)} ${ref.variable.unit}/decade difference in trend ` +
     (excludesZero ? '(approximate HAC 95% interval excludes zero).' : '(approximate HAC 95% interval includes zero — no evidence of a different trend).');

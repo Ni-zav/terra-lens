@@ -6,7 +6,7 @@ const url = new URL('../demo/index.html', import.meta.url).href;
 let browser;
 try {
   browser = await chromium.launch({headless:true,args:['--no-sandbox','--allow-file-access-from-files']});
-  for (const width of [360,390,430,768,1024,1280,1440]) {
+  for (const width of [360,390,430,768,1024,1280,1440,1920]) {
     const page=await browser.newPage({viewport:{width,height:900}});
     const errs=[];
     page.on('pageerror',err=>errs.push(err.message));
@@ -52,5 +52,5 @@ try {
     assert.ok(layout.overflow <= 5,'Print slide '+(index+1)+' overflows: '+JSON.stringify(layout));
   }
   await printPage.close();
-  console.log('Seven-slide browser story passed at 360/390/430/768/1024/1280/1440px; screenshot loaded, no page overflow or desktop clipping.');
+  console.log('Seven-slide browser story passed at 360/390/430/768/1024/1280/1440/1920px; screenshot loaded, no page overflow or desktop clipping.');
 } finally {await browser?.close();}

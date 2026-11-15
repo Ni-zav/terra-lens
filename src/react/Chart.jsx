@@ -8,10 +8,10 @@ echarts.use([LineChart, BarChart, GridComponent, TooltipComponent, DataZoomCompo
 import {buildChartModel, buildSeasonalModel} from './chart-model.js';
 const fmt = n => Number.isFinite(n) ? new Intl.NumberFormat('en-US',{maximumFractionDigits:3}).format(n) : '—';
 const signed = n => Number.isFinite(n) ? (n > 0 ? '+' : '') + new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n) : null;
-const monoFont = "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace";
-const axisText = {color:'#b2c8d6',fontSize:11,fontFamily:monoFont};
-const tooltipBase = {backgroundColor:'rgba(7, 16, 25, 0.96)',borderColor:'#2d4a63',borderWidth:1,padding:[6,10],
-  textStyle:{color:'#f1f7f9',fontSize:11,fontFamily:monoFont}};
+const monoFont = "'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace";
+const axisText = {color:'#4a4a48',fontSize:11,fontFamily:monoFont};
+const tooltipBase = {backgroundColor:'rgba(255, 255, 255, 0.98)',borderColor:'#c5c4be',borderWidth:1,padding:[6,10],
+  textStyle:{color:'#111111',fontSize:11,fontFamily:monoFont}};
 
 function useEChart() {
   const container=useRef(null), chart=useRef(null);
@@ -46,7 +46,7 @@ export function TimeChart({series, mode, range, setRange, setMode}) {
     const instance=chart.current; if(!instance)return;
     const dataSeries=model.series.flatMap(s=>[
       {id:s.id,name:`${s.id} · ${s.label}`,type:'line',data:s.values,connectNulls:false,showSymbol:!monthly,
-        symbol:symbolFor(s.id),symbolSize:s.id==='B'?6:5,lineStyle:{width:monthly?1.45:2.1,color:s.color},itemStyle:{color:s.color,borderColor:'#071019',borderWidth:1},
+        symbol:symbolFor(s.id),symbolSize:s.id==='B'?6:5,lineStyle:{width:monthly?1.45:2.1,color:s.color},itemStyle:{color:s.color,borderColor:'#ffffff',borderWidth:1},
         emphasis:{focus:'series',lineStyle:{width:monthly?2.1:2.7}}},
       ...(!monthly&&s.fit.some(v=>v!==null)?[{name:`${s.id} · ${s.label} OLS`,type:'line',data:s.fit,
         connectNulls:true,showSymbol:false,silent:true,lineStyle:{width:1.5,type:dashFor(s.id),color:s.color,opacity:.88}}]:[])
@@ -54,16 +54,16 @@ export function TimeChart({series, mode, range, setRange, setMode}) {
     instance.setOption({animation:false,backgroundColor:'transparent',aria:{enabled:true,description:
       `${anomaly?'Monthly anomaly':monthly?'Monthly':'Annual'} NASA values in ${unit}. Use the date slider for exact values.`},
       grid:{left:46,right:14,top:20,bottom:24},
-      tooltip:{...tooltipBase,trigger:'axis',axisPointer:{type:'cross',lineStyle:{color:'#4d7288',width:1,type:'dashed'},
-        crossStyle:{color:'#39586b',width:1,type:'dotted'},
-        label:{show:true,backgroundColor:'#0b1a27',borderColor:'#2c4a5e',borderWidth:1,color:'#e4f0f5',fontFamily:monoFont,fontSize:10,padding:[3,6]}},
+      tooltip:{...tooltipBase,trigger:'axis',axisPointer:{type:'cross',lineStyle:{color:'#8f8e88',width:1,type:'dashed'},
+        crossStyle:{color:'#8f8e88',width:1,type:'dotted'},
+        label:{show:true,backgroundColor:'#f5f5f3',borderColor:'#c5c4be',borderWidth:1,color:'#111111',fontFamily:monoFont,fontSize:10,padding:[3,6]}},
         valueFormatter:value=>value==null?'No record':(anomaly?signed(value)??'—':fmt(value))+' '+unit},
-      xAxis:{type:'category',data:model.dates,boundaryGap:false,axisLine:{lineStyle:{color:'#263d4f'}},
-        axisTick:{show:true,lineStyle:{color:'#263d4f'},length:3},
-        splitLine:{show:true,lineStyle:{color:'#0f1e2c',width:1}},
+      xAxis:{type:'category',data:model.dates,boundaryGap:false,axisLine:{lineStyle:{color:'#c5c4be'}},
+        axisTick:{show:true,lineStyle:{color:'#c5c4be'},length:3},
+        splitLine:{show:true,lineStyle:{color:'#ecebe7',width:1}},
         axisLabel:{...axisText,hideOverlap:true,margin:6,formatter:value=>monthly?(value.endsWith('-01')?value.slice(0,4):''):value}},
-      yAxis:{type:'value',scale:!anomaly,axisLine:{show:true,lineStyle:{color:'#263d4f'}},
-        axisLabel:{...axisText,margin:6},splitLine:{lineStyle:{color:'#162838',width:1}},
+      yAxis:{type:'value',scale:!anomaly,axisLine:{show:true,lineStyle:{color:'#c5c4be'}},
+        axisLabel:{...axisText,margin:6},splitLine:{lineStyle:{color:'#e5e4e0',width:1}},
         name:anomaly?`Δ ${unit}`:unit,nameGap:6,nameTextStyle:{...axisText,align:'right'}},
       dataZoom:[{type:'inside',filterMode:'none',zoomOnMouseWheel:'ctrl',moveOnMouseMove:'shift'}],
       series:dataSeries},true);
@@ -80,8 +80,8 @@ export function TimeChart({series, mode, range, setRange, setMode}) {
     const instance=chart.current;
     if(!instance||!model.series.length||!model.dates.length)return;
     instance.setOption({series:[{id:model.series[0].id,markLine:{silent:true,symbol:'none',
-      lineStyle:{color:'#9ec2cf',width:1,type:'dashed'},label:{show:false},
-      data:[{xAxis:model.dates[position]},...(anomaly?[{yAxis:0,lineStyle:{color:'#5d7f90',type:'solid'}}]:[])]}}]});
+      lineStyle:{color:'#6e6e6a',width:1,type:'dashed'},label:{show:false},
+      data:[{xAxis:model.dates[position]},...(anomaly?[{yAxis:0,lineStyle:{color:'#8f8e88',type:'solid'}}]:[])]}}]});
   },[model,position,anomaly]);
   const show=v=>v===null?'no record':(anomaly?signed(v):fmt(v))+' '+unit;
   const readout=model.dates.length ? model.dates[position]+' · '+model.series.map(s=>`${s.label}: ${show(s.values[position])}`).join(' / ') : 'Waiting for NASA data.';
@@ -119,14 +119,14 @@ export function SeasonalChart({series}) {
       grid:{left:46,right:14,top:20,bottom:24},
       tooltip:{...tooltipBase,trigger:'axis',axisPointer:{type:trend?'shadow':'line'},
         valueFormatter:v=>v==null?'Not estimated':(trend?signed(v):fmt(v))+' '+unit+(trend?'/dec':'')},
-      xAxis:{type:'category',data:model.months,axisLine:{lineStyle:{color:'#263d4f'}},axisLabel:{...axisText,margin:6},axisTick:{show:false}},
-      yAxis:{type:'value',scale:!trend,axisLine:{show:true,lineStyle:{color:'#263d4f'}},axisLabel:{...axisText,margin:6},
-        splitLine:{lineStyle:{color:'#162838',width:1}},name:trend?`${unit}/dec`:unit,nameGap:6,nameTextStyle:{...axisText,align:'right'}},
+      xAxis:{type:'category',data:model.months,axisLine:{lineStyle:{color:'#c5c4be'}},axisLabel:{...axisText,margin:6},axisTick:{show:false}},
+      yAxis:{type:'value',scale:!trend,axisLine:{show:true,lineStyle:{color:'#c5c4be'}},axisLabel:{...axisText,margin:6},
+        splitLine:{lineStyle:{color:'#e5e4e0',width:1}},name:trend?`${unit}/dec`:unit,nameGap:6,nameTextStyle:{...axisText,align:'right'}},
       series:model.series.map(s=>trend
         ?{id:s.id,name:`${s.id} · ${s.label}`,type:'bar',data:s.slopes,barMaxWidth:12,itemStyle:{color:s.color,borderRadius:[2,2,0,0]},
-          markLine:{silent:true,symbol:'none',label:{show:false},lineStyle:{color:'#5d7f90',type:'solid'},data:[{yAxis:0}]}}
+          markLine:{silent:true,symbol:'none',label:{show:false},lineStyle:{color:'#8f8e88',type:'solid'},data:[{yAxis:0}]}}
         :{id:s.id,name:`${s.id} · ${s.label}`,type:'line',data:s.climatology,symbol:symbolFor(s.id),symbolSize:s.id==='B'?6:5,connectNulls:false,
-          lineStyle:{width:2.1,color:s.color},itemStyle:{color:s.color,borderColor:'#071019',borderWidth:1}})},true);
+          lineStyle:{width:2.1,color:s.color},itemStyle:{color:s.color,borderColor:'#ffffff',borderWidth:1}})},true);
     const onAxis=params=>{const value=params.axesInfo?.[0]?.value;const i=typeof value==='number'?value:model.months.indexOf(value);if(i>=0&&i<12)setCursor(i);};
     instance.on('updateAxisPointer',onAxis);
     return ()=>instance.off('updateAxisPointer',onAxis);

@@ -21,5 +21,15 @@ try{
   if(await page.locator('.slide').count()!==7)throw Error('Demo must contain exactly seven slides');
   await page.emulateMedia({media:'print'});
   await page.pdf({path:output,preferCSSPageSize:true,printBackground:true});
-  console.log('Wrote verified screenshot-backed demo PDF:',output);
+  const previewDir=fileURLToPath(new URL('../artifacts/',import.meta.url));
+  await mkdir(previewDir,{recursive:true});
+  // Render all seven PRINT slides as independent images for real visual QA.
+  // These are captures of the actual authored NASA-evidence deck, not mockups.
+  for(let n=0;n<7;n++) {
+    await page.locator('.slide').nth(n).screenshot({
+      path:previewDir+'/demo-print-slide-'+String(n+1).padStart(2,'0')+'.png',
+      animations:'disabled'
+    });
+  }
+  console.log('Wrote seven print-layout previews and verified screenshot-backed demo PDF:',output);
 }finally{await browser?.close()}

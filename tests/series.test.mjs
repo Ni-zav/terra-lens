@@ -56,6 +56,24 @@ test('makeSeries sorts, de-duplicates and freezes raw records',()=>{
   assert.ok(Object.isFrozen(s)&&Object.isFrozen(s.monthly));
   assert.equal(coverageOf(s).missingMonths,10);
 });
+test('coverage reports a fully absent internal year as incomplete',()=>{
+  const monthly=[...years(1,()=>1,2001),...years(1,()=>2,2003)];
+  const coverage=coverageOf(makeSeries({id:'A',variable:v,monthly}));
+  assert.equal(coverage.completeYears,2);
+  assert.equal(coverage.missingMonths,12);
+  assert.deepEqual(coverage.incompleteYears,[2002]);
+});
+test('coverage counts absent requested boundary years and records the span basis',()=>{
+  const monthly=[...years(1,()=>1,2002),...years(1,()=>2,2003)];
+  const s=powerSeries({monthly,url:'https://power.larc.nasa.gov/x',fetchedAt:'2026-11-15T00:00:00Z',metadata:{},requestedPeriod:{start:2001,end:2004}},
+    {id:'A',lat:0,lon:0,variable:'T2M'});
+  const coverage=coverageOf(s);
+  assert.equal(coverage.firstYear,2002);assert.equal(coverage.lastYear,2003);
+  assert.equal(coverage.expectedSpan,'requested');assert.equal(coverage.expectedMonths,48);
+  assert.equal(coverage.missingMonths,24);assert.deepEqual(coverage.incompleteYears,[2001,2004]);
+  const imported=coverageOf(makeSeries({id:'G',variable:v,monthly}));
+  assert.equal(imported.expectedSpan,'observed');assert.equal(imported.missingMonths,0);
+});
 test('derivations are memoized per series',()=>{
   const s=makeSeries({id:'A',variable:v,monthly:years(12,y=>y)});
   assert.equal(annualOf(s),annualOf(s));assert.equal(analyzeSeries(s),analyzeSeries(s));
@@ -78,6 +96,27 @@ test('paired contrast only for same variable, unit and support',()=>{
   const f=buildFindings([a,b,g]);
   assert.equal(f.comparisons.length,2);assert.equal(f.lines.length,5);
   assert.match(f.lines.at(-1),/no paired test/);
+});
+test('unknown spatial support never establishes paired compatibility',()=>{
+  const a=makeSeries({id:'A',variable:v,monthly:years(12,y=>y*.02)});
+  const b=makeSeries({id:'B',variable:v,monthly:years(12,y=>y*.04+Math.cos(y))});
+  const result=compareSeries(a,b);
+  assert.equal(result.paired,false);
+  assert.equal(result.contrast,null);
+  assert.ok(result.reasons.some(reason=>/spatial support is not established/.test(reason)));
+  assert.match(buildFindings([a,b]).lines.at(-1),/no paired test/);
+});
+test('gaps suppress lag diagnostics and surface the limitation in findings',()=>{
+  const all=years(16,(y,m)=>y*.03+Math.sin(y)+m);
+  const missing=all.filter(p=>p.year!==2008);
+  const a=makeSeries({id:'A',variable:v,support:SUPPORT.GRID_POINT,monthly:all});
+  const b=makeSeries({id:'B',variable:v,support:SUPPORT.GRID_POINT,monthly:missing});
+  const analysis=analyzeSeries(b);
+  assert.equal(analysis.dependence.r1,null);
+  assert.match(analysis.dependence.reason,/Missing calendar years/);
+  const findings=buildFindings([a,b]);
+  assert.equal(findings.comparisons[0].contrast.hac,null);
+  assert.match(findings.lines.at(-1),/HAC inference unavailable/);
 });
 test('POWER adapter produces a grid-point series with provenance',()=>{
   const s=powerSeries({monthly:years(1,()=>1),url:'https://power.larc.nasa.gov/x',fetchedAt:'2026-11-14T00:00:00Z',source:'NASA POWER',metadata:{}},{id:'A',label:'Yogyakarta',color:'#62d6e4',lat:-7.8,lon:110.4,variable:'T2M'});

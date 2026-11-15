@@ -20,6 +20,16 @@ test('missing paired years never substitute zeros or compare unmatched windows',
  assert.deepEqual(result.excludedYearsA,[2001,2002,2003]);
  assert.equal(pairedContrast(a,b.slice(4)),null);
 });
+test('internal missing year suppresses time-dependent inference, not calendar-year slope',()=>{
+ const a=Array.from({length:16},(_,i)=>({year:2000+i,value:Math.sin(i)}));
+ const b=a.filter(p=>p.year!==2007).map(p=>({...p,value:p.value+0.03*(p.year-2000)}));
+ const result=pairedContrast(a,b);
+ assert.equal(result.n,15);
+ assert.deepEqual(result.excludedYearsA,[2007]);
+ assert.ok(Math.abs(result.classical.slopePerDecade-0.3)<1e-10);
+ assert.equal(result.hac,null);
+ assert.match(result.caveat,/gaps/);
+});
 test('noisy constant difference produces finite, nonnegative HAC interval and p in [0,1]',()=>{
  const a=Array.from({length:30},(_,i)=>({year:1985+i,value:i*.12+Math.sin(i)}));
  const b=a.map((p,i)=>({year:p.year,value:p.value+2+Math.sin(i*.78)}));

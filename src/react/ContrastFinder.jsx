@@ -39,15 +39,15 @@ function CoordinatePlot({records}) {
   const y=lat=>202-(lat+12)/19*156;
   return <figure className="discovery-figure">
     <svg viewBox="0 0 800 236" role="img" aria-label="Eight predeclared Indonesian coordinate sample points plotted by longitude and latitude. Colors show sampling status, not climate intensity.">
-      <rect x="52" y="34" width="696" height="168" rx="2" fill="#07131e" stroke="#233b4e" />
-      {[95,105,115,125].filter(v=>v<=124).map(v=><g key={v}><line x1={x(v)} x2={x(v)} y1="34" y2="202" stroke="#162938"/><text x={x(v)} y="220" fill="#8fa9b8" textAnchor="middle" fontSize="13" fontFamily="ui-monospace, monospace">{v}°E</text></g>)}
-      {[-10,-5,0,5].map(v=><g key={v}><line y1={y(v)} y2={y(v)} x1="52" x2="748" stroke="#162938"/><text x="44" y={y(v)+4} fill="#8fa9b8" textAnchor="end" fontSize="12" fontFamily="ui-monospace, monospace">{v}°</text></g>)}
+      <rect x="52" y="34" width="696" height="168" rx="4" fill="#ffffff" stroke="#dfdeda" />
+      {[95,105,115,125].filter(v=>v<=124).map(v=><g key={v}><line x1={x(v)} x2={x(v)} y1="34" y2="202" stroke="#e5e4e0"/><text x={x(v)} y="220" fill="#4a4a48" textAnchor="middle" fontSize="13" fontFamily="DM Mono, ui-monospace, monospace">{v}°E</text></g>)}
+      {[-10,-5,0,5].map(v=><g key={v}><line y1={y(v)} y2={y(v)} x1="52" x2="748" stroke="#e5e4e0"/><text x="44" y={y(v)+4} fill="#4a4a48" textAnchor="end" fontSize="12" fontFamily="DM Mono, ui-monospace, monospace">{v}°</text></g>)}
       {SENTINEL_POINTS.map((p,i)=>{
         const r=byId.get(p.id),status=r?.status||'waiting';
-        const color=status==='error'?'#ff9e80':status==='insufficient-years'?'#f6b975':status==='ok'?'#62d6e4':'#688394';
-        return <g key={p.id}><circle cx={x(p.lon)} cy={y(p.lat)} r="12" fill={color} stroke="#061019" strokeWidth="2"/><text x={x(p.lon)} y={y(p.lat)+4} textAnchor="middle" fontSize="11" fontWeight="700" fontFamily="ui-monospace, monospace" fill="#04151f">{i+1}</text><title>{p.label}: {status}</title></g>;
+        const color=status==='error'?'#b91c1c':status==='insufficient-years'?'#b84314':status==='ok'?'#1a4be0':'#6e6e6a';
+        return <g key={p.id}><circle cx={x(p.lon)} cy={y(p.lat)} r="12" fill={color} stroke="#ffffff" strokeWidth="2"/><text x={x(p.lon)} y={y(p.lat)+4} textAnchor="middle" fontSize="11" fontWeight="700" fontFamily="DM Mono, ui-monospace, monospace" fill="#ffffff">{i+1}</text><title>{p.label}: {status}</title></g>;
       })}
-      <text x="400" y="21" textAnchor="middle" fill="#b7ccd8" fontWeight="600" fontSize="14" fontFamily="ui-monospace, monospace">SAMPLING COORDINATES · NOT A CLIMATE RASTER</text>
+      <text x="400" y="21" textAnchor="middle" fill="#4a4a48" fontWeight="600" fontSize="13" fontFamily="DM Mono, ui-monospace, monospace">Sampling coordinates · Not a climate raster</text>
     </svg>
     <figcaption>Fixed sampling coordinates (1–8). Colors show request status only—never temperature or risk.</figcaption>
   </figure>;
@@ -179,7 +179,7 @@ export default function ContrastFinder({onInspect}) {
             <p><strong>Scope:</strong> {brief.scope} ({summary.candidatePairs} candidate pairs; post-selected).</p>
             {canInspect&&<div className="discovery-paired">
               <p><strong>Selected test:</strong> B = {b.label} minus A = {a.label} on matched full years.</p>
-              {aligned?<p>Fitted difference: <strong>{signed(aligned.classical.slopePerDecade)} {unit}/dec</strong> · HAC 95% CI: {signed(aligned.hac.ciLowPerDecade)} to {signed(aligned.hac.ciHighPerDecade)} ({aligned.n}y). <strong>Exploratory only</strong>: post-selection invalidates confirmatory p-values.</p>
+              {aligned?<p>Fitted difference: <strong>{signed(aligned.classical.slopePerDecade)} {unit}/dec</strong> · {aligned.hac?`HAC 95% CI: ${signed(aligned.hac.ciLowPerDecade)} to ${signed(aligned.hac.ciHighPerDecade)}`:'HAC unavailable: gaps in shared years'} ({aligned.n}y). <strong>Exploratory only</strong>: post-selection invalidates confirmatory p-values.</p>
                 :<p>Insufficient common full years to test a paired slope difference.</p>}
               <a className="discovery-inspect" href={investigateUrl(a,b,variable,Number(start),Number(end))} onClick={e=>{
                 if(onInspect&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){

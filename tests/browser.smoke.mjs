@@ -30,6 +30,12 @@ try{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded',null,{timeout:20000});
+  // POWER monthly extremes are not means of daily extremes or annual extremes.
+  await page.locator('#variable').selectOption('T2M_MAX');
+  assert.match(await page.locator('#variable-description').textContent(),/Highest modeled hourly.*each month.*not annual maxima/);
+  await page.locator('#variable').selectOption('T2M_MIN');
+  assert.match(await page.locator('#variable-description').textContent(),/Lowest modeled hourly.*each month.*not annual minima/);
+  await page.locator('#variable').selectOption('T2M');
   assert.match(await page.locator('#metric-slope').textContent(),/°C/);
   assert.equal((await page.locator('#metric-years').textContent()).trim(),'24');
   await page.locator('#earth-globe canvas').waitFor({timeout:20000});
@@ -101,6 +107,24 @@ try{
   await page.screenshot({path:join(ROOT,'artifacts','react-fixture-cases.png')});
   await page.locator('#tab-giovanni').click();
   await page.locator('#giovanni-heading').waitFor({timeout:20000});
+  assert.match(await page.locator('#giovanni-example-heading').textContent(),/NASA Giovanni tutorial/);
+  const tutorialCard=page.locator('.giovanni-tutorial').filter({has:page.locator('#giovanni-example-heading')});
+  assert.match(await tutorialCard.textContent(),/original Giovanni job URL and quality flags are also undocumented/);
+  assert.equal(await tutorialCard.locator('details tbody tr').count(),44);
+  assert.equal(await page.locator('#nasa-source-case').count(),1);
+  const regionalDownload=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Download regional evidence JSON'}).click();
+  const regionalEvidence=JSON.parse(await readFile(await (await regionalDownload).path(),'utf8'));
+  assert.equal(regionalEvidence.monthly.length,288);
+  assert.equal(regionalEvidence.annual.length,24);
+  assert.equal(regionalEvidence.sourceCSV_SHA256,'ff7cd37fd010ae16015ce22400c2cb583c975c6d9277e0235cbd674d774e54dc');
+  assert.match(regionalEvidence.limitations,/No quality-flag variable/);
+  const tutorialDownload=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Download tutorial evidence JSON'}).click();
+  const tutorialEvidence=JSON.parse(await readFile(await (await tutorialDownload).path(),'utf8'));
+  assert.equal(tutorialEvidence.rows.length,44);
+  assert.equal(tutorialEvidence.sha256,'34193c502c6417eb1163967a33dc2b19a87ea8be5518142f6196cb77b0a2b8fd');
+  assert.match(tutorialEvidence.limitations,/quality flags are unavailable/);
   await page.screenshot({path:join(ROOT,'artifacts','react-fixture-giovanni.png')});
   for(const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660],[820,700],[800,660]]){
     await page.setViewportSize({width,height});
@@ -119,7 +143,7 @@ try{
   }
   for(const [mw,mh] of [[768,1024],[390,844],[360,800]]){
     await page.setViewportSize({width:mw,height:mh});
-    for(const t of ['annual','comparison','cases']){
+    for(const t of ['annual','comparison','cases','giovanni']){
       await page.locator(`#tab-${t}`).click();
       assert.ok((await page.evaluate(()=>document.documentElement.scrollWidth))<=mw+2,`Mobile/tablet overflow at ${mw}x${mh} (${t})`);
     }
@@ -130,6 +154,111 @@ try{
   const noWebGL=await browser.newPage({viewport:{width:390,height:844}});
   await noWebGL.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args)}});
   await noWebGL.goto(`http://127.0.0.1:${port}/`);await noWebGL.locator('#earth-globe').scrollIntoViewIfNeeded();await noWebGL.locator('#earth-globe[data-error]').waitFor({timeout:20000});assert.equal(await noWebGL.locator('#lat-a').isEnabled(),true);await noWebGL.close();
+  // A missing month makes an internal year incomplete in both fixture series.
+  // The UI must retain the calendar-year estimate but not report gap-blind HAC.
+  const gaps=await browser.newPage({viewport:{width:1280,height:720}});
+  const gapErrors=[];gaps.on('pageerror',e=>gapErrors.push(e.message));
+  await gaps.route('**/api/power?**',async route=>{
+    const response=await route.fetch(), json=await response.json();
+    const records=Object.values(json.properties.parameter)[0];
+    records['201001']=-999;
+    await route.fulfill({response,json});
+  });
+  await gaps.goto(`http://127.0.0.1:${port}/`);
+  await gaps.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
+  assert.match(await gaps.locator('#metric-significance-detail').textContent(),/HAC unavailable: gaps/);
+  await gaps.locator('#tab-comparison').click();
+  assert.match(await gaps.locator('.paired-contrast').textContent(),/HAC and Durbin–Watson require consecutive/);
+  assert.match(await gaps.locator('#finding-text').textContent(),/HAC inference unavailable/);
+  assert.deepEqual(gapErrors,[]);await gaps.close();
+  // Simulate a superseded request whose transport ignores cancellation and
+  // completes after its accelerated timeout. It must not overwrite a new result.
+  const race=await browser.newPage({viewport:{width:1280,height:720}});
+  await race.addInitScript(()=>{
+    const originalFetch=window.fetch.bind(window), originalTimer=window.setTimeout.bind(window);
+    window.__testInitialCalls=0; window.__testTimeouts=0;
+    window.fetch=(input,options)=>{
+      if(String(input).startsWith('/api/power?') && ++window.__testInitialCalls<=2)
+        return originalFetch(input,{...options,signal:undefined});
+      return originalFetch(input,options);
+    };
+    window.setTimeout=(fn,ms,...args)=>ms===30000
+      ? originalTimer(()=>{window.__testTimeouts++;fn();},3000,...args)
+      : originalTimer(fn,ms,...args);
+  });
+  let raceRequests=0;
+  await race.route('**/api/power?**',async route=>{
+    if(++raceRequests<=2)await new Promise(resolve=>setTimeout(resolve,4500));
+    await route.continue().catch(()=>{});
+  });
+  await race.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
+  await race.waitForFunction(()=>window.__testInitialCalls>=2);
+  await race.locator('#lat-a').fill('-8.1');
+  await race.locator('#analyze').click();
+  await race.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
+  await race.waitForTimeout(5000);
+  assert.equal(await race.evaluate(()=>window.__testTimeouts),1,'The superseded request must actually reach its timeout');
+  assert.equal((await race.locator('#data-label').textContent()).trim(),'NASA data loaded');
+  assert.match(await race.locator('#status').textContent(),/Loaded 2 NASA points/);
+  assert.equal(await race.locator('#lat-a').inputValue(),'-8.1');
+  await race.close();
+  // The checked-in NASA area export is used here as a real-source integration
+  // fixture; the synthetic POWER responses remain limited to this test server.
+  const area=await browser.newPage({viewport:{width:1280,height:720},acceptDownloads:true});
+  await area.goto(`http://127.0.0.1:${port}/`);
+  await area.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
+  await area.locator('#tab-giovanni').click();
+  await area.getByRole('heading',{name:'Explore NASA Giovanni cases'}).waitFor();
+  let catalogCalls=0;
+  await area.route('https://cmr.earthdata.nasa.gov/search/collections.json?*',route=>{catalogCalls++;return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({feed:{entry:[{id:'C123-TEST',title:'Synthetic catalog test collection',short_name:'TEST',version_id:'1'}]}})})});
+  await area.route('https://cmr.earthdata.nasa.gov/search/variables.umm_json?*',route=>route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({hits:1,items:[{meta:{'concept-id':'V123-TEST'},umm:{Name:'TESTVAR',LongName:'Synthetic variable',Units:'K',FillValues:[{Value:9999}]},associations:{collections:[{'concept-id':'C123-TEST'}]}}]})}));
+  await area.locator('#catalog-term').fill('soil moisture');
+  await area.locator('#catalog-search').click();
+  await area.getByText('Synthetic catalog test collection').waitFor();
+  await area.locator('#catalog-search').click();
+  await area.getByText(/collection records returned \(cached\)/).waitFor();
+  assert.equal(catalogCalls,1,'repeat catalog request should use bounded memory cache');
+  await area.getByRole('button',{name:'View variables for TEST'}).click();
+  await area.getByRole('link',{name:'TESTVAR'}).waitFor();
+  assert.match(await area.getByRole('region',{name:'Catalog variable results'}).innerText(),/unit K.*declared fill 9999/);
+  await area.locator('#catalog-variable-filter').fill('not-present');
+  assert.equal(await area.getByRole('link',{name:'TESTVAR'}).count(),0);
+  await area.locator('#catalog-variable-filter').fill('testvar');
+  await area.getByRole('link',{name:'TESTVAR'}).waitFor();
+  assert.match(await area.locator('#panel-giovanni').textContent(),/annual calculation is a day-weighted average of monthly values, not an annual total or annual extreme/i);
+  assert.match(await area.locator('#panel-giovanni').textContent(),/no upload needed/i);
+  assert.match(await area.locator('#panel-giovanni').textContent(),/separate NASA POWER point investigation/i);
+  assert.match(await area.locator('#panel-giovanni').textContent(),/cannot be confidently translated into extra heatwave days per summer/i);
+  assert.match(await area.locator('#panel-giovanni').textContent(),/reprocessed September 2020 and June–September 2021/i);
+  await area.locator('#region-west').fill('-123');await area.locator('#region-east').fill('-121');
+  await area.locator('#region-south').fill('35');await area.locator('#region-north').fill('37');
+  const query=await area.locator('#giovanni-region-query').getAttribute('href');
+  assert.equal(new URLSearchParams(new URL(query).hash.slice(1)).get('bbox'),'-123,35,-121,37');
+  await area.locator('#giovanni-file').setInputFiles(join(ROOT,'data/source-snapshots/g4.areaAvgTimeSeries.M2TMNXSLV_5_12_4_T2M.20010101-20241231.110E_8S_111E_7S.csv'));
+  await area.getByText(/288 monthly records, 24 complete years/).waitFor();
+  assert.match(await area.locator('#sources').textContent(),/Copied links do not include the imported Giovanni file/);
+  assert.match(await area.locator('#provenance-text').textContent(),/G is a user-imported Giovanni area-averaged product/);
+  await area.locator('#tab-comparison').click();
+  assert.match(await area.locator('#comparison-panel').textContent(),/spatial support differs/);
+  // Synthetic cloud import fixture: a declared fill month must not create a
+  // complete year or enter the calculated trend.
+  await area.locator('#tab-giovanni').click();
+  const syntheticCloud=['param_name,T2M','unit,K','fill_value,1e15'];
+  for(let year=2001;year<=2010;year++) for(let month=1;month<=12;month++)
+    syntheticCloud.push(`${year}-${String(month).padStart(2,'0')}-01,${year===2001&&month===1?'1e15':280}`);
+  await area.locator('#giovanni-file').setInputFiles({name:'synthetic-cloud-test.csv',mimeType:'text/csv',buffer:Buffer.from(syntheticCloud.join('\n'))});
+  await area.getByText(/119 monthly records, 9 complete years/).waitFor();
+  assert.match(await area.locator('.giovanni-summary').textContent(),/Not enough complete years/i);
+  assert.match(await area.locator('.giovanni-summary').textContent(),/not annual totals or annual extremes/i);
+  const cloudDownload=area.waitForEvent('download');await area.locator('#evidence-download').click();
+  const cloudEvidence=JSON.parse(await readFile(await(await cloudDownload).path(),'utf8'));
+  assert.match(cloudEvidence.series.find(s=>s.id==='G').provenance.warning,/not annual totals or annual extremes/i);
+  await area.close();
+  const deepLink=await browser.newPage({viewport:{width:1280,height:720}});
+  await deepLink.goto(`http://127.0.0.1:${port}/#giovanni`);
+  await deepLink.getByRole('heading',{name:'Explore NASA Giovanni cases'}).waitFor();
+  assert.equal(await deepLink.locator('#tab-giovanni').getAttribute('aria-selected'),'true');
+  await deepLink.close();
   const offline=await browser.newPage({viewport:{width:1280,height:720}});
   await offline.route('**/api/power?**',route=>route.fulfill({status:503,body:'unavailable'}));
   await offline.route('**/power.larc.nasa.gov/**',route=>route.fulfill({status:503,body:'unavailable'}));

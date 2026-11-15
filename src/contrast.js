@@ -18,6 +18,16 @@ export function pairedContrast(annualA, annualB, minYears = 10) {
   const trend = linearTrend(differences, minYears);
   if (!trend) return null;
   const n = years.length;
+  const consecutive = years.every((year, i) => i === 0 || year === years[i - 1] + 1);
+  // The lag covariance estimator below treats adjacent observations as one
+  // year apart. Do not apply it to a series with missing calendar years.
+  if (!consecutive) return {
+    definition: 'B minus A on paired complete calendar years', differences, n, years,
+    excludedYearsA: [...a.keys()].filter(year => !b.has(year)).sort((x, y) => x - y),
+    excludedYearsB: [...b.keys()].filter(year => !a.has(year)).sort((x, y) => x - y),
+    classical: trend, hac: null,
+    caveat: 'HAC and Durbin–Watson are unavailable because shared complete years have gaps. The fitted slope uses actual calendar years and remains exploratory.'
+  };
   const xMean = years.reduce((sum, year) => sum + year, 0) / n;
   const x = years.map(year => year - xMean);
   const sxx = x.reduce((sum, value) => sum + value * value, 0);

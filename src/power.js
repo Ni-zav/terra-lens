@@ -2,8 +2,8 @@
 import {makeSeries, SUPPORT} from './series.js';
 export const VARIABLES = Object.freeze({
   T2M: { label: 'Air temperature', description: 'Near-surface mean air temperature at 2 meters (monthly mean).', unit: '°C' },
-  T2M_MAX: { label: 'Daily maximum temperature', description: 'Monthly average of the daily maximum 2 m temperature; not the single highest day.', unit: '°C' },
-  T2M_MIN: { label: 'Daily minimum temperature', description: 'Monthly average of the daily minimum 2 m temperature; not the single lowest day.', unit: '°C' },
+  T2M_MAX: { label: 'Monthly maximum temperature', description: 'Highest modeled hourly 2 m temperature in each month. Annual values are day-weighted averages of monthly maxima, not annual maxima.', unit: '°C' },
+  T2M_MIN: { label: 'Monthly minimum temperature', description: 'Lowest modeled hourly 2 m temperature in each month. Annual values are day-weighted averages of monthly minima, not annual minima.', unit: '°C' },
   T2MDEW: { label: 'Dew point temperature', description: 'Monthly mean near-surface dew/frost point at 2 meters.', unit: '°C' },
   RH2M: { label: 'Relative humidity', description: 'Near-surface relative humidity at 2 meters.', unit: '%' },
   QV2M: { label: 'Specific humidity', description: 'Near-surface specific humidity at 2 meters.', unit: 'g/kg' },
@@ -222,15 +222,36 @@ export function parseMonthly(json, variable, {start = 1981, end = 2025} = {}) {
 export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
   const nasaUrl = requestURL(options);
   const proxyUrl = '/api/power?' + nasaUrl.split('?')[1];
-  let response;
-  try {
-    response = await fetcher(proxyUrl, {signal});
-    if (!response.ok || !response.headers.get('content-type')?.includes('json')) {
-      response = await fetcher(nasaUrl, {signal});
+  const isStaticGithubPages = typeof location !== 'undefined' &&
+    typeof location.hostname === 'string' &&
+    location.hostname.endsWith('.github.io');
+  const callNasaDirect = async () => {
+    const maxAttempts = fetcher === fetch ? 6 : 1;
+    let lastErr;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await fetcher(nasaUrl, {signal});
+      } catch (err) {
+        if (err?.name === 'AbortError' || signal?.aborted || attempt === maxAttempts) throw err;
+        lastErr = err;
+        await new Promise((r) => setTimeout(r, 350));
+      }
     }
-  } catch (error) {
-    if (error?.name === 'AbortError') throw error;
-    response = await fetcher(nasaUrl, {signal});
+    throw lastErr;
+  };
+  let response;
+  if (isStaticGithubPages) {
+    response = await callNasaDirect();
+  } else {
+    try {
+      response = await fetcher(proxyUrl, {signal});
+      if (!response.ok || !response.headers.get('content-type')?.includes('json')) {
+        response = await callNasaDirect();
+      }
+    } catch (error) {
+      if (error?.name === 'AbortError') throw error;
+      response = await callNasaDirect();
+    }
   }
   if (!response.ok) throw new Error('NASA POWER request failed (HTTP ' + response.status + '). Please try again.');
   const payload = await response.json();
@@ -239,7 +260,8 @@ export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
   return {
     monthly, url: nasaUrl, fetchedAt: new Date().toISOString(),
     source: 'NASA POWER / MERRA-2-derived meteorological reanalysis',
-    metadata: payload.header || {}, coordinate: payload.geometry?.coordinates
+    metadata: payload.header || {}, coordinate: payload.geometry?.coordinates,
+    requestedPeriod: {start: options.start, end: options.end}
   };
 }
 
@@ -250,6 +272,6 @@ export function powerSeries(fetched, {id, label, color, lat, lon, variable}) {
     id, label, color, monthly: fetched.monthly, support: SUPPORT.GRID_POINT, geo: {lat, lon},
     variable: {code: 'POWER:' + variable, label: info.label, unit: info.unit, description: info.description},
     provenance: {kind: 'nasa-power', source: fetched.source, url: fetched.url, retrievedAt: fetched.fetchedAt,
-      metadata: fetched.metadata, coordinate: fetched.coordinate, authenticated: true}
+      metadata: fetched.metadata, coordinate: fetched.coordinate, requestedPeriod: fetched.requestedPeriod || null, authenticated: true}
   });
 }

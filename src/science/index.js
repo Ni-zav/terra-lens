@@ -7,3 +7,4 @@ export {GISTEMP_CSV_URL,GISTEMP_TXT_URL,parseGISTEMP,parseGISTEMPtext,
 export {powerMonthlyContext,alignSWOTandPOWER,descriptiveAssociation,
   buildWaterCase} from './interconnect.js';
 export {analyzeRiverContext,analyzeLocalGlobal} from './engine.js';
+export {parseGiovanniAreaCSV, analyzeGiovanniArea} from './giovanni-case.js';

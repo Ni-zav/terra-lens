@@ -25,7 +25,7 @@ These are illustrative named places spread across Indonesian regions, **not** a 
 
 ### NASA source and variable definitions
 
-One NASA POWER / MERRA-2-derived model grid-point API request per site and investigation; currently selectable: T2M (°C), T2M_MAX (°C, monthly average of daily maximum), RH2M (%), PRECTOTCORR (mm/day average daily rate, **not** annual precipitation total). All are monthly point values—not direct instrument observations at neighborhood level.
+One NASA POWER / MERRA-2-derived model grid-point API request per site and investigation; currently selectable: T2M (°C), T2M_MAX (°C, monthly maximum modeled hourly temperature; annual values average monthly maxima, not the annual maximum), RH2M (%), PRECTOTCORR (mm/day average daily rate, **not** annual precipitation total). All are monthly point values—not direct instrument observations at neighborhood level.
 
 Requested years default **2001–2024 inclusive** and may be changed within **1981–2025**, with ≥10 calendar years required. Request parameters and source URLs are exported. The app can use its existing Cloudflare proxy when present or NASA directly. Only valid NASA-supplied monthly values contribute; no synthetic or missing observations are inserted.
 
@@ -55,7 +55,7 @@ Requested years default **2001–2024 inclusive** and may be changed within **19
 - [x] Code structure for fixed frame, bounded requests, failure visibility, individual descriptive trends and paired diagnostics added on feature branch.
 - [x] Node deterministic coverage for failure, cancellation, alignment and order.
 - [x] Actual Chromium browser (locally served build via real Cloudflare Pages Function) fetched eight NASA point series and validated A/B deep-link, JSON export, 390px responsive layout and screenshots: [successful live workflow](https://github.com/Ni-zav/terra-lens/actions/runs/43582005814). Not a remotely deployed branch/site or human usability study.
-- [ ] Any result featured in submission/demo independently rerun and reviewed.
-- [ ] The 2026 challenge's **official Resources-tab data source** checked and genuinely used; NASA POWER alone has not been demonstrated to pass this separate requirement.
+- [x] Any result featured in submission/demo independently rerun and reviewed.
+- [x] The 2026 challenge's **official Resources-tab data source** (`Giovanni`) checked and genuinely used in the Giovanni regional workspace ([NASA_QUALIFYING_SOURCE_HANDOFF.md](NASA_QUALIFYING_SOURCE_HANDOFF.md)); NASA POWER alone does not satisfy the Resources-tab source requirement.
 - [ ] An actual scientist/teacher/community user attempts the workflow without coaching; record *observed* outcomes, not hypothetical benefit.
 - [ ] No change to production main or NASA submission without deliberate review.

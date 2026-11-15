@@ -1,0 +1,21 @@
+name: Giovanni original source verification
+on:
+  pull_request:
+  push:
+    branches: [main, review/nasa-qualifying-source-20261115]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install scipy netCDF4
+      - run: node --test tests/giovanni-area.test.mjs
+      - run: python scripts/verify-giovanni-area.py
+      - run: python scripts/verify-giovanni-grid.py
+      - run: python scripts/verify-transcribed-merra-grid.py
