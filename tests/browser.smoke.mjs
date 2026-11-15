@@ -208,6 +208,7 @@ try{
   assert.equal(new URLSearchParams(new URL(query).hash.slice(1)).get('bbox'),'-123,35,-121,37');
   await area.locator('#giovanni-file').setInputFiles(join(ROOT,'data/source-snapshots/g4.areaAvgTimeSeries.M2TMNXSLV_5_12_4_T2M.20010101-20241231.110E_8S_111E_7S.csv'));
   await area.getByText(/288 monthly records, 24 complete years/).waitFor();
+  assert.match(await area.locator('#sources').textContent(),/Copied links do not include the imported Giovanni file/);
   assert.match(await area.locator('#provenance-text').textContent(),/G is a user-imported Giovanni area-averaged product/);
   await area.locator('#tab-comparison').click();
   assert.match(await area.locator('#comparison-panel').textContent(),/spatial support differs/);
