@@ -49,8 +49,8 @@ A genuine NASA Giovanni monthly dataset could be connected via the existing `src
 ## New secure source-acquisition path (15 November 2026)
 
 The project now has an **opt-in, participant-authenticated source fetcher**:
-[\`scripts/fetch-authentic-giovanni.mjs\`](../scripts/fetch-authentic-giovanni.mjs).
-It requests NASA's official \`https://api.giovanni.earthdata.nasa.gov/timeseries\`
+[`scripts/fetch-authentic-giovanni.mjs`](../scripts/fetch-authentic-giovanni.mjs).
+It requests NASA's official `https://api.giovanni.earthdata.nasa.gov/timeseries`
 endpoint with an Earthdata bearer token in an HTTP header, and writes the
 **unaltered response bytes outside the repository**. It refuses unlabeled,
 sparse or duplicate-month data and invokes the independent JavaScript evidence
@@ -59,7 +59,7 @@ pipeline; its analysis output remains a *source claim pending manual NASA review
 **Select the exact variable identifier in NASA's authoritative
 [configured-variables](https://api.giovanni.earthdata.nasa.gov/configured-variables)
 catalog before running.** A scientifically suitable candidate is the NASA
-MERRA-2 monthly model product **M2IMNXASM v5.12.4**, \`T2M\` in Kelvin,
+MERRA-2 monthly model product **M2IMNXASM v5.12.4**, `T2M` in Kelvin,
 [DOI 10.5067/5ESKGQTZG7FO](https://doi.org/10.5067/5ESKGQTZG7FO).
 The *collection ID*, *API variable identifier*, and *collection DOI* are
 different metadata fields. Do not guess the API variable ID or substitute
@@ -69,7 +69,7 @@ not automatically an area-averaged regional observation.
 On a laptop with Earthdata Login **already authorized**, set the following
 values locally (never paste the token into GitHub, logs, ChatGPT or a PR):
 
-\`\`\`bash
+```bash
 cd terra-lens
 # Source a bearer token from your own authenticated Earthdata environment
 # into EARTHDATA_TOKEN without saving it to files or shell history.
@@ -83,7 +83,7 @@ export GIOVANNI_END="2024-12-31"
 export GIOVANNI_DOWNLOAD_DIR="$HOME/Documents/terra-lens-original-nasa"
 node scripts/fetch-authentic-giovanni.mjs
 unset EARTHDATA_TOKEN
-\`\`\`
+```
 
 The script prints an original-file path, result evidence path, NASA request URL,
 monthly-row count, and SHA-256. The data and generated evidence are **private
@@ -94,14 +94,14 @@ results or edit the downloaded response into an allegedly original file.
 
 Then run the independent numerical check using the printed paths:
 
-\`\`\`bash
+```bash
 GIOVANNI_EVIDENCE_FILE="/absolute/path/to/giovanni-evidence-....json" \
 GIOVANNI_CSV_FILE="/absolute/path/to/giovanni-original-....csv" \
 python3 scripts/verify-giovanni-source-python.py
-\`\`\`
+```
 
 Confirm the original NASA collection DOI, spatial method and CSV metadata;
-test in the \`Giovanni\` tab, preserve the untouched original and use the evidence
+test in the `Giovanni` tab, preserve the untouched original and use the evidence
 only after external source review. **No one has performed this real authenticated
 download as part of these code changes.** It cannot be called Global Award
 eligibility satisfied on that basis.
