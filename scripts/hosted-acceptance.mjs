@@ -35,6 +35,16 @@ try{
    'Two authentic NASA POWER HTTP 200 responses must be observed');
  assert.deepEqual(pageErrors,[]);
  mark('Hosted baseline: two real NASA responses, 24 years, valid paired finding');
+ assert.equal(await page.locator('a.skip[href="#explore"]').count(),1,'Keyboard skip-to-workspace link is required');
+ await page.locator('#tab-annual').focus();
+ await page.keyboard.press('ArrowRight');
+ await page.waitForFunction(()=>document.getElementById('tab-monthly')?.getAttribute('aria-selected')==='true');
+ await page.keyboard.press('End');
+ await page.waitForFunction(()=>document.getElementById('tab-giovanni')?.getAttribute('aria-selected')==='true');
+ await page.keyboard.press('Home');
+ await page.waitForFunction(()=>document.getElementById('tab-annual')?.getAttribute('aria-selected')==='true');
+ assert.ok(await page.locator('#metric-slope').getAttribute('id'));
+ mark('Hosted keyboard tabs: skip link, ArrowRight, End, Home and ARIA selection');
  await page.screenshot({path:'artifacts/hosted-home-desktop.png',fullPage:true,animations:'disabled'});
  const csvWait=page.waitForEvent('download');
  await page.locator('#download').click();
