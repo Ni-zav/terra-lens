@@ -239,7 +239,8 @@ export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
   return {
     monthly, url: nasaUrl, fetchedAt: new Date().toISOString(),
     source: 'NASA POWER / MERRA-2-derived meteorological reanalysis',
-    metadata: payload.header || {}, coordinate: payload.geometry?.coordinates
+    metadata: payload.header || {}, coordinate: payload.geometry?.coordinates,
+    requestedPeriod: {start: options.start, end: options.end}
   };
 }
 
@@ -250,6 +251,6 @@ export function powerSeries(fetched, {id, label, color, lat, lon, variable}) {
     id, label, color, monthly: fetched.monthly, support: SUPPORT.GRID_POINT, geo: {lat, lon},
     variable: {code: 'POWER:' + variable, label: info.label, unit: info.unit, description: info.description},
     provenance: {kind: 'nasa-power', source: fetched.source, url: fetched.url, retrievedAt: fetched.fetchedAt,
-      metadata: fetched.metadata, coordinate: fetched.coordinate, authenticated: true}
+      metadata: fetched.metadata, coordinate: fetched.coordinate, requestedPeriod: fetched.requestedPeriod || null, authenticated: true}
   });
 }

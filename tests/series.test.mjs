@@ -63,6 +63,17 @@ test('coverage reports a fully absent internal year as incomplete',()=>{
   assert.equal(coverage.missingMonths,12);
   assert.deepEqual(coverage.incompleteYears,[2002]);
 });
+test('coverage counts absent requested boundary years and records the span basis',()=>{
+  const monthly=[...years(1,()=>1,2002),...years(1,()=>2,2003)];
+  const s=powerSeries({monthly,url:'https://power.larc.nasa.gov/x',fetchedAt:'2026-11-15T00:00:00Z',metadata:{},requestedPeriod:{start:2001,end:2004}},
+    {id:'A',lat:0,lon:0,variable:'T2M'});
+  const coverage=coverageOf(s);
+  assert.equal(coverage.firstYear,2002);assert.equal(coverage.lastYear,2003);
+  assert.equal(coverage.expectedSpan,'requested');assert.equal(coverage.expectedMonths,48);
+  assert.equal(coverage.missingMonths,24);assert.deepEqual(coverage.incompleteYears,[2001,2004]);
+  const imported=coverageOf(makeSeries({id:'G',variable:v,monthly}));
+  assert.equal(imported.expectedSpan,'observed');assert.equal(imported.missingMonths,0);
+});
 test('derivations are memoized per series',()=>{
   const s=makeSeries({id:'A',variable:v,monthly:years(12,y=>y)});
   assert.equal(annualOf(s),annualOf(s));assert.equal(analyzeSeries(s),analyzeSeries(s));

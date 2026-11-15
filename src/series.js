@@ -70,11 +70,17 @@ export function coverageOf(s) {
   return derive(s, 'coverage', x => {
     if (!x.monthly.length) return {firstYear: null, lastYear: null, months: 0, expectedMonths: 0, completeYears: 0, incompleteYears: [], missingMonths: 0};
     const first = x.monthly[0].year, last = x.monthly.at(-1).year;
+    const requested = x.provenance.requestedPeriod;
+    const validRequest = Number.isInteger(requested?.start) && Number.isInteger(requested?.end) &&
+      requested.start >= 1850 && requested.end <= 2100 && requested.start <= first && requested.end >= last;
+    const expectedFirstYear = validRequest ? requested.start : first;
+    const expectedLastYear = validRequest ? requested.end : last;
     const complete = new Set(annualOf(x).map(r => r.year));
-    // Include fully absent years between the first and last observation.
-    const years = Array.from({length: last - first + 1}, (_, i) => first + i);
+    // Count every year in a known request, otherwise the observed span only.
+    const years = Array.from({length: expectedLastYear - expectedFirstYear + 1}, (_, i) => expectedFirstYear + i);
     const expected = years.length * 12;
-    return {firstYear: first, lastYear: last, months: x.monthly.length, expectedMonths: expected,
+    return {firstYear: first, lastYear: last, expectedFirstYear, expectedLastYear,
+      expectedSpan: validRequest ? 'requested' : 'observed', months: x.monthly.length, expectedMonths: expected,
       completeYears: complete.size, incompleteYears: years.filter(y => !complete.has(y)),
       missingMonths: expected - x.monthly.length};
   });
