@@ -30,7 +30,7 @@ test('Giovanni point-service metadata yields an unauthenticated point series',()
  const data=Array.from({length:24},(_,i)=>String(2000+Math.floor(i/12))+'-'+String(i%12+1).padStart(2,'0')+'-01,'+(280+i)+'\n').join('');
  const s=giovanniSeries(parseGiovanniMonthlyCSV(header+data),{sha256:'abc'});
  assert.equal(s.id,'G');assert.equal(s.support,SUPPORT.GRID_POINT);assert.equal(s.variable.unit,'K');
- assert.equal(s.provenance.authenticated,false);assert.deepEqual(s.geo,{lat:45.125,lon:-98.125});
+ assert.equal(s.provenance.authenticated,false);assert.match(s.provenance.warning,/not annual totals or annual extremes/);assert.deepEqual(s.geo,{lat:45.125,lon:-98.125});
 });
 
 test('NASA Giovanni in the Cloud timestamp with a space is recognized as an actual monthly observation',()=>{

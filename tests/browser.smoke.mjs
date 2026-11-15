@@ -225,6 +225,7 @@ try{
   assert.equal(await area.getByRole('link',{name:'TESTVAR'}).count(),0);
   await area.locator('#catalog-variable-filter').fill('testvar');
   await area.getByRole('link',{name:'TESTVAR'}).waitFor();
+  assert.match(await area.locator('#panel-giovanni').textContent(),/annual calculation is a day-weighted average of monthly values, not an annual total or annual extreme/i);
   assert.match(await area.locator('#panel-giovanni').textContent(),/no upload needed/i);
   assert.match(await area.locator('#panel-giovanni').textContent(),/separate NASA POWER point investigation/i);
   assert.match(await area.locator('#panel-giovanni').textContent(),/cannot be confidently translated into extra heatwave days per summer/i);
@@ -248,6 +249,10 @@ try{
   await area.locator('#giovanni-file').setInputFiles({name:'synthetic-cloud-test.csv',mimeType:'text/csv',buffer:Buffer.from(syntheticCloud.join('\n'))});
   await area.getByText(/119 monthly records, 9 complete years/).waitFor();
   assert.match(await area.locator('.giovanni-summary').textContent(),/Not enough complete years/i);
+  assert.match(await area.locator('.giovanni-summary').textContent(),/not annual totals or annual extremes/i);
+  const cloudDownload=area.waitForEvent('download');await area.locator('#evidence-download').click();
+  const cloudEvidence=JSON.parse(await readFile(await(await cloudDownload).path(),'utf8'));
+  assert.match(cloudEvidence.series.find(s=>s.id==='G').provenance.warning,/not annual totals or annual extremes/i);
   await area.close();
   const deepLink=await browser.newPage({viewport:{width:1280,height:720}});
   await deepLink.goto(`http://127.0.0.1:${port}/#giovanni`);

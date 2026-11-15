@@ -69,6 +69,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
           <h3>Active Imported Series (G)</h3>
           <p><strong>{imported.label}</strong> · {imported.monthly.length} monthly records, {analysis.coverage.completeYears} complete years · unit {imported.variable.unit}. <em>{analysis.verdict.headline}.</em></p>
           {analysis.trend && <p className="giovanni-note">OLS {fmt(analysis.trend.slopePerDecade)} {imported.variable.unit}/decade (p {analysis.trend.pValue.toFixed(4)}) · Sen {fmt(analysis.robust.senSlopePerDecade)} (Mann–Kendall p {analysis.robust.pValue.toFixed(4)})</p>}
+          {imported.provenance.warning?.includes('temporal aggregation')&&<p className="giovanni-note">Annual values are day-weighted averages of monthly values, not annual totals or annual extremes. Verify that averaging is meaningful for this product.</p>}
           <p className="giovanni-note">SHA-256: <code>{imported.provenance.sha256}</code></p>
           <button type="button" id="giovanni-remove" onClick={onRemove}>Remove series G</button>
         </div> : <div className="giovanni-summary is-empty">
@@ -78,7 +79,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
       </div>
       <div className="giovanni-form">
         <h3>NASA provenance &amp; original monthly CSV</h3>
-        <p className="giovanni-note">For cloud CSVs, verify the product’s missing-value codes: declared numeric fill values are excluded, or −999 if none is declared. Other undocumented codes may remain.</p>
+        <p className="giovanni-note">For cloud CSVs, verify the product’s missing-value codes: declared numeric fill values are excluded, or −999 if none is declared. Other undocumented codes may remain. The annual calculation is a day-weighted average of monthly values, not an annual total or annual extreme. Check that this calculation is meaningful for your product before interpreting a trend; the app cannot verify its temporal aggregation.</p>
         <div className="coord-row">
           <div><label htmlFor="giovanni-product">NASA dataset/product identifier</label><input id="giovanni-product" value={product} onChange={e=>setProduct(e.target.value)} placeholder="e.g. M2TMNXSLV, version" /></div>
           <div><label htmlFor="giovanni-doi">Dataset DOI (if known)</label><input id="giovanni-doi" value={doi} onChange={e=>setDoi(e.target.value)} placeholder="doi:10.5067/..." /></div>

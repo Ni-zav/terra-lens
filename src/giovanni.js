@@ -76,6 +76,6 @@ export function giovanniSeries(parsed, {id = 'G', color = '#e79bc0', fileName, s
     variable: {code: 'GIOVANNI:' + md.param_name, label: md.param_name, unit: md.unit},
     provenance: {kind: 'giovanni-import', fileName, sha256, product: product || null, doi: doi || null,
       url: sourceURL || null, metadata: md, authenticated: false,
-      warning: 'User-supplied file; provenance and source quality are not independently authenticated. Check product-specific missing-value markers; declared numeric fill/missing values are excluded, or -999 when none is declared.'}
+      warning: 'User-supplied file; provenance, source quality and temporal aggregation are not independently authenticated. Annual values are day-weighted averages of monthly values, not annual totals or annual extremes; verify that averaging is meaningful for this product. Check product-specific missing-value markers; declared numeric fill/missing values are excluded, or -999 when none is declared.'}
   });
 }
