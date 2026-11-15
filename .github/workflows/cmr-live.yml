@@ -2,7 +2,7 @@ name: Experimental live NASA CMR browser
 on:
   workflow_dispatch:
   push:
-    branches: [experiment/nasa-cmr-discovery-20261115]
+    branches: [experiment/nasa-cmr-discovery-20261115, fix/final-science-site-deck-readiness-20261115]
 permissions:
   contents: read
 jobs:
@@ -19,7 +19,7 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: node scripts/live-cmr-browser.mjs
-      - name: Test isolated public experiment
+      - name: Test public review preview
         run: node scripts/live-cmr-browser.mjs
         env:
-          CMR_TEST_URL: https://ni-zav.github.io/terra-lens-preview/experiments/cmr/
+          CMR_TEST_URL: https://ni-zav.github.io/terra-lens-preview/
