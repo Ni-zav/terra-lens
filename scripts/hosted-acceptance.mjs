@@ -1,0 +1,78 @@
+/**
+ * Actual hosted, logged-out GitHub Pages acceptance test (not a branch preview).
+ * Production NASA calls are real. Never use test fixtures or cached mock results.
+ * Designed to run in Actions, distinct from local Pages-Function tests.
+ */
+import assert from 'node:assert/strict';
+import {mkdir,readFile} from 'node:fs/promises';
+import {chromium} from 'playwright';
+const base=process.env.TERRA_HOSTED_URL||'https://ni-zav.github.io/terra-lens/';
+if(!/^https:\/\/[A-Za-z0-9.-]+\/[A-Za-z0-9./_-]+\/?$/.test(base))
+  throw new Error('Hosted URL must be an HTTPS project origin (no query parameters)');
+const url=base.endsWith('/')?base:base+'/';
+await mkdir('artifacts',{recursive:true});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const findings={target:url,source:'HOSTED production (not local branch)',checks:[],nasaCalls:[],consoleErrors:[]};
+const mark=(label)=>{findings.checks.push(label);console.log('PASS '+label)};
+try{
+ const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
+ const page=await context.newPage();
+ const pageErrors=[];
+ page.on('pageerror',e=>pageErrors.push(e.message));
+ page.on('console',m=>{if(m.type()==='error')findings.consoleErrors.push(m.text().slice(0,250));});
+ page.on('response',r=>{if(r.ok()&&r.url().startsWith('https://power.larc.nasa.gov/api/temporal/monthly/point')){
+   const q=new URL(r.url()).searchParams;
+   findings.nasaCalls.push({variable:q.get('parameters'),latitude:q.get('latitude'),longitude:q.get('longitude')});
+ }});
+ const first=await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
+ assert.equal(first.status(),200,'Hosted application must be reachable without login');
+ await page.waitForFunction(()=>document.getElementById('data-label')?.textContent==='NASA data loaded',
+  null,{timeout:125000});
+ assert.equal((await page.locator('#metric-years').textContent()).trim(),'24');
+ assert.match(await page.locator('#metric-slope').textContent(),/\+0\.18\s*°C/);
+ assert.match(await page.locator('#finding-text').textContent(),/Jakarta/);
+ assert.ok(findings.nasaCalls.filter(r=>r.variable==='T2M').length>=2,
+   'Two authentic NASA POWER HTTP 200 responses must be observed');
+ assert.deepEqual(pageErrors,[]);
+ mark('Hosted baseline: two real NASA responses, 24 years, valid paired finding');
+ await page.screenshot({path:'artifacts/hosted-home-desktop.png',fullPage:true,animations:'disabled'});
+ const csvWait=page.waitForEvent('download');
+ await page.locator('#download').click();
+ const csvDownload=await csvWait;
+ const csv=await readFile(await csvDownload.path(),'utf8');
+ assert.match(csv,/"POWER:T2M"/);
+ assert.match(csv,/power\.larc\.nasa\.gov/);
+ assert.equal(csv.trimEnd().split('\n').length,577);
+ mark('Hosted CSV export: 576 monthly source records');
+ await page.locator('#tab-cases').click();
+ await page.locator('#panel-cases').waitFor();
+ await page.getByText(/SWOT/i).first().waitFor({timeout:30000});
+ mark('Hosted Multi-source panel rendered');
+ await page.locator('#tab-giovanni').click();
+ await page.locator('#giovanni-file').waitFor({timeout:30000});
+ mark('Hosted Giovanni panel rendered (importer does not prove authentic source)');
+ await page.locator('#tab-finder').click();
+ await page.locator('.discovery-table tbody tr').first().waitFor({timeout:30000});
+ assert.equal(await page.locator('.discovery-table tbody tr').count(),8);
+ mark('Hosted Trend Contrast Finder rendered with eight predeclared points');
+ await page.setViewportSize({width:390,height:844});
+ const dimensions=await page.evaluate(()=>({screen:innerWidth,document:document.documentElement.scrollWidth}));
+ assert.ok(dimensions.document<=dimensions.screen+3,
+  'Hosted app has horizontal overflow at 390px: '+JSON.stringify(dimensions));
+ await page.screenshot({path:'artifacts/hosted-home-mobile.png',fullPage:true,animations:'disabled'});
+ mark('Hosted responsive 390px layout');
+ const deck=await context.newPage();
+ const deckResponse=await deck.goto(new URL('demo/',url).href,{waitUntil:'domcontentloaded',timeout:45000});
+ assert.equal(deckResponse.status(),200);
+ assert.equal(await deck.locator('.slide').count(),7);
+ const screenshot=deck.locator('img[src="../docs/screenshots/nasa-real-desktop.png"]');
+ assert.equal(await screenshot.evaluate(i=>i.complete&&i.naturalWidth>0),true);
+ await deck.screenshot({path:'artifacts/hosted-deck-cover.png',animations:'disabled'});
+ const pdf=await context.request.get(new URL('demo/Terra-Lens_Seven_Slide_Demo.pdf',url).href);
+ assert.equal(pdf.status(),200,'Hosted PDF must load');
+ const buffer=await pdf.body();
+ assert.ok(buffer.length>100000&&buffer.subarray(0,5).toString()==='%PDF-','Hosted demo must be a real PDF');
+ mark('Hosted seven-slide HTML, real NASA screenshot and linked PDF');
+ assert.deepEqual(pageErrors,[]);
+ console.log('HOSTED ACCEPTANCE SUMMARY: '+JSON.stringify(findings));
+}finally{await browser.close()}
