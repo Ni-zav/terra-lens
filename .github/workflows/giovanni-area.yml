@@ -18,3 +18,4 @@ jobs:
       - run: node --test tests/giovanni-area.test.mjs
       - run: python scripts/verify-giovanni-area.py
       - run: python scripts/verify-giovanni-grid.py
+      - run: python scripts/verify-transcribed-merra-grid.py
