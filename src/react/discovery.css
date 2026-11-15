@@ -62,16 +62,23 @@
   display: grid;
   grid-template-columns: minmax(220px, 0.78fr) minmax(0, 1.22fr);
   gap: 8px;
-  flex: 1;
+  flex: 1 0 auto;
   min-height: 0;
-  align-items: start;
+  align-items: stretch;
 }
 .discovery-controls,
 .discovery-right-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
+  min-height: 0;
+}
+.discovery-plot {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
 }
 .discovery-box,
 .discovery-plot {
@@ -183,28 +190,38 @@
 .discovery-figure {
   margin: 0;
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .discovery-figure svg {
   display: block;
   width: 100%;
+  flex: 1;
   height: auto;
-  max-height: 138px;
+  min-height: 115px;
+  max-height: 240px;
   min-width: 0;
 }
 .discovery-figure figcaption {
   color: var(--dim);
   font: 400 9px/1.25 var(--body);
-  margin: 3px 0 0;
+  margin: 4px 0 0;
 }
 .discovery-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--panel);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .discovery-table {
   border-collapse: collapse;
   width: 100%;
+  flex: 1;
   font: 500 10px var(--mono);
   font-variant-numeric: tabular-nums;
   text-align: left;
@@ -216,7 +233,7 @@
 }
 .discovery-table th,
 .discovery-table td {
-  padding: 3.5px 6px;
+  padding: 5px 8px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
