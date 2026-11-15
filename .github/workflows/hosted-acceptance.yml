@@ -31,7 +31,10 @@ jobs:
       - name: Test hosted review preview against real NASA data and BUILD-PROVENANCE.txt
         env:
           TERRA_HOSTED_URL: ${{ inputs.target_url || 'https://ni-zav.github.io/terra-lens-preview/' }}
-          TERRA_EXPECTED_COMMIT: ${{ inputs.expected_commit || ((inputs.target_url == '' || inputs.target_url == 'https://ni-zav.github.io/terra-lens-preview/') && github.sha || '') }}
+          # The submitted preview intentionally remains pinned to the final PR source SHA.
+          # A merge commit on main has a different SHA but contains the same release tree.
+          # Avoid comparing the frozen preview to github.sha from subsequent main pushes.
+          TERRA_EXPECTED_COMMIT: ${{ inputs.expected_commit || ((inputs.target_url == '' || inputs.target_url == 'https://ni-zav.github.io/terra-lens-preview/') && '662a33a8d9b34cd691e43c80572f73dbea004784' || '') }}
         run: node scripts/hosted-acceptance.mjs
       - name: Upload screenshots and summary JSON even when checks fail
         if: always()
