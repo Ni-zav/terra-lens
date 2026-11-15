@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import {VARIABLES, LOCATIONS, fetchNASA, requestURL, resolveLocationName, powerSeries} from '../power.js';
 import {analyzeSeries, buildFindings, supportLabel} from '../series.js';
 import {axisPlan} from './chart-model.js';
+import {csvCell} from '../csv.js';
 const TimeChart=React.lazy(()=>import('./Chart.jsx').then(module=>({default:module.TimeChart})));
 const SeasonalChart=React.lazy(()=>import('./Chart.jsx').then(module=>({default:module.SeasonalChart})));
 const GiovanniEvidence=React.lazy(()=>import('./Giovanni.jsx'));
@@ -79,10 +80,9 @@ function download(name,type,text){
 function csvDownload(series){
   if(!series.length)return;
   const columns=['series','location','latitude','longitude','spatial_support','variable','year','month','value','unit','source_url','retrieved_at'];
-  const quote=v=>'"'+String(v??'').replaceAll('"','""')+'"';
   const rows=[columns.join(',')];
   for(const s of series) for(const p of s.monthly)rows.push([s.id,s.label,s.geo?.lat,s.geo?.lon,s.support,s.variable.code,p.year,p.month,p.value,
-    s.variable.unit,s.provenance.url,s.provenance.retrievedAt].map(quote).join(','));
+    s.variable.unit,s.provenance.url,s.provenance.retrievedAt].map(csvCell).join(','));
   download(`terra-lens-${series[0].variable.code.replace(':','-')}.csv`,'text/csv;charset=utf-8',rows.join('\n')+'\n');
 }
 /** Everything shown on screen, from the same derivations, plus provenance. */
