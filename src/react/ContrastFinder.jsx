@@ -172,7 +172,9 @@ export default function ContrastFinder({onInspect}) {
             })}</tbody>
           </table>
         </div>
-        {run.phase==='complete'?<div className="discovery-output" aria-live="polite">
+      </div>
+    </div>
+    {run.phase==='complete'?<div className="discovery-output" aria-live="polite">
           <article className="discovery-findings">
             <h3>3. Inspect the evidence, not just a ranking</h3>
             <p>{brief.finding}</p>
@@ -213,7 +215,5 @@ export default function ContrastFinder({onInspect}) {
             <p><strong>Verify:</strong> Open any A/B pair in the main workspace to inspect residual lag-1 autocorrelation, seasonal breakdowns, and <a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER monthly API</a> provenance.</p>
           </article>
         </div>}
-      </div>
-    </div>
   </div>;
 }

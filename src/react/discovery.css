@@ -190,7 +190,7 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 148px;
+  max-height: 220px;
   min-width: 0;
 }
 .discovery-figure figcaption {
@@ -218,7 +218,7 @@
 }
 .discovery-table th,
 .discovery-table td {
-  padding: 5.5px 8px;
+  padding: 7.5px 10px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
@@ -295,7 +295,9 @@
 .discovery-output {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 8px;
+  margin-top: auto;
+  flex: none;
 }
 .discovery-output article {
   min-width: 0;

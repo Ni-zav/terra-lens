@@ -499,13 +499,14 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 215px;
+  max-height: 360px;
 }
 .sc-provenance-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 16px;
+  margin-top: auto;
   padding: 6px 10px;
   background: var(--bg);
   border: 1px solid var(--border);
