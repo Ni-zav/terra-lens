@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {parseGiovanniMonthlyCSV, giovanniSeries} from '../giovanni.js';
+import GiovanniCase from './GiovanniCase.jsx';
 import {analyzeSeries} from '../series.js';
 
 const fmt = value => Number.isFinite(value) ? (value > 0 ? '+' : '') + Number(value).toFixed(3) : '—';
@@ -37,6 +38,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
       </div>
       <p className="giovanni-links"><a href="https://giovanni.gsfc.nasa.gov/giovanni/" target="_blank" rel="noreferrer">Open NASA Giovanni</a> · <a href="https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GiC_Time_Series_Service.ipynb" target="_blank" rel="noreferrer">NASA CSV workflow example</a></p>
     </div>
+    <GiovanniCase />
     <div className="giovanni-grid">
       <div className="giovanni-copy">
         <div className="giovanni-card">
