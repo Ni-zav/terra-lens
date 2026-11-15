@@ -283,25 +283,60 @@
 .metric-pt-a .metric-label { color: var(--cyan); }
 .metric-pt-b .metric-label { color: var(--amber); }
 
+.metrics-extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 4px 10px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-strong);
+  font: 500 10px var(--mono);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.metrics-extra-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.metrics-extra-label {
+  color: var(--series-color);
+  font-weight: 600;
+}
+.metrics-extra-item strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.metrics-extra-item > span:last-child {
+  color: var(--dim);
+  font-size: 9.5px;
+}
+
 .science-cases {
   min-width: 0;
   max-width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px;
   margin: 0;
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .sc-header {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
   padding-bottom: 5px;
   border-bottom: 1px solid var(--border);
   flex: none;
+}
+.sc-header .pane-title-group {
+  min-width: 0;
+  flex: 1;
 }
 .sc-header h2 {
   font: 600 12px var(--head);
@@ -369,13 +404,13 @@
 .sc-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 .sc-summary-grid {
   display: grid;
   grid-template-columns: 1fr 1.1fr;
-  gap: 8px;
+  gap: 6px;
   align-items: stretch;
 }
 .sc-card {
@@ -463,7 +498,7 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 185px;
+  max-height: 168px;
 }
 .sc-figure figcaption {
   font: 400 9.5px/1.3 var(--body);
