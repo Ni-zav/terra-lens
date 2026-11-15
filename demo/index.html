@@ -54,6 +54,8 @@
       padding: 1px 5px;
       border-radius: 3px;
       border: 1px solid var(--border);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     /* Sticky Deck Navigation Bar (hidden in print) */
@@ -132,23 +134,27 @@
     main {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 18px;
+      padding: 14px 18px;
       display: flex;
       flex-direction: column;
-      gap: 22px;
+      gap: 18px;
     }
     .slide {
       width: 100%;
-      aspect-ratio: 16 / 9;
+      height: min(calc(100dvh - 68px), 800px);
       background: var(--slide);
       border: 1px solid var(--border-strong);
       border-radius: 8px;
-      padding: 20px 26px 16px;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 10px;
+      padding: 16px 22px 12px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
       position: relative;
       overflow: hidden;
+    }
+    .slide.active {
+      display: flex;
     }
 
     /* Slide Header */
@@ -215,9 +221,10 @@
 
     /* Slide Body Grids */
     .slide-body {
+      flex: 1;
       min-height: 0;
       display: grid;
-      gap: 12px;
+      gap: 10px;
       align-content: stretch;
     }
     .cols-2 { grid-template-columns: 1.08fr 0.92fr; }
@@ -252,7 +259,7 @@
     .card-head.amber { color: var(--b); }
     .card-head.ok { color: var(--ok); }
     .card-head.warn { color: var(--warn); }
-    .card h3 {
+    .card h3, .case-panel h3 {
       margin: 0;
       font-size: 14px;
       font-weight: 600;
@@ -260,7 +267,7 @@
       color: var(--text);
       line-height: 1.24;
     }
-    .card p, .card li {
+    .card p, .card li, .case-panel p {
       margin: 0;
       font-size: 12px;
       line-height: 1.4;
@@ -647,7 +654,10 @@
       font-family: var(--mono);
       font-size: 10px;
       color: var(--dim);
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
+    .slide-foot > span { min-width: 0; overflow-wrap: anywhere; }
     .slide-foot strong { color: var(--muted); font-weight: 500; }
 
     /* Deck Footer */
@@ -740,6 +750,9 @@
         display: block !important;
       }
       .slide {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
         width: 16in !important;
         height: 9in !important;
         max-height: 9in !important;
@@ -747,6 +760,7 @@
         margin: 0 !important;
         border: 0 !important;
         border-radius: 0 !important;
+        padding: 18px 24px 14px !important;
         page-break-after: always;
         break-after: page;
         page-break-inside: avoid;
@@ -784,15 +798,18 @@
     <div class="deck-bar-left">
       <a class="deck-brand" href="../">Terra-Lens</a>
       <span class="deck-sub">NASA Space Apps 2026 · Be An Earth System Trend Detective · Team ni-zav</span>
+      <span id="counter" style="font-family:var(--mono);font-size:11px;color:var(--muted);padding-left:8px;">Slide 1 of 7</span>
     </div>
     <div class="deck-jumps">
-      <a href="#slide-1">01 Problem</a>
-      <a href="#slide-2">02 Pipeline</a>
-      <a href="#slide-3">03 System</a>
-      <a href="#slide-4">04 Trends</a>
-      <a href="#slide-5">05 Contrast</a>
-      <a href="#slide-6">06 Multi-Source</a>
-      <a href="#slide-7">07 Verification</a>
+      <button type="button" id="prev" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--panel);color:var(--text);font-family:var(--mono);font-size:11px;cursor:pointer;">← Prev</button>
+      <button type="button" id="next" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--panel);color:var(--text);font-family:var(--mono);font-size:11px;cursor:pointer;">Next →</button>
+      <a href="#slide-1" data-jump="0">01</a>
+      <a href="#slide-2" data-jump="1">02</a>
+      <a href="#slide-3" data-jump="2">03</a>
+      <a href="#slide-4" data-jump="3">04</a>
+      <a href="#slide-5" data-jump="4">05</a>
+      <a href="#slide-6" data-jump="5">06</a>
+      <a href="#slide-7" data-jump="6">07</a>
       <a href="../">Live App</a>
       <a class="pdf-btn" href="./Terra-Lens_Seven_Slide_Demo.pdf">7-Slide PDF</a>
     </div>
@@ -800,7 +817,7 @@
 
   <main>
     <!-- SLIDE 1: TITLE, PROBLEM & RESEARCH QUESTION -->
-    <section class="slide" id="slide-1" aria-labelledby="s1-title">
+    <section class="slide active" id="slide-1" aria-labelledby="s1-title">
       <header class="slide-head">
         <div class="head-main">
           <div class="kicker">
@@ -949,10 +966,10 @@
                 <td>Analyzed on its own Kelvin axis or anomaly <code>σ</code> view; <strong>refuses</strong> paired B−A slope test against POWER point series</td>
               </tr>
               <tr>
-                <th scope="row">NASA POWER API v2.9.0<br><code>T2M</code>, <code>T2M_MAX</code>, <code>PRECTOTCORR</code>, <code>RH2M</code>, <code>WS2M</code>, <code>ALLSKY</code></th>
+                <th scope="row">NASA POWER API v2.9.0<br><code>T2M</code>, <code>T2M_MAX</code>, <code>T2M_MIN</code>, <code>T2MDEW</code>, <code>RH2M</code>, <code>QV2M</code>, <code>WS2M</code>, <code>PS</code>, <code>PRECTOTCORR</code></th>
                 <td><span class="badge badge-live">Live Browser Query</span><br>Direct CORS API + Cloudflare Pages Function proxy fallback</td>
                 <td>Single model grid cell (MERRA-2 <code>0.5° × 0.625°</code> / GEOS-FPIT)</td>
-                <td>Monthly means (1981–2025); headline study uses 2001–2024 (288 months, 24 complete years)</td>
+                <td>Monthly means/extrema (1981–2025); headline study uses 2001–2024 (288 months, 24 complete years)</td>
                 <td>Allows paired contrast <code>B − A</code> only when both series share identical variable, unit, and grid-point support</td>
               </tr>
               <tr>
@@ -999,7 +1016,7 @@
           <article class="stage-card">
             <div class="stage-num">01 · Configure Variable, Window &amp; Points A–D</div>
             <h3>Select NASA Parameter or Click the 3D Globe</h3>
-            <p>Choose from 6 allowlisted NASA POWER variables and up to 4 simultaneous coordinates (presets or custom lat/lon via keyboard or 3D globe).</p>
+            <p>Choose from 9 allowlisted NASA POWER variables and up to 4 simultaneous coordinates (presets or custom lat/lon via keyboard or 3D globe).</p>
           </article>
           <article class="stage-card">
             <div class="stage-num">02 · Inspect Annual, Monthly, Anomaly &amp; Seasonal Views</div>
@@ -1062,16 +1079,16 @@
               <div class="label">● Point A · Yogyakarta POWER Cell (−7.7956°, 110.3695°)</div>
               <span class="big">+0.179 °C / decade</span>
               <div class="sub">
-                Exact OLS: <code>+0.179141 °C/dec</code> · 95% CI: <code>+0.0349 to +0.3233</code> · <code>p = 0.01732</code><br>
-                Theil–Sen: <code>+0.1419 °C/dec</code> (95% CI <code>+0.0195 to +0.3052</code>) · MK <code>p = 0.02821</code> · Lag-1 <code>r₁ = +0.025</code>
+                Exact OLS: <code>+0.179141 °C/dec</code> · 95% CI: <code>+0.0348 to +0.3235</code> · <code>p = 0.01732</code> · <code>R² = 0.231</code><br>
+                Theil–Sen: <code>+0.1409 °C/dec</code> (95% CI <code>+0.0332 to +0.3118</code>) · MK <code>p = 0.02400</code> · Mean <code>25.88 °C</code> · Residual <code>r₁ = −0.066</code>
               </div>
             </div>
             <div class="stat-box b">
               <div class="label">◆ Point B · Jakarta POWER Cell (−6.2088°, 106.8456°)</div>
               <span class="big">+0.224 °C / decade</span>
               <div class="sub">
-                Exact OLS: <code>+0.223835 °C/dec</code> · 95% CI: <code>+0.0968 to +0.3508</code> · <code>p = 0.001455</code><br>
-                Theil–Sen: <code>+0.1932 °C/dec</code> (95% CI <code>+0.0725 to +0.3435</code>) · MK <code>p = 0.003235</code> · Lag-1 <code>r₁ = +0.056</code>
+                Exact OLS: <code>+0.223835 °C/dec</code> · 95% CI: <code>+0.0962 to +0.3515</code> · <code>p = 0.001455</code> · <code>R² = 0.376</code><br>
+                Theil–Sen: <code>+0.1926 °C/dec</code> (95% CI <code>+0.0789 to +0.3194</code>) · MK <code>p = 0.00097</code> · Mean <code>27.38 °C</code> · Residual <code>r₁ = +0.144</code>
               </div>
             </div>
           </div>
@@ -1089,7 +1106,7 @@
         </div>
 
         <figure class="chart-fig">
-          <img src="./annual-temperature.png" alt="2001 to 2024 complete-year annual mean 2m air temperature and fitted OLS lines for Yogyakarta and Jakarta.">
+          <img src="annual-temperature.png" alt="2001 to 2024 complete-year annual mean 2m air temperature and fitted OLS lines for Yogyakarta and Jakarta.">
           <figcaption>
             <strong>Figure 1 · NASA POWER Annual Mean <code>T2M</code> (2001–2024, <code>n = 24</code> complete years):</strong> Day-weighted annual means (solid lines) and full-period OLS fits (dashed lines) for Point A Yogyakarta (cobalt, 2001 mean <code>25.706 °C</code> → 2024 mean <code>26.435 °C</code>) and Point B Jakarta (terracotta, 2001 mean <code>27.152 °C</code> → 2024 mean <code>28.134 °C</code>).
           </figcaption>
@@ -1118,9 +1135,9 @@
 
       <div class="slide-body cols-2">
         <figure class="chart-fig">
-          <img src="./slope-intervals.png" alt="95 percent confidence intervals for linear warming trends in Yogyakarta and Jakarta.">
+          <img src="slope-intervals.png" alt="95 percent confidence intervals for linear warming trends in Yogyakarta and Jakarta.">
           <figcaption>
-            <strong>Figure 2 · Individual 95% Slope Confidence Intervals (<code>°C/decade</code>):</strong> Yogyakarta’s interval (<code>+0.0349 to +0.3233</code>) and Jakarta’s interval (<code>+0.0968 to +0.3508</code>) overlap substantially. To test whether their slopes differ on shared calendar years, Terra-Lens regresses the paired annual difference series <code>d_t = B_t − A_t</code> over <code>2001–2024</code> (<code>n = 24</code>, 0 unmatched years).
+            <strong>Figure 2 · Individual 95% Slope Confidence Intervals (<code>°C/decade</code>):</strong> Yogyakarta’s interval (<code>+0.0348 to +0.3235</code>) and Jakarta’s interval (<code>+0.0962 to +0.3515</code>) overlap substantially. To test whether their slopes differ on shared calendar years, Terra-Lens regresses the paired annual difference series <code>d_t = B_t − A_t</code> over <code>2001–2024</code> (<code>n = 24</code>, 0 unmatched years).
           </figcaption>
         </figure>
 
@@ -1139,7 +1156,7 @@
               <span class="big">p = 0.3739 (Includes 0)</span>
               <div class="sub">
                 HAC 95% CI: <code>−0.057416 to +0.146803 °C/dec</code><br>
-                HAC SE: <code>0.049240 °C/dec</code> · Durbin–Watson: <code>2.21</code>
+                HAC SE: <code>0.004924 °C/yr</code> (<code>0.049236 °C/dec</code>) · Durbin–Watson: <code>2.21</code>
               </div>
             </div>
           </div>
@@ -1152,7 +1169,7 @@
 
           <div class="card">
             <div class="card-head">Exploratory 8-Point Indonesian Sentinel Screen Caveat</div>
-            <p>In the <strong>Trend Contrast Finder</strong> tab, screening 8 pre-declared Indonesian coordinates (<code>28</code> candidate pairs) surfaces extreme-pair contrasts (e.g., Surabaya minus Kupang: <code>+0.178 °C/dec</code>). Terra-Lens explicitly labels post-selected pairs as <strong>exploratory hypothesis generation</strong> because selecting extremes after viewing 8 series invalidates confirmatory p-values without multiple-testing correction.</p>
+            <p>In the <strong>Trend Contrast Finder</strong> tab, screening 8 pre-declared Indonesian coordinates (<code>28</code> candidate pairs) surfaces extreme-pair contrasts (e.g., Medan <code>+0.291 °C/dec</code> vs. Surabaya <code>+0.140 °C/dec</code>). Terra-Lens explicitly labels post-selected pairs as <strong>exploratory hypothesis generation</strong> because selecting extremes after viewing 8 series invalidates confirmatory p-values without multiple-testing correction.</p>
           </div>
         </div>
       </div>
@@ -1186,7 +1203,7 @@
             <div class="case-kv">
               <div><span>Observed SWOT WSE Range</span><strong>120.68 m to 131.25 m (10.56 m spread)</strong></div>
               <div><span>SWOT Quality Flags (reach_q)</span><strong>Q0: 0 · Q1 (suspect): 10 · Q2 (degraded): 2</strong></div>
-              <div><span>Monthly POWER Rain (Mar / Apr / May)</span><strong>3.93 / 6.72 / 4.21 mm/day (3 UTC months)</strong></div>
+              <div><span>Monthly POWER Rain (Mar / Apr / May)</span><strong>3.99 / 7.08 / 4.04 mm/day (3 UTC months)</strong></div>
               <div><span>Statistical Association Guardrail</span><strong>Refused (n = 3 &lt; 6 minimum months)</strong></div>
             </div>
           </article>
@@ -1196,9 +1213,9 @@
             <h3>Yogyakarta POWER vs. NASA GISS GISTEMP v4 &amp; Giovanni HWF</h3>
             <p>Rebases both Yogyakarta POWER <code>T2M</code> and NASA GISS global land-ocean anomalies to a shared <code>2001–2020</code> monthly normal (2001–2024), alongside NASA’s published Giovanni MERRA-2 summer heatwave frequency (<code>HWF</code>, 1980–2023) tutorial table.</p>
             <div class="case-kv">
-              <div><span>Rebased Yogyakarta POWER Slope</span><strong>+0.179 °C/dec (p = 0.0173 · 1 grid cell)</strong></div>
-              <div><span>Rebased GISTEMP v4 Global Slope</span><strong>+0.244 °C/dec (p = 2.09 × 10⁻⁹ · Global)</strong></div>
-              <div><span>Giovanni Tutorial Summer HWF (1980–2023)</span><strong>Canada +0.55 · US +0.76 units/dec (descriptive)</strong></div>
+              <div><span>Rebased Yogyakarta POWER Slope</span><strong>+0.1791 °C/dec (p = 0.0173 · 1 grid cell)</strong></div>
+              <div><span>Rebased GISTEMP v4 Global Slope</span><strong>+0.2504 °C/dec (p = 2.75 × 10⁻⁸ · Gap −0.0713)</strong></div>
+              <div><span>Giovanni Tutorial Summer HWF (1980–2023)</span><strong>Canada +0.1903 · US +0.3904 counts/dec</strong></div>
               <div><span>Cross-Support Difference Test</span><strong>Refused (Point vs. Global / Undocumented JJA agg)</strong></div>
             </div>
           </article>
@@ -1314,5 +1331,31 @@
       <p>This deck is CSS-locked to 7 landscape <code>16:9</code> pages in <code>@media print</code> and exported automatically via Playwright Chromium in <code>scripts/build-demo.mjs</code> to <a href="./Terra-Lens_Seven_Slide_Demo.pdf">Terra-Lens_Seven_Slide_Demo.pdf</a>.</p>
     </div>
   </footer>
+  <script>
+    (function(){
+      var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+      var counter = document.getElementById('counter');
+      var prev = document.getElementById('prev');
+      var next = document.getElementById('next');
+      var idx = 0;
+      function show(n) {
+        idx = (n + slides.length) % slides.length;
+        slides.forEach(function(s, i){ s.classList.toggle('active', i === idx); });
+        if (counter) counter.textContent = 'Slide ' + (idx + 1) + ' of ' + slides.length;
+      }
+      if (prev) prev.addEventListener('click', function(){ show(idx - 1); });
+      if (next) next.addEventListener('click', function(){ show(idx + 1); });
+      document.querySelectorAll('[data-jump]').forEach(function(a){
+        a.addEventListener('click', function(e){
+          e.preventDefault();
+          show(Number(a.getAttribute('data-jump')) || 0);
+        });
+      });
+      window.addEventListener('keydown', function(e){
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') show(idx + 1);
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(idx - 1);
+      });
+    })();
+  </script>
 </body>
 </html>

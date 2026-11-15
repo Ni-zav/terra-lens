@@ -69,7 +69,7 @@ NASA POWER's meteorological parameters are derived from NASA GMAO **MERRA-2** as
 
 Built during the 14–15 November 2026 hackathon window. AI-assisted research, code drafting, testing and submission preparation were used. This is disclosed for evaluation; scientific results are produced by deterministic code, not generative AI. There is no generative AI answering scientific questions or substituting observations in the running application.
 
-Source attribution: [NASA Giovanni](https://giovanni.gsfc.nasa.gov/), [NASA POWER](https://power.larc.nasa.gov/), [NASA POWER monthly API](https://power.larc.nasa.gov/docs/services/api/temporal/monthly/), [NASA MERRA-2](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/), [NASA Space Apps Challenge](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/). The browser application uses system sans-serif and monospace font stacks with zero external font trackers.
+Source attribution: [NASA Giovanni](https://giovanni.gsfc.nasa.gov/), [NASA POWER](https://power.larc.nasa.gov/), [NASA POWER monthly API](https://power.larc.nasa.gov/docs/services/api/temporal/monthly/), [NASA MERRA-2](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/), [NASA Space Apps Challenge](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/). The browser application and slide deck load `Instrument Sans` and `DM Mono` from Google Fonts with local system sans-serif and monospace fallbacks.
 
 Independent hackathon project. Not affiliated with, sponsored by, or endorsed by NASA.
 
