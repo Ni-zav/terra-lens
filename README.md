@@ -115,3 +115,41 @@ In addition to the 4-point (A/B/C/D) NASA POWER workspace, Terra-Lens connects t
 4. **Source Catalog Transparency:** Planned connectors (`GPM IMERG`, `GLDAS`, `MODIS MOD11C3`, `FIRMS`) are explicitly marked `planned` in the UI catalog table so planned roadmap items are never confused with active browser integrations.
 
 The official challenge Resources tab lists Giovanni, Hydrology Time Series, and AppEEARS as NASA resources. Actual analysis of a qualifying listed NASA source remains unverified; see [provenance and eligibility](docs/NASA_RESOURCES_PROVENANCE.md).
+
+## Final source-eligibility and release checks (15 November 2026)
+
+The selected challenge's official **NASA Data & Resources** section lists
+[Giovanni](https://giovanni.gsfc.nasa.gov/giovanni/),
+[Hydrology Time Series](https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Time%20Series),
+and [AppEEARS](https://appeears.earthdatacloud.nasa.gov/).
+The existing NASA POWER, SWOT and GISS analyses are real scientific examples,
+but **do not by themselves demonstrate the mandatory use of an authentic
+dataset obtained from a qualifying listed NASA resource**. This mandatory
+Global Award source criterion remains **NOT SATISFIED** as of this branch.
+See [source-evidence requirements](docs/NASA_RESOURCES_PROVENANCE.md).
+
+For an Earthdata-authorized participant, the new
+[secure Giovanni acquisition guide](docs/GIOVANNI_AUTHENTIC_SOURCE_GATE.md)
+and `scripts/fetch-authentic-giovanni.mjs` can request an original NASA monthly
+point time series, preserve original CSV bytes **outside Git**, calculate
+SHA-256, and generate evidence for independent SciPy validation. A configured
+downloader, importer, or test fixture is not evidence of a successful NASA
+download. Never commit NASA login credentials or tokens.
+
+To run the logged-out public production acceptance audit (which tests
+**deployed main, not the current unmerged branch**):
+
+```bash
+npm ci
+npx playwright install chromium
+node scripts/hosted-acceptance.mjs
+```
+
+The audit covers a real NASA POWER default investigation, CSV export, core
+data-source tabs, mobile overflow, linked presentation/PDF, and a clearly
+labeled simulated NASA transport failure (no invented fallback data). See the
+[read-only workflow](.github/workflows/hosted-acceptance.yml).
+
+**No NASA account submission occurs from these scripts.** The official
+challenge source gate, presentation approval and actual NASA Team Project
+submission require separate human review.
