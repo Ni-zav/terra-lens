@@ -66,7 +66,8 @@ try{
  assert.equal(deckResponse.status(),200);
  assert.equal(await deck.locator('.slide').count(),7);
  const screenshot=deck.locator('img[src="../docs/screenshots/nasa-real-desktop.png"]');
- assert.equal(await screenshot.evaluate(i=>i.complete&&i.naturalWidth>0),true);
+ await screenshot.waitFor({state:'attached',timeout:15000});
+ await deck.waitForFunction(()=>{const image=document.querySelector('img[src="../docs/screenshots/nasa-real-desktop.png"]');return !!image&&image.complete&&image.naturalWidth>0;},null,{timeout:15000});
  await deck.screenshot({path:'artifacts/hosted-deck-cover.png',animations:'disabled'});
  const pdf=await context.request.get(new URL('demo/Terra-Lens_Seven_Slide_Demo.pdf',url).href);
  assert.equal(pdf.status(),200,'Hosted PDF must load');
