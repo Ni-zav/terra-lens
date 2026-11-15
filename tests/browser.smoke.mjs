@@ -30,6 +30,12 @@ try{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded',null,{timeout:20000});
+  // POWER monthly extremes are not means of daily extremes or annual extremes.
+  await page.locator('#variable').selectOption('T2M_MAX');
+  assert.match(await page.locator('#variable-description').textContent(),/Highest modeled hourly.*each month.*not annual maxima/);
+  await page.locator('#variable').selectOption('T2M_MIN');
+  assert.match(await page.locator('#variable-description').textContent(),/Lowest modeled hourly.*each month.*not annual minima/);
+  await page.locator('#variable').selectOption('T2M');
   assert.match(await page.locator('#metric-slope').textContent(),/°C/);
   assert.equal((await page.locator('#metric-years').textContent()).trim(),'24');
   await page.locator('#earth-globe canvas').waitFor({timeout:20000});

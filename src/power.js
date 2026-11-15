@@ -2,8 +2,8 @@
 import {makeSeries, SUPPORT} from './series.js';
 export const VARIABLES = Object.freeze({
   T2M: { label: 'Air temperature', description: 'Near-surface mean air temperature at 2 meters (monthly mean).', unit: '°C' },
-  T2M_MAX: { label: 'Daily maximum temperature', description: 'Monthly average of the daily maximum 2 m temperature; not the single highest day.', unit: '°C' },
-  T2M_MIN: { label: 'Daily minimum temperature', description: 'Monthly average of the daily minimum 2 m temperature; not the single lowest day.', unit: '°C' },
+  T2M_MAX: { label: 'Monthly maximum temperature', description: 'Highest modeled hourly 2 m temperature in each month. Annual values are day-weighted averages of monthly maxima, not annual maxima.', unit: '°C' },
+  T2M_MIN: { label: 'Monthly minimum temperature', description: 'Lowest modeled hourly 2 m temperature in each month. Annual values are day-weighted averages of monthly minima, not annual minima.', unit: '°C' },
   T2MDEW: { label: 'Dew point temperature', description: 'Monthly mean near-surface dew/frost point at 2 meters.', unit: '°C' },
   RH2M: { label: 'Relative humidity', description: 'Near-surface relative humidity at 2 meters.', unit: '%' },
   QV2M: { label: 'Specific humidity', description: 'Near-surface specific humidity at 2 meters.', unit: 'g/kg' },

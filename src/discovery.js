@@ -25,10 +25,10 @@ export const INVESTIGATIONS = Object.freeze({
     cannot:'No heat illness, heatwave frequency, city average or future risk can be inferred from monthly model point means.'
   },
   T2M_MAX: {
-    question:'Where do modeled monthly averages of daily high temperatures show different fitted long-term changes?',
+    question:'Where do modeled monthly maximum temperatures show different fitted long-term changes?',
     audience:'Researchers exploring daytime heat conditions',
     next:'Check daily extreme-heat thresholds and independent weather stations before discussing human heat exposure.',
-    cannot:'This is NOT the highest temperature reached or a heatwave-frequency metric.'
+    cannot:'Annual values average monthly maxima; they are not annual highest temperatures or a heatwave-frequency metric.'
   },
   RH2M: {
     question:'How have modeled near-surface relative-humidity averages changed at selected points?',
