@@ -153,6 +153,8 @@
 .giovanni-tutorial a { color: var(--cyan); text-decoration: underline; text-underline-offset: 2px; }
 .giovanni-tutorial button { padding: 6px 10px; color: var(--text); background: var(--panel); border: 1px solid var(--cyan); border-radius: 2px; cursor: pointer; }
 .giovanni-tutorial summary { margin-top: 8px; cursor: pointer; }
+.giovanni-region-fields { display: grid; grid-template-columns: repeat(auto-fit,minmax(110px,1fr)); gap: 8px; margin: 8px 0; }
+.giovanni-region-fields input { width: 100%; min-width: 0; padding: 5px; color: var(--text); background: var(--bg); border: 1px solid var(--border); }
 .giovanni-workspace label {
   display: block;
   margin: 0 0 3px;

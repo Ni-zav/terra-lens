@@ -37,7 +37,7 @@ These are historical modeled/reanalysis grid-cell estimates, not urban area aver
 - [x] Chromium browser tested with the **real** NASA API through the actual Pages Function code running locally, including two points, another variable, 576-row CSV and mobile overflow. [Live NASA browser workflow #43563581913](https://github.com/Ni-zav/terra-lens/actions/runs/43563581913); [actual screenshots](screenshots/README.md).
 - [ ] GitHub Pages production workflows verified end-to-end. Locally running the optional Pages Function is not proof of a deployed proxy.
 - [x] Official 2026 challenge Resources tab inspected: Giovanni, Hydrology Time Series and AppEEARS are listed under NASA resources.
-- [ ] Analyze an authentic qualifying listed NASA data source. POWER is genuine NASA data but is not named in the NASA resource list.
+- [x] Analyze an authentic Giovanni area-average export from the listed resource; see [source provenance and independent verification](NASA_QUALIFYING_SOURCE_HANDOFF.md). POWER itself is not named in the NASA resource list. The Giovanni source is an area average, not either POWER point.
 - [x] Real-NASA browser screenshots generated. They are not synthetic browser-test fixtures.
 
 ## Reading the evidence

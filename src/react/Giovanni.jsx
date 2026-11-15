@@ -1,7 +1,10 @@
 import React, {useState} from 'react';
 import {parseGiovanniMonthlyCSV, giovanniSeries} from '../giovanni.js';
+import GiovanniCase from './GiovanniCase.jsx';
 import {analyzeSeries} from '../series.js';
 import GiovanniTutorial from './GiovanniTutorial.jsx';
+import {giovanniAreaSeries} from '../science/giovanni-case.js';
+import {giovanniTemperatureQuery} from '../science/giovanni-query.js';
 
 const fmt = value => Number.isFinite(value) ? (value > 0 ? '+' : '') + Number(value).toFixed(3) : '—';
 
@@ -13,6 +16,9 @@ const fmt = value => Number.isFinite(value) ? (value > 0 ? '+' : '') + Number(va
 export default function GiovanniEvidence({imported, onImport, onRemove}) {
   const [error,setError]=useState('');
   const [product,setProduct]=useState(''), [sourceURL,setSourceURL]=useState(''), [doi,setDoi]=useState('');
+  const [region,setRegion]=useState({west:'110',south:'-8',east:'111',north:'-7',start:'2001',end:'2024'});
+  let queryURL='',queryError='';
+  try {queryURL=giovanniTemperatureQuery(region);} catch(cause) {queryError=cause.message;}
   async function importCSV(event) {
     const file=event.target.files?.[0]; if(!file)return;
     setError('');
@@ -22,10 +28,12 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
       // the checksum (for example a UTF-8 BOM or malformed bytes).
       const originalBytes=await file.arrayBuffer();
       const data=new TextDecoder('utf-8',{fatal:true}).decode(originalBytes);
-      const parsed=parseGiovanniMonthlyCSV(data);
       const digest=await crypto.subtle.digest('SHA-256',originalBytes);
       const sha256=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
-      onImport(giovanniSeries(parsed,{fileName:file.name,sha256,product:product.trim(),doi:doi.trim(),sourceURL:sourceURL.trim()}));
+      const metadata={fileName:file.name,sha256,product:product.trim(),doi:doi.trim(),sourceURL:sourceURL.trim()};
+      onImport(data.replace(/^\uFEFF/,'').startsWith('Title:,')
+        ? giovanniAreaSeries(data,metadata)
+        : giovanniSeries(parseGiovanniMonthlyCSV(data),metadata));
     } catch (cause) {setError(cause.message);}
     finally {event.target.value='';}
   }
@@ -38,12 +46,20 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
       </div>
       <p className="giovanni-links"><a href="https://giovanni.gsfc.nasa.gov/giovanni/" target="_blank" rel="noreferrer">Open NASA Giovanni</a> · <a href="https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GiC_Time_Series_Service.ipynb" target="_blank" rel="noreferrer">NASA CSV workflow example</a></p>
     </div>
+    <GiovanniCase />
     <GiovanniTutorial/>
+    <section className="giovanni-card giovanni-tutorial" aria-labelledby="giovanni-query-title">
+      <h3 id="giovanni-query-title">Explore another region with Giovanni</h3>
+      <p>Choose a bounding box and years for NASA MERRA-2 monthly 2 m temperature. Giovanni runs the area-average request on NASA’s site and may require Earthdata sign-in. Download its CSV and import it below; this app never receives your credentials.</p>
+      <div className="giovanni-region-fields">{[['west','West longitude'],['south','South latitude'],['east','East longitude'],['north','North latitude'],['start','First year'],['end','Last year']].map(([key,label])=><div key={key}><label htmlFor={'region-'+key}>{label}</label><input id={'region-'+key} type="number" step={key==='start'||key==='end'?'1':'any'} value={region[key]} onChange={e=>setRegion({...region,[key]:e.target.value})}/></div>)}</div>
+      {queryError?<p role="status">{queryError}</p>:<p><a id="giovanni-region-query" href={queryURL} target="_blank" rel="noreferrer">Open this region in NASA Giovanni</a></p>}
+      <p className="giovanni-note">Supported here: M2TMNXSLV v5.12.4 monthly mean T2M, non-antimeridian boxes and years 1980–2025. Other products and automated Giovanni acquisition are not implemented. Keep source metadata and check quality before drawing conclusions.</p>
+    </section>
     <div className="giovanni-grid">
       <div className="giovanni-copy">
         <div className="giovanni-card">
           <h3>Independent NASA Series Integration (Series G)</h3>
-          <p className="giovanni-note">Export a <strong>monthly</strong> time series from NASA Giovanni and import it here. It joins the workspace as series <strong>G</strong> and runs through the same annual-mean, OLS, Mann–Kendall, and anomaly calculations as NASA POWER.</p>
+          <p className="giovanni-note">Import a <strong>monthly</strong> Giovanni Cloud point CSV or classic area-average M2TMNXSLV v5.12.4 T2M CSV. It joins the workspace as series <strong>G</strong> and runs through the same annual-mean, OLS, Mann–Kendall, and anomaly calculations as NASA POWER.</p>
           <p className="giovanni-note">Giovanni point-service CSVs contain a <strong>single grid-point series</strong> when valid latitude and longitude metadata are present; area-averaged exports are different products. Do not infer a direct physical difference between unlike sources. Files are processed locally, and source authenticity is not certified by this browser.</p>
         </div>
         {analysis ? <div aria-live="polite" className="giovanni-summary">

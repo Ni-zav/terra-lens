@@ -102,8 +102,17 @@ try{
   await page.locator('#tab-giovanni').click();
   await page.locator('#giovanni-heading').waitFor({timeout:20000});
   assert.match(await page.locator('#giovanni-example-heading').textContent(),/NASA Giovanni tutorial/);
-  assert.match(await page.locator('.giovanni-card').first().textContent(),/original Giovanni job URL and quality flags are not documented/);
-  assert.equal(await page.locator('.giovanni-card details tbody tr').count(),44);
+  const tutorialCard=page.locator('.giovanni-tutorial').filter({has:page.locator('#giovanni-example-heading')});
+  assert.match(await tutorialCard.textContent(),/original Giovanni job URL and quality flags are not documented/);
+  assert.equal(await tutorialCard.locator('details tbody tr').count(),44);
+  assert.equal(await page.locator('#nasa-source-case').count(),1);
+  const regionalDownload=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Download regional evidence JSON'}).click();
+  const regionalEvidence=JSON.parse(await readFile(await (await regionalDownload).path(),'utf8'));
+  assert.equal(regionalEvidence.monthly.length,288);
+  assert.equal(regionalEvidence.annual.length,24);
+  assert.equal(regionalEvidence.sourceCSV_SHA256,'ff7cd37fd010ae16015ce22400c2cb583c975c6d9277e0235cbd674d774e54dc');
+  assert.match(regionalEvidence.limitations,/No quality-flag variable/);
   const tutorialDownload=page.waitForEvent('download');
   await page.getByRole('button',{name:'Download tutorial evidence JSON'}).click();
   const tutorialEvidence=JSON.parse(await readFile(await (await tutorialDownload).path(),'utf8'));
@@ -168,12 +177,12 @@ try{
       return originalFetch(input,options);
     };
     window.setTimeout=(fn,ms,...args)=>ms===30000
-      ? originalTimer(()=>{window.__testTimeouts++;fn();},1000,...args)
+      ? originalTimer(()=>{window.__testTimeouts++;fn();},3000,...args)
       : originalTimer(fn,ms,...args);
   });
   let raceRequests=0;
   await race.route('**/api/power?**',async route=>{
-    if(++raceRequests<=2)await new Promise(resolve=>setTimeout(resolve,1800));
+    if(++raceRequests<=2)await new Promise(resolve=>setTimeout(resolve,4500));
     await route.continue().catch(()=>{});
   });
   await race.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
@@ -181,12 +190,28 @@ try{
   await race.locator('#lat-a').fill('-8.1');
   await race.locator('#analyze').click();
   await race.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
-  await race.waitForTimeout(2200);
+  await race.waitForTimeout(5000);
   assert.equal(await race.evaluate(()=>window.__testTimeouts),1,'The superseded request must actually reach its timeout');
   assert.equal((await race.locator('#data-label').textContent()).trim(),'NASA data loaded');
   assert.match(await race.locator('#status').textContent(),/Loaded 2 NASA points/);
   assert.equal(await race.locator('#lat-a').inputValue(),'-8.1');
   await race.close();
+  // The checked-in NASA area export is used here as a real-source integration
+  // fixture; the synthetic POWER responses remain limited to this test server.
+  const area=await browser.newPage({viewport:{width:1280,height:720},acceptDownloads:true});
+  await area.goto(`http://127.0.0.1:${port}/`);
+  await area.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
+  await area.locator('#tab-giovanni').click();
+  await area.locator('#region-west').fill('-123');await area.locator('#region-east').fill('-121');
+  await area.locator('#region-south').fill('35');await area.locator('#region-north').fill('37');
+  const query=await area.locator('#giovanni-region-query').getAttribute('href');
+  assert.equal(new URLSearchParams(new URL(query).hash.slice(1)).get('bbox'),'-123,35,-121,37');
+  await area.locator('#giovanni-file').setInputFiles(join(ROOT,'data/source-snapshots/g4.areaAvgTimeSeries.M2TMNXSLV_5_12_4_T2M.20010101-20241231.110E_8S_111E_7S.csv'));
+  await area.getByText(/288 monthly records, 24 complete years/).waitFor();
+  assert.match(await area.locator('#provenance-text').textContent(),/G is a user-imported Giovanni area-averaged product/);
+  await area.locator('#tab-comparison').click();
+  assert.match(await area.locator('#comparison-panel').textContent(),/spatial support differs/);
+  await area.close();
   const offline=await browser.newPage({viewport:{width:1280,height:720}});
   await offline.route('**/api/power?**',route=>route.fulfill({status:503,body:'unavailable'}));
   await offline.route('**/power.larc.nasa.gov/**',route=>route.fulfill({status:503,body:'unavailable'}));

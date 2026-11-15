@@ -52,7 +52,7 @@ The [NASA POWER case-study notebook](notebooks/nasa_power_case_study.ipynb) retr
 - [Live NASA browser validation workflow](.github/workflows/live-browser.yml) — tests two points, a second variable, CSV exports, and mobile layout.
 - [Independent NASA/SciPy cross-validation](.github/workflows/scipy-verify.yml) — retrieves NASA observations and recomputes the same annual trends in Python and JavaScript.
 
-**Live app:** https://ni-zav.github.io/terra-lens/ . NASA challenge Resources-tab data-source eligibility remains unresolved; NASA POWER is not itself listed on that tab.
+**Live app:** https://ni-zav.github.io/terra-lens/ . The deployed main site does not yet contain this review branch's Giovanni regional case; NASA POWER is not itself listed on the selected challenge's Resources tab.
 
 ## Project evidence
 
@@ -102,7 +102,7 @@ This branch introduces a paired A/B trend comparison using **shared complete cal
 
 The NASA POWER selector includes nine meteorological parameters rather than three, with explicit units and meanings; see [data catalog](docs/DATA_CATALOG.md). A local **NASA Giovanni monthly CSV** workspace can analyze a second source with product ID, DOI, original URL, file checksum, complete-year means and classical OLS; see [Giovanni evidence guide](docs/GIOVANNI_EVIDENCE.md).
 
-**Release caution:** The branch also analyzes a [NASA-published Giovanni tutorial table](docs/GIOVANNI_TUTORIAL_CASE.md). Its source job, weighting and quality flags are not available in the published file, so the strict source gate and award eligibility remain unverified. Neither these changes nor a GitHub PR constitute a completed NASA team submission. Do not claim statistical significance of the B−A difference without inspecting paired/HAC results and assumptions.
+**Release caution:** The branch analyzes a [Giovanni regional MERRA-2 series](docs/NASA_QUALIFYING_SOURCE_HANDOFF.md), with the original output, source links, checksums and independent verification. The Giovanni output has no quality-flag variable, and its input-granule quality was not independently audited. NASA determines award eligibility; neither this work nor a GitHub PR constitutes an official submission. The separate [NASA tutorial table](docs/GIOVANNI_TUTORIAL_CASE.md) has incomplete job lineage and is labeled accordingly.
 
 
 ## Multi-source NASA context & regional sentinel screening
@@ -114,7 +114,7 @@ In addition to the 4-point (A/B/C/D) NASA POWER workspace, Terra-Lens connects t
 3. **8-Point Indonesian Sentinel Contrast Finder:** Screens a predeclared 8-coordinate Indonesian frame (`2001–2024` `T2M`), ranking fitted slopes from Surabaya (`+0.140 °C/decade`) to Medan (`+0.291 °C/decade`) and reporting the post-selected paired HAC interval as exploratory only. See [discovery limitations](docs/DISCOVERY_METHOD.md) and [verified sentinel case study](docs/DISCOVERY_CASE_STUDY.md).
 4. **Source Catalog Transparency:** Planned connectors (`GPM IMERG`, `GLDAS`, `MODIS MOD11C3`, `FIRMS`) are explicitly marked `planned` in the UI catalog table so planned roadmap items are never confused with active browser integrations.
 
-The official challenge Resources tab lists Giovanni, Hydrology Time Series, and AppEEARS as NASA resources. Actual analysis of a qualifying listed NASA source remains unverified; see [provenance and eligibility](docs/NASA_RESOURCES_PROVENANCE.md).
+The official challenge Resources tab lists Giovanni, Hydrology Time Series, and AppEEARS as NASA resources. The branch uses actual Giovanni output; see [provenance and eligibility](docs/NASA_RESOURCES_PROVENANCE.md).
 
 ## Final source-eligibility and release checks (15 November 2026)
 
@@ -123,10 +123,12 @@ The selected challenge's official **NASA Data & Resources** section lists
 [Hydrology Time Series](https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Time%20Series),
 and [AppEEARS](https://appeears.earthdatacloud.nasa.gov/).
 The existing NASA POWER, SWOT and GISS analyses are real scientific examples,
-but do not by themselves demonstrate the mandatory use of a qualifying
-listed NASA source. A NASA-published Giovanni tutorial table is now analyzed;
-its missing original job lineage and quality metadata leave the strict project
-source gate **UNVERIFIED**. NASA determines Global Award eligibility.
+but do not by themselves demonstrate use of a listed NASA source. The branch now
+also analyzes an authenticated Giovanni MERRA-2 area-average export. The original
+CSV and NetCDF, job URLs, product DOI, missing-value handling and independent
+SciPy cross-check are recorded in [the source handoff](docs/NASA_QUALIFYING_SOURCE_HANDOFF.md).
+No quality-flag variable is present in the output; input-granule QA and model
+uncertainty remain limitations. NASA determines Global Award eligibility.
 See [source-evidence requirements](docs/NASA_RESOURCES_PROVENANCE.md).
 
 For an Earthdata-authorized participant, the new
@@ -136,6 +138,17 @@ point time series, preserve original CSV bytes **outside Git**, calculate
 SHA-256, and generate evidence for independent SciPy validation. A configured
 downloader, importer, or test fixture is not evidence of a successful NASA
 download. Never commit NASA login credentials or tokens.
+
+For another region, the Giovanni tab builds an area-average query for the same
+validated monthly T2M product using user-selected bounds and years. Giovanni
+runs the query on NASA's site; its classic CSV can be imported locally. POWER
+point requests already support global coordinates and nine listed variables.
+Other products, automatic Giovanni API access and cross-source causal inference
+remain planned, not implemented capabilities.
+The eight-point finder uses a 15-minute in-memory cache for successful POWER
+requests and records cache hits and original retrieval time. The main workspace
+does not currently cache requests; this is not an archive download or an
+offline-data promise.
 
 To run the logged-out public production acceptance audit (which tests
 **deployed main, not the current unmerged branch**):

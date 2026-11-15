@@ -56,4 +56,4 @@ For comparison, the **pre-existing** 2001–2024 Jakarta vs Yogyakarta B−A stu
 
 An educator can ask students why eight positive point slopes do not identify a national heat-risk ranking. A community science team could ask where to compare independent station observations and whether land elevation/urbanization/exposure confound a point comparison. A researcher can download exact NASA URLs and derived data for an independent check. **These are potential uses, not verified uptake.**
 
-The official 2026 challenge Resources-tab qualification is **still open**. NASA POWER is NASA data but has not been verified as a listed qualifying source. The original Giovanni importer alone does not certify that a real listed mission dataset was analyzed.
+The finder uses NASA POWER, which is not named on the challenge's NASA Resources tab. The separate [Giovanni regional case](NASA_QUALIFYING_SOURCE_HANDOFF.md) analyzes output from a listed NASA service; its spatial support differs from the finder's points. An importer alone cannot certify a user-supplied file.

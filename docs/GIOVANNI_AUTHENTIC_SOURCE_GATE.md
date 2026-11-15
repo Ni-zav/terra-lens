@@ -1,6 +1,6 @@
 # Unresolved required NASA Resources-tab source — secure authenticated Giovanni evidence path
 
-**Status 15 Nov 2026: NOT COMPLETE.** Real NASA SWOT, GISS and POWER data exist, but multiple resource reproductions place the SWOT information link under a **Space Agency Partner** category; NASA GO Team says Global Awards require actual use of a **NASA data source included in the selected challenge Resources**. Those reproductions instead name NASA **Giovanni**, **Hydrology Time Series**, and **AppEEARS** as NASA-resources group. The official challenge page response was inspected on 15 November 2026 and lists these three services under NASA Data & Resources. Do NOT declare NASA Global Award eligibility solved by just citing a NASA URL.
+**Status 15 Nov 2026:** The branch now incorporates an authenticated Giovanni area-average export and independent numerical verification. See [source handoff](NASA_QUALIFYING_SOURCE_HANDOFF.md). The original output contains no quality-flag variable and input-granule QA has not been independently audited. NASA determines award eligibility; citing a URL alone is insufficient.
 
 The branch also analyzes a [NASA-published tutorial CSV attributed to Giovanni](GIOVANNI_TUTORIAL_CASE.md). Its original job URL, precise weighting and quality flags are not available, so it is a useful candidate but does not close this project's strict source-verification gate.
 
@@ -43,7 +43,7 @@ A genuine NASA Giovanni monthly dataset could be connected via the existing `src
 ## Strict safety checks
 
 - No Earthdata username/password or bearer token enters git, chat, web frontend, CI logs or source snapshot manifest.
-- If no real authenticated download is available, report **UNVERIFIED** and use the tested NASA SWOT/GISS/POWER demos only with the eligibility warning.
+- Do not report a new download as authenticated until its original output and provenance have been checked; the existing regional case is documented separately.
 - Do not replace a missing Giovanni CSV with a fabricated one or a NASA GISS snapshot and relabel it as Giovanni.
 - Do not label the local source-file checker as an authenticated NASA downloader.
 - The source's official list membership may need organizer confirmation; NASA mission authenticity and event eligibility are separate requirements.
@@ -104,6 +104,6 @@ python3 scripts/verify-giovanni-source-python.py
 
 Confirm the original NASA collection DOI, spatial method and CSV metadata;
 test in the `Giovanni` tab, preserve the untouched original and use the evidence
-only after external source review. **No one has performed this real authenticated
-download as part of these code changes.** It cannot be called Global Award
-eligibility satisfied on that basis.
+only after external source review. This fetcher has not been used to acquire the
+regional case; that case was downloaded through Giovanni's browser workflow and
+is documented in the source handoff. A fetcher alone does not establish eligibility.

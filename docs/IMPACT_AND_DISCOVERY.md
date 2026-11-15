@@ -31,7 +31,7 @@ A prototype showing a scientifically honest *non-finding* is valuable: our earli
 
 NASA describes the category as the project that best makes space data accessible or leverages it for a unique application. Terra-Lens's candidate distinction is **auditable, user-guided comparative claim testing that resists false certainty**. Its novelty is not a new Earth observation, not a novel regression formula, and not displaying a satellite-themed globe.
 
-The authentic NASA source and method matter more than decorative multi-source logos. **At present the only operational data source in the original app and this finder is NASA POWER; an additional Giovanni CSV importer is a capability, not proof that a verified qualifying NASA mission dataset was analyzed.** The official challenge Resources-tab source gate is outstanding.
+The original finder queries NASA POWER point data; the Giovanni tab separately analyzes an authentic area-average export from the challenge-listed service. See [the source handoff](NASA_QUALIFYING_SOURCE_HANDOFF.md) for provenance and limitations. Import capability alone is not proof that any user-supplied file is authentic.
 
 ## Honest impact metrics to measure, not invent
 

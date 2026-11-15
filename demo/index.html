@@ -1086,24 +1086,24 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 
       <div class="case-panel">
         <div>
-          <div class="stage-num">REGIONAL SCREEN &amp; NEXT VERIFICATION</div>
-          <h3>8-Point Sentinel Scan &amp; Limitations</h3>
-          <p>Predeclared 8-point Indonesian POWER screen (2001–2024 <span class="num">T2M</span>) spans <span class="num">+0.140 °C/dec</span> (Surabaya) to <span class="num">+0.291 °C/dec</span> (Medan), with post-selected HAC intervals marked exploratory.</p>
+          <div class="stage-num">CASE C · NASA-LISTED GIOVANNI RESOURCE</div>
+          <h3>Regional MERRA-2 Temperature</h3>
+          <p>Giovanni area-averaged monthly 2 m temperature for <span class="num">110–111°E, 8–7°S</span>, 2001–2024. This is a regional model-grid average, not a city thermometer or a POWER point.</p>
         </div>
         <div class="case-metrics">
-          Max contrast: Medan vs Surabaya (+0.151 °C/dec)<br>
-          Post-selected HAC 95% CI: +0.025 to +0.278<br>
-          Giovanni CSV: Local user-file parser<br>
-          Catalog: GPM/GLDAS/MODIS/FIRMS = planned
+          288 monthly observations · 24 complete years<br>
+          OLS: +0.177 K/decade · p = 0.0124<br>
+          Classical 95% CI: +0.042 to +0.312 K/decade<br>
+          CSV + NetCDF checked independently with SciPy
         </div>
         <div class="limit-note">
-          <strong>Verify Next:</strong> Compare against BMKG thermometer stations, USGS/local stream gauges, and analyze an original dataset from a NASA-listed challenge resource.
+          <strong>Limitations:</strong> Inference assumes independent residuals; model uncertainty and selection are not captured. No quality flags were present in the Giovanni output; input-granule QA was not audited.
         </div>
       </div>
     </div>
 
     <div class="footer">
-      <span>Verified snapshots: `data/cases/ohio-river-swot-power.json` &amp; `data/cases/yogyakarta-global-gistemp-power.json` · Python parity checks pass</span>
+      <span>Giovanni data and provenance: `docs/NASA_QUALIFYING_SOURCE_HANDOFF.md` · source and SciPy checks in repository</span>
       <span class="slide-num">06 / 07</span>
     </div>
   </section>
@@ -1150,7 +1150,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
             • <strong>NASA POWER / GMAO MERRA-2:</strong> NASA Langley Research Center POWER Project (`temporal/monthly/point`, `T2M` &amp; `PRECTOTCORR`).<br>
             • <strong>NASA SWOT Hydrocron:</strong> PO.DAAC SWOT Level-2 River Single-Pass Vector Product vD (Reach `74267300251`).<br>
             • <strong>NASA GISS GISTEMP v4:</strong> GISS Surface Temperature Analysis (`GLB.Ts+dSST`, table retrieved `2026-11-14`).<br>
-            • <strong>NASA Giovanni tutorial:</strong> M2SMNXEDI v2 HWF, DOI <a href="https://doi.org/10.5067/O8AX56DO60MI">10.5067/O8AX56DO60MI</a>.<br>
+            • <strong>NASA Giovanni:</strong> M2TMNXSLV v5.12.4 T2M, DOI <a href="https://doi.org/10.5067/AP1B0BA5PD2K">10.5067/AP1B0BA5PD2K</a>.<br>
             • <strong>NASA Earth Observatory:</strong> Blue Marble Next Generation (`2001`, Reto Stöckli) visual globe context.
           </p>
         </div>
@@ -1159,7 +1159,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
           <h3>TRANSPARENT AI &amp; ELIGIBILITY DISCLOSURE</h3>
           <p class="disclosure">
             <strong>AI Disclosure:</strong> AI tools assisted with software engineering, UI/slide layout refinement, and documentation drafting. Scientific values are computed from NASA records; selected calculations were independently checked with SciPy.<br>
-            <strong>Eligibility Note:</strong> A NASA-published Giovanni tutorial table is analyzed in the review branch. Its original job and quality metadata remain unavailable; source eligibility is unverified.
+            <strong>Source Note:</strong> Giovanni is listed in the challenge resources. The regional export is analyzed on the review branch; no quality flags were present in that output. NASA determines award eligibility.
           </p>
         </div>
       </div>
