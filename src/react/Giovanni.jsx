@@ -29,7 +29,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
   return <div className="giovanni-workspace" aria-labelledby="giovanni-heading">
     <div className="giovanni-head">
       <div className="pane-title-group">
-        <span className="section-kicker">Area-Average Import</span>
+        <span className="section-kicker">NASA Source Import · Local File</span>
         <h2 id="giovanni-heading">Add a NASA Giovanni monthly series</h2>
       </div>
       <p className="giovanni-links"><a href="https://giovanni.gsfc.nasa.gov/giovanni/" target="_blank" rel="noreferrer">Open NASA Giovanni</a> · <a href="https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GiC_Time_Series_Service.ipynb" target="_blank" rel="noreferrer">NASA CSV workflow example</a></p>
@@ -39,7 +39,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
         <div className="giovanni-card">
           <h3>Independent NASA Series Integration (Series G)</h3>
           <p className="giovanni-note">Export a <strong>monthly</strong> time series from NASA Giovanni and import it here. It joins the workspace as series <strong>G</strong> and runs through the same annual-mean, OLS, Mann–Kendall, and anomaly calculations as NASA POWER.</p>
-          <p className="giovanni-note">Because Giovanni series are area averages, Terra-Lens never runs a paired difference test against a POWER grid point; compare shapes in <em>Monthly → Anomaly</em>. The file is processed locally and is not authenticated by this app.</p>
+          <p className="giovanni-note">Giovanni point-service CSVs contain a <strong>single grid-point series</strong> when valid latitude and longitude metadata are present; area-averaged exports are different products. Do not infer a direct physical difference between unlike sources. Files are processed locally, and source authenticity is not certified by this browser.</p>
         </div>
         {analysis ? <div aria-live="polite" className="giovanni-summary">
           <h3>Active Imported Series (G)</h3>
@@ -53,7 +53,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
         </div>}
       </div>
       <div className="giovanni-form">
-        <h3>Import Parameters & CSV File</h3>
+        <h3>NASA provenance &amp; original monthly CSV</h3>
         <div className="coord-row">
           <div><label htmlFor="giovanni-product">NASA dataset/product identifier</label><input id="giovanni-product" value={product} onChange={e=>setProduct(e.target.value)} placeholder="e.g. M2TMNXSLV, version" /></div>
           <div><label htmlFor="giovanni-doi">Dataset DOI (if known)</label><input id="giovanni-doi" value={doi} onChange={e=>setDoi(e.target.value)} placeholder="doi:10.5067/..." /></div>
