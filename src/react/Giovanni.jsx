@@ -75,6 +75,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
       </div>
       <div className="giovanni-form">
         <h3>NASA provenance &amp; original monthly CSV</h3>
+        <p className="giovanni-note">For cloud CSVs, verify the product’s missing-value codes: declared numeric fill values are excluded, or −999 if none is declared. Other undocumented codes may remain.</p>
         <div className="coord-row">
           <div><label htmlFor="giovanni-product">NASA dataset/product identifier</label><input id="giovanni-product" value={product} onChange={e=>setProduct(e.target.value)} placeholder="e.g. M2TMNXSLV, version" /></div>
           <div><label htmlFor="giovanni-doi">Dataset DOI (if known)</label><input id="giovanni-doi" value={doi} onChange={e=>setDoi(e.target.value)} placeholder="doi:10.5067/..." /></div>

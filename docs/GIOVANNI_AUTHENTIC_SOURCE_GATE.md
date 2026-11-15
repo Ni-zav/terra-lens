@@ -30,7 +30,7 @@ python3 -m pip install --user scipy
 python3 scripts/verify-giovanni-source-python.py
 ```
 
-Replace placeholder values with actual NASA source identifiers and the original URL; fake placeholder values will not make the record authentic. The parser rejects unlabeled files (needs `param_name`, `unit`), multiple daily samples per calendar month, unsupported fill values and fewer than ten complete calendar years. This ensures the reported regression has a defensible time domain, but **does not** certify Earthdata authenticity.
+Replace placeholder values with actual NASA source identifiers and the original URL; fake placeholder values will not make the record authentic. The cloud parser requires `param_name` and `unit`, rejects multiple samples per calendar month and excludes declared numeric fill values (or `-999` if no fill is declared); it cannot infer every product-specific missing marker. Trend calculation requires at least ten complete calendar years. These checks do **not** certify Earthdata authenticity or source quality.
 
 5. Review the actual `artifacts/giovanni-source-evidence.json`: SHA-256 of original CSV, NASA URL/DOI as externally recorded, parser metadata, retained month records, complete annual records, classical OLS slope, interval and p-value and caveats.
 6. Cross-check the original source URL/product DOI on NASA's product page; examine temperature/Kelvin conversion, regional-vs-point support, time aggregation, fill values, quality flags and model uncertainty. Independent Python numerical agreement checks code only; cannot establish NASA dataset origin or scientific source correctness.

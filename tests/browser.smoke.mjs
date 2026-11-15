@@ -212,6 +212,15 @@ try{
   assert.match(await area.locator('#provenance-text').textContent(),/G is a user-imported Giovanni area-averaged product/);
   await area.locator('#tab-comparison').click();
   assert.match(await area.locator('#comparison-panel').textContent(),/spatial support differs/);
+  // Synthetic cloud import fixture: a declared fill month must not create a
+  // complete year or enter the calculated trend.
+  await area.locator('#tab-giovanni').click();
+  const syntheticCloud=['param_name,T2M','unit,K','fill_value,1e15'];
+  for(let year=2001;year<=2010;year++) for(let month=1;month<=12;month++)
+    syntheticCloud.push(`${year}-${String(month).padStart(2,'0')}-01,${year===2001&&month===1?'1e15':280}`);
+  await area.locator('#giovanni-file').setInputFiles({name:'synthetic-cloud-test.csv',mimeType:'text/csv',buffer:Buffer.from(syntheticCloud.join('\n'))});
+  await area.getByText(/119 monthly records, 9 complete years/).waitFor();
+  assert.match(await area.locator('.giovanni-summary').textContent(),/Not enough complete years/i);
   await area.close();
   const offline=await browser.newPage({viewport:{width:1280,height:720}});
   await offline.route('**/api/power?**',route=>route.fulfill({status:503,body:'unavailable'}));

@@ -17,7 +17,7 @@ export function parseGiovanniMonthlyCSV(text) {
     if (comma < 1) continue;
     const key = line.slice(0,comma).trim().replace(/^"|"$/g,'');
     const raw = line.slice(comma+1).trim().replace(/^"|"$/g,'');
-    if (/^[A-Za-z][\w-]*$/.test(key) && !['time','timestamp','date'].includes(key.toLowerCase())) {
+    if (/^[A-Za-z_][\w-]*$/.test(key) && !['time','timestamp','date'].includes(key.toLowerCase())) {
       if (!rows.length) metadata[key.toLowerCase()] = raw;
       continue;
     }
@@ -35,7 +35,16 @@ export function parseGiovanniMonthlyCSV(text) {
     if (seen.has(date)) throw new Error('Multiple samples per month: use a monthly Giovanni time series, not daily or 3-hourly data.');
     seen.add(date);
     const value=raw===''?NaN:Number(raw);
-    if (!Number.isFinite(value)||value<=-990) continue;
+    // Declared source sentinels are product-specific: a large positive fill
+    // is possible, and a blanket threshold can discard valid negative data.
+    const declared = ['_fillvalue', 'fillvalue', 'fill_value', 'missing_value']
+      .filter(name => Object.hasOwn(metadata, name))
+      .map(name => {
+        const value = Number(metadata[name]);
+        if (metadata[name].trim() === '' || !Number.isFinite(value)) throw new Error(`Invalid ${name} metadata.`);
+        return value;
+      });
+    if (!Number.isFinite(value) || declared.includes(value) || (!declared.length && value === -999)) continue;
     rows.push({year,month,value,date});
   }
   if (!metadata.param_name || !metadata.unit) throw new Error('Giovanni CSV metadata must include param_name and unit. This importer does not accept unlabeled CSV.');
@@ -67,6 +76,6 @@ export function giovanniSeries(parsed, {id = 'G', color = '#e79bc0', fileName, s
     variable: {code: 'GIOVANNI:' + md.param_name, label: md.param_name, unit: md.unit},
     provenance: {kind: 'giovanni-import', fileName, sha256, product: product || null, doi: doi || null,
       url: sourceURL || null, metadata: md, authenticated: false,
-      warning: 'User-supplied file; provenance fields are not independently authenticated.'}
+      warning: 'User-supplied file; provenance and source quality are not independently authenticated. Check product-specific missing-value markers; declared numeric fill/missing values are excluded, or -999 when none is declared.'}
   });
 }
