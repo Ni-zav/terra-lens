@@ -20,11 +20,23 @@ const findings={target:url,expectedCommit:expectedCommit||null,deployedCommit:nu
 const mark=(label)=>{findings.checks.push(label);console.log('PASS '+label)};
 try{
  const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
- const provResp=await context.request.get(new URL('BUILD-PROVENANCE.txt',url).href,{timeout:30000});
- if(provResp.ok()){
-   const provText=await provResp.text();
-   const m=provText.match(/^(?:Source\s+)?commit:\s*([0-9a-f]{40})/im);
-   findings.deployedCommit=m?m[1]:provText.trim();
+ const maxAttempts=expectedCommit?36:1;
+ for(let attempt=1;attempt<=maxAttempts;attempt++){
+   const provUrl=new URL('BUILD-PROVENANCE.txt',url);
+   if(attempt>1)provUrl.searchParams.set('t',String(Date.now()));
+   const provResp=await context.request.get(provUrl.href,{timeout:30000});
+   if(provResp.ok()){
+     const provText=await provResp.text();
+     const m=provText.match(/^(?:Source\s+)?commit:\s*([0-9a-f]{40})/im);
+     findings.deployedCommit=m?m[1]:provText.trim();
+     if(!expectedCommit||findings.deployedCommit===expectedCommit)break;
+   }
+   if(attempt<maxAttempts){
+     console.log(`Waiting for BUILD-PROVENANCE.txt to match ${expectedCommit} (attempt ${attempt}/${maxAttempts}, saw ${findings.deployedCommit})...`);
+     await new Promise(r=>setTimeout(r,5000));
+   }
+ }
+ if(findings.deployedCommit){
    if(expectedCommit){
      assert.equal(findings.deployedCommit,expectedCommit,`Deployed BUILD-PROVENANCE commit (${findings.deployedCommit}) must match expected (${expectedCommit})`);
    }
@@ -122,16 +134,23 @@ try{
  assert.ok(buffer.length>100000&&buffer.subarray(0,5).toString()==='%PDF-','Hosted demo must be a real PDF');
  findings.pdfSha256=createHash('sha256').update(buffer).digest('hex');
  mark('Hosted seven-slide HTML (Slide 5 CI & DW verified), real NASA screenshot and linked PDF SHA-256 '+findings.pdfSha256);
- // Explicitly labeled outage simulation: verify no synthetic observations
- // are displayed if the ACTUAL hosted site cannot reach the NASA API.
+ // Explicitly labeled outage simulation + recovery: verify no synthetic observations
+ // are displayed if the ACTUAL hosted site cannot reach the NASA API, and that
+ // normal data presentation resumes after network recovery + retry.
  const outage=await context.newPage();
  await outage.route('**/power.larc.nasa.gov/api/temporal/monthly/point**',route=>route.abort('failed'));
  await outage.goto(url,{waitUntil:'domcontentloaded'});
  await outage.waitForFunction(()=>document.getElementById('data-label')?.textContent==='Request failed',null,{timeout:45000});
  assert.match(await outage.locator('#status').textContent(),/Could not retrieve NASA data/);
  assert.equal((await outage.locator('#metric-slope').textContent()).trim(),'—');
+ await outage.unroute('**/power.larc.nasa.gov/api/temporal/monthly/point**');
+ await outage.locator('#analyze').click();
+ await outage.waitForFunction(()=>document.getElementById('data-label')?.textContent==='NASA data loaded',null,{timeout:125000});
+ assert.equal((await outage.locator('#metric-years').textContent()).trim(),'24');
+ assert.match(await outage.locator('#metric-slope').textContent(),/\+0\.18\s*°C/);
+ assert.match(await outage.locator('#finding-text').textContent(),/Jakarta/);
  await outage.close();
- mark('Hosted failure-state: simulated NASA transport failure gives honest error, no invented data');
+ mark('Hosted failure-then-recovery: simulated NASA transport failure gives honest error, no invented data, and #analyze retry restores 24-year live data');
  assert.deepEqual(pageErrors,[]);
  await writeFile('artifacts/hosted-acceptance-summary.json',JSON.stringify(findings,null,2)+'\n');
  console.log('HOSTED ACCEPTANCE SUMMARY: '+JSON.stringify(findings));
