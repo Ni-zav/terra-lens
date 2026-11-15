@@ -222,15 +222,22 @@ export function parseMonthly(json, variable, {start = 1981, end = 2025} = {}) {
 export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
   const nasaUrl = requestURL(options);
   const proxyUrl = '/api/power?' + nasaUrl.split('?')[1];
+  const isStaticGithubPages = typeof location !== 'undefined' &&
+    typeof location.hostname === 'string' &&
+    location.hostname.endsWith('.github.io');
   let response;
-  try {
-    response = await fetcher(proxyUrl, {signal});
-    if (!response.ok || !response.headers.get('content-type')?.includes('json')) {
+  if (isStaticGithubPages) {
+    response = await fetcher(nasaUrl, {signal});
+  } else {
+    try {
+      response = await fetcher(proxyUrl, {signal});
+      if (!response.ok || !response.headers.get('content-type')?.includes('json')) {
+        response = await fetcher(nasaUrl, {signal});
+      }
+    } catch (error) {
+      if (error?.name === 'AbortError') throw error;
       response = await fetcher(nasaUrl, {signal});
     }
-  } catch (error) {
-    if (error?.name === 'AbortError') throw error;
-    response = await fetcher(nasaUrl, {signal});
   }
   if (!response.ok) throw new Error('NASA POWER request failed (HTTP ' + response.status + '). Please try again.');
   const payload = await response.json();

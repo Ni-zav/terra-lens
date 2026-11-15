@@ -1,21 +1,37 @@
 /**
- * Actual hosted, logged-out GitHub Pages acceptance test (not a branch preview).
- * Production NASA calls are real. Never use test fixtures or cached mock results.
- * Designed to run in Actions, distinct from local Pages-Function tests.
+ * Actual hosted, logged-out GitHub Pages acceptance test (defaults to the review preview).
+ * Verifies BUILD-PROVENANCE.txt source SHA, real NASA POWER requests, keyboard navigation,
+ * CSV & Evidence JSON exports, Giovanni regional case & CSV import, Multi-source cases,
+ * 8-point Contrast Finder, 390px mobile layout, 7-slide HTML deck (including Slide 5 CI & DW),
+ * downloadable 7-slide PDF SHA-256, and simulated NASA outage recovery.
  */
 import assert from 'node:assert/strict';
-import {mkdir,readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {chromium} from 'playwright';
-const base=process.env.TERRA_HOSTED_URL||'https://ni-zav.github.io/terra-lens/';
+const base=process.env.TERRA_HOSTED_URL||'https://ni-zav.github.io/terra-lens-preview/';
+const expectedCommit=process.env.TERRA_EXPECTED_COMMIT?.trim()||'';
 if(!/^https:\/\/[A-Za-z0-9.-]+\/[A-Za-z0-9./_-]+\/?$/.test(base))
   throw new Error('Hosted URL must be an HTTPS project origin (no query parameters)');
 const url=base.endsWith('/')?base:base+'/';
 await mkdir('artifacts',{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-const findings={target:url,source:'HOSTED production (not local branch)',checks:[],nasaCalls:[],consoleErrors:[]};
+const findings={target:url,expectedCommit:expectedCommit||null,deployedCommit:null,pdfSha256:null,checks:[],nasaCalls:[],consoleErrors:[]};
 const mark=(label)=>{findings.checks.push(label);console.log('PASS '+label)};
 try{
  const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
+ const provResp=await context.request.get(new URL('BUILD-PROVENANCE.txt',url).href,{timeout:30000});
+ if(provResp.ok()){
+   const provText=await provResp.text();
+   const m=provText.match(/^(?:Source\s+)?commit:\s*([0-9a-f]{40})/im);
+   findings.deployedCommit=m?m[1]:provText.trim();
+   if(expectedCommit){
+     assert.equal(findings.deployedCommit,expectedCommit,`Deployed BUILD-PROVENANCE commit (${findings.deployedCommit}) must match expected (${expectedCommit})`);
+   }
+   mark('Hosted provenance: BUILD-PROVENANCE.txt commit '+findings.deployedCommit);
+ }else if(expectedCommit){
+   assert.fail('BUILD-PROVENANCE.txt missing on hosted target when TERRA_EXPECTED_COMMIT was required');
+ }
  const page=await context.newPage();
  const pageErrors=[];
  page.on('pageerror',e=>pageErrors.push(e.message));
@@ -54,13 +70,29 @@ try{
  assert.match(csv,/power\.larc\.nasa\.gov/);
  assert.equal(csv.trimEnd().split('\n').length,577);
  mark('Hosted CSV export: 576 monthly source records');
+ const evWait=page.waitForEvent('download');
+ await page.locator('#evidence-download').click();
+ const evDownload=await evWait;
+ const evJson=JSON.parse(await readFile(await evDownload.path(),'utf8'));
+ assert.equal(evJson.series?.length,2);
+ assert.ok(Math.abs(evJson.pairedContrast.classical.ciLowPerDecade - (-0.072286988)) < 1e-5);
+ assert.ok(Math.abs(evJson.pairedContrast.classical.ciHighPerDecade - 0.161674202) < 1e-5);
+ assert.ok(Math.abs(evJson.pairedContrast.hac.durbinWatson - 2.2053598) < 1e-5);
+ mark('Hosted Evidence JSON export: verified paired classical CI and Durbin-Watson');
  await page.locator('#tab-cases').click();
  await page.locator('#panel-cases').waitFor();
  await page.getByText(/SWOT/i).first().waitFor({timeout:30000});
  mark('Hosted Multi-source panel rendered');
  await page.locator('#tab-giovanni').click();
  await page.locator('#giovanni-file').waitFor({timeout:30000});
- mark('Hosted Giovanni panel rendered (importer does not prove authentic source)');
+ await page.locator('#nasa-source-case').waitFor({timeout:30000});
+ assert.match(await page.locator('#panel-giovanni').textContent(),/\+0\.177 K per decade/);
+ const gioEvWait=page.waitForEvent('download');
+ await page.getByRole('button',{name:/Download regional evidence JSON/i}).click();
+ const gioEvDownload=await gioEvWait;
+ const gioEv=JSON.parse(await readFile(await gioEvDownload.path(),'utf8'));
+ assert.equal(gioEv.sourceCSV_SHA256,'ff7cd37fd010ae16015ce22400c2cb583c975c6d9277e0235cbd674d774e54dc');
+ mark('Hosted Giovanni panel: regional M2TMNXSLV 5.12.4 case and evidence JSON export verified');
  await page.locator('#tab-finder').click();
  await page.locator('.discovery-table tbody tr').first().waitFor({timeout:30000});
  assert.equal(await page.locator('.discovery-table tbody tr').count(),8);
@@ -75,6 +107,9 @@ try{
  const deckResponse=await deck.goto(new URL('demo/',url).href,{waitUntil:'domcontentloaded',timeout:45000});
  assert.equal(deckResponse.status(),200);
  assert.equal(await deck.locator('.slide').count(),7);
+ const slide5Text=await deck.locator('.slide').nth(4).textContent();
+ assert.match(slide5Text,/−0\.0723 to \+0\.1617 °C\/dec/,'Slide 5 must show corrected classical OLS 95% CI');
+ assert.match(slide5Text,/Durbin–Watson\s*2\.21/,'Slide 5 must show corrected Durbin-Watson 2.21');
  const screenshot=deck.locator('img[src="../docs/screenshots/nasa-real-desktop.png"]');
  await screenshot.waitFor({state:'attached',timeout:15000});
  await deck.waitForFunction(()=>{const image=document.querySelector('img[src="../docs/screenshots/nasa-real-desktop.png"]');return !!image&&image.complete&&image.naturalWidth>0;},null,{timeout:15000});
@@ -83,9 +118,10 @@ try{
  assert.equal(pdf.status(),200,'Hosted PDF must load');
  const buffer=await pdf.body();
  assert.ok(buffer.length>100000&&buffer.subarray(0,5).toString()==='%PDF-','Hosted demo must be a real PDF');
- mark('Hosted seven-slide HTML, real NASA screenshot and linked PDF');
+ findings.pdfSha256=createHash('sha256').update(buffer).digest('hex');
+ mark('Hosted seven-slide HTML (Slide 5 CI & DW verified), real NASA screenshot and linked PDF SHA-256 '+findings.pdfSha256);
  // Explicitly labeled outage simulation: verify no synthetic observations
- // are displayed if the ACTUAL production site cannot reach the NASA API.
+ // are displayed if the ACTUAL hosted site cannot reach the NASA API.
  const outage=await context.newPage();
  await outage.route('**/power.larc.nasa.gov/api/temporal/monthly/point**',route=>route.abort('failed'));
  await outage.goto(url,{waitUntil:'domcontentloaded'});
@@ -95,5 +131,6 @@ try{
  await outage.close();
  mark('Hosted failure-state: simulated NASA transport failure gives honest error, no invented data');
  assert.deepEqual(pageErrors,[]);
+ await writeFile('artifacts/hosted-acceptance-summary.json',JSON.stringify(findings,null,2)+'\n');
  console.log('HOSTED ACCEPTANCE SUMMARY: '+JSON.stringify(findings));
 }finally{await browser.close()}

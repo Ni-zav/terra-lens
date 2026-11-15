@@ -1,5 +1,5 @@
 import {cp,mkdir} from 'node:fs/promises';
-for (const path of ['docs','demo','favicon.svg','THIRD_PARTY.md']) await cp(path,`dist/${path}`,{recursive:true});
+for (const path of ['docs','demo','data/source-snapshots','favicon.svg','THIRD_PARTY.md']) await cp(path,`dist/${path}`,{recursive:true});
 await mkdir('dist/licenses',{recursive:true});
 for (const [name,path] of Object.entries({
   'react.txt':'node_modules/react/LICENSE', 'react-dom.txt':'node_modules/react-dom/LICENSE',

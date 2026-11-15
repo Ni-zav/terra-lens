@@ -52,7 +52,7 @@ The [NASA POWER case-study notebook](notebooks/nasa_power_case_study.ipynb) retr
 - [Live NASA browser validation workflow](.github/workflows/live-browser.yml) — tests two points, a second variable, CSV exports, and mobile layout.
 - [Independent NASA/SciPy cross-validation](.github/workflows/scipy-verify.yml) — retrieves NASA observations and recomputes the same annual trends in Python and JavaScript.
 
-**Live app:** https://ni-zav.github.io/terra-lens/ . The deployed main site does not yet contain this review branch's Giovanni regional case; NASA POWER is not itself listed on the selected challenge's Resources tab.
+**Live review preview:** https://ni-zav.github.io/terra-lens-preview/ (provenance recorded at https://ni-zav.github.io/terra-lens-preview/BUILD-PROVENANCE.txt). The earlier `main` deployment (`https://ni-zav.github.io/terra-lens/`) predates this review branch's Giovanni regional case.
 
 ## Project evidence
 
@@ -69,7 +69,7 @@ NASA POWER's meteorological parameters are derived from NASA GMAO **MERRA-2** as
 
 Built during the 14–15 November 2026 hackathon window. AI-assisted research, code drafting, testing and submission preparation were used. This is disclosed for evaluation; scientific results are produced by deterministic code, not generative AI. There is no generative AI answering scientific questions or substituting observations in the running application.
 
-Source attribution: [NASA POWER](https://power.larc.nasa.gov/), [NASA POWER monthly API](https://power.larc.nasa.gov/docs/services/api/temporal/monthly/), [NASA MERRA-2](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/), [NASA Space Apps Challenge](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/). Browser fonts are loaded from Google Fonts where available.
+Source attribution: [NASA Giovanni](https://giovanni.gsfc.nasa.gov/), [NASA POWER](https://power.larc.nasa.gov/), [NASA POWER monthly API](https://power.larc.nasa.gov/docs/services/api/temporal/monthly/), [NASA MERRA-2](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/), [NASA Space Apps Challenge](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/). The browser application uses system sans-serif and monospace font stacks with zero external font trackers.
 
 Independent hackathon project. Not affiliated with, sponsored by, or endorsed by NASA.
 
@@ -110,7 +110,7 @@ The NASA POWER selector includes nine meteorological parameters rather than thre
 In addition to the 4-point (A/B/C/D) NASA POWER workspace, Terra-Lens connects two verified multi-source NASA case studies in the **Multi-source** tab (`#tab-cases`, `src/react/ScienceCases.jsx`) alongside the 8-point **Contrast Finder** (`#tab-finder`, `src/react/ContrastFinder.jsx`):
 
 1. **River Satellite vs. Modeled Rain (`SWOT + POWER`):** Compares 12 irregular passes from **NASA PO.DAAC SWOT Level-2 River Single-Pass Vector Product vD** on Ohio River SWORD Reach `74267300251` (`Mar–May 2025`, water-surface elevation `120.68–131.25 m` above geoid, `10` quality-1 suspect and `2` quality-2 degraded passes) against monthly **NASA POWER `PRECTOTCORR`** (`mm/day`) at the nearby Louisville grid cell (`38.2527°, -85.7585°`). Separate panels preserve the distinct physical units, irregular satellite cadence, and 3-month overlap without claiming a flood gauge or correlation test.
-2. **Local Grid vs. Global Index (`POWER + GISS GISTEMP v4`):** Places Yogyakarta's 2001–2024 NASA POWER `T2M` series (`+0.1791 °C/decade`, `p = 0.0173`) alongside the **NASA GISS Surface Temperature Analysis (`GISTEMP v4`, `GLB.Ts+dSST`)** global land-ocean anomaly index (`+0.2500 °C/decade`, `p = 1.98e-7`, dated official table excerpt `2026-11-14`), both rebased to `2001–2020` calendar-month normals for visual alignment without claiming a point-vs-globe significance test. Users can also re-verify the comparison against the live NASA POWER API directly in the browser.
+2. **Local Grid vs. Global Index (`POWER + GISS GISTEMP v4`):** Places Yogyakarta's 2001–2024 NASA POWER `T2M` series (`+0.1791 °C/decade`, `p = 0.0173`) alongside the **NASA GISS Surface Temperature Analysis (`GISTEMP v4`, `GLB.Ts+dSST`)** global land-ocean anomaly index (`+0.2504 °C/decade`, `p = 2.75e-8`, dated official table excerpt `2026-11-14`), both rebased to `2001–2020` calendar-month normals for visual alignment without claiming a point-vs-globe significance test. Users can also re-verify the comparison against the live NASA POWER API directly in the browser.
 3. **8-Point Indonesian Sentinel Contrast Finder:** Screens a predeclared 8-coordinate Indonesian frame (`2001–2024` `T2M`), ranking fitted slopes from Surabaya (`+0.140 °C/decade`) to Medan (`+0.291 °C/decade`) and reporting the post-selected paired HAC interval as exploratory only. See [discovery limitations](docs/DISCOVERY_METHOD.md) and [verified sentinel case study](docs/DISCOVERY_CASE_STUDY.md).
 4. **Source Catalog Transparency:** Planned connectors (`GPM IMERG`, `GLDAS`, `MODIS MOD11C3`, `FIRMS`) are explicitly marked `planned` in the UI catalog table so planned roadmap items are never confused with active browser integrations.
 

@@ -1,6 +1,15 @@
-name: Hosted Production Acceptance (read-only)
+name: Hosted Preview & Production Acceptance (read-only)
 on:
   workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Hosted HTTPS URL to validate'
+        required: false
+        default: 'https://ni-zav.github.io/terra-lens-preview/'
+      expected_commit:
+        description: 'Optional 40-char commit SHA expected in BUILD-PROVENANCE.txt'
+        required: false
+        default: ''
   push:
     paths:
       - 'scripts/hosted-acceptance.mjs'
@@ -19,12 +28,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Test hosted GitHub Pages MAIN (not branch preview) against real NASA data
+      - name: Test hosted review preview against real NASA data and BUILD-PROVENANCE.txt
+        env:
+          TERRA_HOSTED_URL: ${{ inputs.target_url || 'https://ni-zav.github.io/terra-lens-preview/' }}
+          TERRA_EXPECTED_COMMIT: ${{ inputs.expected_commit || '' }}
         run: node scripts/hosted-acceptance.mjs
-      - name: Upload screenshots even when checks fail
+      - name: Upload screenshots and summary JSON even when checks fail
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: hosted-production-acceptance
-          path: artifacts/hosted-*.png
+          name: hosted-preview-acceptance
+          path: |
+            artifacts/hosted-*.png
+            artifacts/hosted-acceptance-summary.json
           if-no-files-found: ignore
