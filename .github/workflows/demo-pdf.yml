@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -50,10 +52,16 @@ jobs:
           git add demo/Terra-Lens_Seven_Slide_Demo.pdf
           if ! git diff --cached --quiet; then
             git commit -m 'docs(demo): sync generated verified seven-slide PDF'
+            # Other development may land on the PR branch while Chromium runs.
+            # Rebase our generated binary only on the current remote branch.
+            git fetch origin "$GITHUB_REF_NAME"
+            git rebase "origin/$GITHUB_REF_NAME"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
       - name: Upload verified demo PDF
         uses: actions/upload-artifact@v4
         with:
           name: terra-lens-demo-pdf
-          path: demo/Terra-Lens_Seven_Slide_Demo.pdf
+          path: |
+            demo/Terra-Lens_Seven_Slide_Demo.pdf
+            artifacts/demo-print-slide-*.png
