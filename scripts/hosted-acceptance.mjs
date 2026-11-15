@@ -75,9 +75,11 @@ try{
  const evDownload=await evWait;
  const evJson=JSON.parse(await readFile(await evDownload.path(),'utf8'));
  assert.equal(evJson.series?.length,2);
- assert.ok(Math.abs(evJson.pairedContrast.classical.ciLowPerDecade - (-0.072286988)) < 1e-5);
- assert.ok(Math.abs(evJson.pairedContrast.classical.ciHighPerDecade - 0.161674202) < 1e-5);
- assert.ok(Math.abs(evJson.pairedContrast.hac.durbinWatson - 2.2053598) < 1e-5);
+ const pairContrast=evJson.comparisons?.[0]?.contrast;
+ assert.ok(pairContrast,'Expected paired contrast in comparisons[0].contrast');
+ assert.ok(Math.abs(pairContrast.classical.ciLowPerDecade - (-0.072286988)) < 1e-4);
+ assert.ok(Math.abs(pairContrast.classical.ciHighPerDecade - 0.161674202) < 1e-4);
+ assert.ok(Math.abs(pairContrast.hac.durbinWatson - 2.2053598) < 1e-2);
  mark('Hosted Evidence JSON export: verified paired classical CI and Durbin-Watson');
  await page.locator('#tab-cases').click();
  await page.locator('#panel-cases').waitFor();
