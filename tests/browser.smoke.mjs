@@ -137,7 +137,7 @@ try{
   }
   for(const [mw,mh] of [[768,1024],[390,844],[360,800]]){
     await page.setViewportSize({width:mw,height:mh});
-    for(const t of ['annual','comparison','cases']){
+    for(const t of ['annual','comparison','cases','giovanni']){
       await page.locator(`#tab-${t}`).click();
       assert.ok((await page.evaluate(()=>document.documentElement.scrollWidth))<=mw+2,`Mobile/tablet overflow at ${mw}x${mh} (${t})`);
     }
