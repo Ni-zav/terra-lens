@@ -13,10 +13,10 @@ export default function Catalog({region}) {
   catch(e){if(active.current===controller)setError(e.name==='AbortError'?'Catalog request timed out or was cancelled.':e.message)}
   finally{clearTimeout(timer);if(active.current===controller){active.current=null;setLoading(false)}}
  }
- return <section className="giovanni-card" aria-labelledby="catalog-title">
+ return <section className="giovanni-card giovanni-tutorial" aria-labelledby="catalog-title">
   <h3 id="catalog-title">Find datasets in NASA Earthdata (experimental)</h3>
   <p>Search NASA's collection catalog for the bounds and years above. Catalog overlap does not establish that observations exist at your exact location, that a variable is suitable, or that Terra-Lens can analyze the collection. Results may include partner data.</p>
-  <label htmlFor="catalog-term">Dataset or topic</label><input id="catalog-term" value={term} maxLength="100" onChange={e=>setTerm(e.target.value)} placeholder="e.g. soil moisture" />
+  <label htmlFor="catalog-term">Dataset or topic</label><input id="catalog-term" type="text" value={term} maxLength="100" onChange={e=>setTerm(e.target.value)} placeholder="e.g. soil moisture" />
   <button type="button" id="catalog-search" disabled={loading} onClick={search}>{loading?'Searching NASA catalog…':'Search collections'}</button>
   <p className="giovanni-note">At most 10 collection records; successful searches are cached in this browser for 15 minutes. NASA's catalog may take up to a minute. No data archives are downloaded.</p>
   {error&&<p role="alert">{error}</p>}
