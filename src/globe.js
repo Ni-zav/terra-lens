@@ -5,7 +5,7 @@ import * as THREE from 'three';
 const RAD = Math.PI / 180;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const wrap = lon => ((lon + 180) % 360 + 360) % 360 - 180;
-const MARKER_COLORS = { A: 0x62d6e4, B: 0xf6b975, C: 0xa38cf8, D: 0x56d39a };
+const MARKER_COLORS = { A: 0x1a4be0, B: 0xb84314, C: 0x0d6e66, D: 0x1f6b3b };
 
 export function pointToVector(lat, lon, radius = 1) {
   const phi = lat * RAD, lambda = lon * RAD;
@@ -67,7 +67,7 @@ export function createGlobe(host, onPick, onHover) {
     }
     for (const point of points) {
       if (!Number.isFinite(point.lat) || !Number.isFinite(point.lon) || Math.abs(point.lat)>90 || Math.abs(point.lon)>180) continue;
-      const color = MARKER_COLORS[point.id] || 0x62d6e4;
+      const color = MARKER_COLORS[point.id] || 0x1a4be0;
       const marker = new THREE.Mesh(new THREE.SphereGeometry(.026, 16, 12),
         new THREE.MeshBasicMaterial({color}));
       marker.position.copy(pointToVector(point.lat, point.lon, 1.02));

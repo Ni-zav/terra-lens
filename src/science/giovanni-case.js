@@ -40,7 +40,7 @@ export function giovanniAreaSeries(text, {fileName, sha256, sourceURL, doi} = {}
   const bounds=match.slice(1).map(Number),[west,south,east,north]=bounds;
   if(west < -180 || east > 180 || south < -90 || north > 90 || west>=east || south>=north)
     throw Error('Invalid or antimeridian-crossing area bounds');
-  return makeSeries({id:'G',label:'MERRA-2 T2M (Giovanni area)',color:'#e79bc0',
+  return makeSeries({id:'G',label:'MERRA-2 T2M (Giovanni area)',color:'#8f2d56',
     variable:{code:'GIOVANNI:M2TMNXSLV_5_12_4_T2M',label:'2 m air temperature',unit:'K'},
     support:SUPPORT.AREA_AVERAGE,monthly,
     provenance:{kind:'giovanni-import',fileName,sha256,url:sourceURL||null,doi:doi||null,

@@ -40,7 +40,7 @@ export function makeSeries({id, label, color, variable, support = SUPPORT.UNKNOW
     .sort((a, b) => a.year - b.year || a.month - b.month)
     .filter(p => { const k = p.year * 100 + p.month; if (seen.has(k)) return false; seen.add(k); return true; });
   return Object.freeze({
-    id, label: label || id, color: color || '#9fb3bf',
+    id, label: label || id, color: color || '#1a4be0',
     variable: Object.freeze({code: variable.code || null, label: variable.label || variable.code || 'Variable', unit: variable.unit, description: variable.description || ''}),
     support, geo: geo ? Object.freeze({lat: geo.lat, lon: geo.lon}) : null,
     provenance: Object.freeze({...provenance}),

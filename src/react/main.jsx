@@ -15,8 +15,8 @@ import './react.css';
 import './quiet.css';
 
 const POINT_IDS=['A','B','C','D'];
-const COLORS=['#62d6e4','#f6b975','#a38cf8','#56d39a'];
-const COLOR_MAP={A:'#62d6e4',B:'#f6b975',C:'#a38cf8',D:'#56d39a'};
+const COLORS=['#1a4be0','#b84314','#0d6e66','#1f6b3b'];
+const COLOR_MAP={A:'#1a4be0',B:'#b84314',C:'#0d6e66',D:'#1f6b3b'};
 const number=(v,d=2)=>Number.isFinite(v)?new Intl.NumberFormat('en-US',{maximumFractionDigits:d}).format(v):'—';
 const signed=(v,d=2)=>(v>0?'+':'')+number(v,d);
 const pValue=p=>p<.0001?'< 0.0001':number(p,4);
@@ -166,16 +166,16 @@ function Comparison({series,findings}){
   const height=Math.max(194,top+rowGap*(valid.length-1)+70);
   return <div className="comparison-panel" id="comparison-panel"><div className="comparison-topline"><div className="pane-title-group"><h3>Trend evidence, complementary tests</h3><p>Classical OLS (filled circle, thick bar) and rank-based Theil–Sen / Mann–Kendall (diamond, thin bar) use the same observations · 95% intervals</p></div></div>
     <div className="confidence-wrap" tabIndex="0" role="region" aria-label="Slope intervals"><svg id="confidence-chart" viewBox={`0 0 960 ${height}`} role="img" aria-label="Classical and Theil–Sen 95 percent slope intervals for each series">
-    {[0,1,2,3,4].map(i=>{const value=min+(max-min)*i/4;return <g key={i}><line x1={x(value)} y1="38" x2={x(value)} y2={height-26} stroke="#1e3446"/><text x={x(value)} y={height-9} fill="#95b0be" textAnchor="middle" fontSize="16" fontFamily="ui-monospace, monospace">{number(value,2)}</text></g>})}
-    <line x1={x(0)} y1="38" x2={x(0)} y2={height-26} stroke="#8cb4c2" strokeDasharray="4 4"/>
+    {[0,1,2,3,4].map(i=>{const value=min+(max-min)*i/4;return <g key={i}><line x1={x(value)} y1="38" x2={x(value)} y2={height-26} stroke="#dfdeda"/><text x={x(value)} y={height-9} fill="#4a4a48" textAnchor="middle" fontSize="16" fontFamily="DM Mono, ui-monospace, monospace">{number(value,2)}</text></g>})}
+    <line x1={x(0)} y1="38" x2={x(0)} y2={height-26} stroke="#8f8e88" strokeDasharray="4 4"/>
     {valid.map((a,i)=>{const s=a.series,y=top+i*rowGap,t=a.trend,r=a.robust,d=x(r.senSlopePerDecade);return <g key={s.id}>
-      <text x="18" y={y+5} fill="#e4f2f5" fontSize={valid.length>2?"16":"18"} fontFamily="ui-monospace, monospace">{s.id} · {s.label.length>20?s.label.slice(0,19)+'…':s.label}</text>
+      <text x="18" y={y+5} fill="#111111" fontSize={valid.length>2?"16":"18"} fontFamily="DM Mono, ui-monospace, monospace">{s.id} · {s.label.length>20?s.label.slice(0,19)+'…':s.label}</text>
       <line x1={x(t.ciLowPerDecade)} x2={x(t.ciHighPerDecade)} y1={y-4} y2={y-4} stroke={s.color} strokeWidth="6" strokeLinecap="round"/>
       <circle cx={x(t.slopePerDecade)} cy={y-4} r="7" fill={s.color}><title>{`${s.label} OLS: ${signed(t.slopePerDecade,3)} ${unit}/decade; 95% CI ${signed(t.ciLowPerDecade,3)} to ${signed(t.ciHighPerDecade,3)}`}</title></circle>
-      <line x1={x(r.senCiLowPerDecade)} x2={x(r.senCiHighPerDecade)} y1={y+9} y2={y+9} stroke={s.color} strokeWidth="2" opacity=".8"/>
-      <path d={`M${d} ${y+3} L${d+6} ${y+9} L${d} ${y+15} L${d-6} ${y+9} Z`} fill="#071019" stroke={s.color} strokeWidth="2"><title>{`${s.label} Theil–Sen: ${signed(r.senSlopePerDecade,3)} ${unit}/decade; 95% CI ${signed(r.senCiLowPerDecade,3)} to ${signed(r.senCiHighPerDecade,3)}`}</title></path>
+      <line x1={x(r.senCiLowPerDecade)} x2={x(r.senCiHighPerDecade)} y1={y+9} y2={y+9} stroke={s.color} strokeWidth="2" opacity=".85"/>
+      <path d={`M${d} ${y+3} L${d+6} ${y+9} L${d} ${y+15} L${d-6} ${y+9} Z`} fill="#ffffff" stroke={s.color} strokeWidth="2"><title>{`${s.label} Theil–Sen: ${signed(r.senSlopePerDecade,3)} ${unit}/decade; 95% CI ${signed(r.senCiLowPerDecade,3)} to ${signed(r.senCiHighPerDecade,3)}`}</title></path>
     </g>})}
-    <text x="580" y="20" textAnchor="middle" fill="#95b0be" fontSize="15" fontFamily="ui-monospace, monospace">95% slope intervals · {unit}/decade</text></svg></div>
+    <text x="580" y="20" textAnchor="middle" fill="#4a4a48" fontSize="15" fontFamily="DM Mono, ui-monospace, monospace">95% slope intervals · {unit}/decade</text></svg></div>
     {plan.excluded.length>0&&<p className="comparison-note">{plan.excluded.map(s=>s.id).join(', ')} not drawn: unit differs from {unit}. See its row below.</p>}
     <div className="comparison-rows" id="comparison-rows">{series.map(s=>{const a=analyzeSeries(s),u=s.variable.unit;return <article className="comparison-point" key={s.id} style={{'--series-color':s.color}}><div className="comparison-location"><span className="comparison-badge">{s.id}</span><strong>{s.label}</strong><small>{s.geo?`${number(s.geo.lat,4)}°, ${number(s.geo.lon,4)}° · `:''}{supportLabel(s.support)}</small><Verdict verdict={a.verdict}/></div><div className="comparison-numbers">
       <div className="comparison-stat"><span>OLS trend</span><strong>{a.trend?`${signed(a.trend.slopePerDecade,3)} ${u}/dec`:'Not estimated'}</strong></div>

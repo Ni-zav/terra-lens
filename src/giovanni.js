@@ -59,7 +59,7 @@ export function parseGiovanniMonthlyCSV(text) {
  * grid-point sample, while area-average exports must explicitly say so.
  * Absent sufficient metadata, do not guess the spatial support.
  */
-export function giovanniSeries(parsed, {id = 'G', color = '#e79bc0', fileName, sha256, product, doi, sourceURL} = {}) {
+export function giovanniSeries(parsed, {id = 'G', color = '#8f2d56', fileName, sha256, product, doi, sourceURL} = {}) {
   const md = parsed.metadata;
   const hasCoordinates = md.lat !== undefined && md.lon !== undefined &&
     md.lat !== '' && md.lon !== '';
