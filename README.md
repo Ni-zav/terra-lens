@@ -13,11 +13,11 @@ Terra-Lens lets users select an environmental variable, choose geographic points
 
 | NASA challenge question | Terra-Lens answer |
 | --- | --- |
-| What is changing? | Select NASA POWER 2 m temperature, relative humidity, or corrected precipitation rate. |
-| Where? | Pick coordinates or compare two named point locations. |
-| How much? | Estimate an ordinary-least-squares linear slope per decade and fitted change over the observed span. |
-| When? | Plot monthly and complete-year historical time series. |
-| Is it significant? | Report classical two-sided Student t-test p-value and 95% confidence interval, with limitations. |
+| What is changing? | Select from nine NASA POWER meteorological variables (`T2M`, `T2M_MAX`, `T2M_MIN`, `T2MDEW`, `RH2M`, `QV2M`, `WS2M`, `PS`, `PRECTOTCORR`) plus bundled/imported NASA Giovanni `M2TMNXSLV` regional `T2M`. |
+| Where? | Pick up to four coordinates (A/B/C/D) via keyboard or 3D Blue Marble globe, or screen 8 Indonesian points. |
+| How much? | Estimate day-weighted complete-year OLS slopes and Theil–Sen median pairwise slopes per decade. |
+| When? | Plot annual, monthly, deseasonalized anomaly, and per-calendar-month seasonal time series. |
+| Is it significant? | Report classical Student-t and Mann–Kendall tests alongside paired `B − A` Newey–West HAC intervals, with explicit limitations. |
 
 The map-like coordinate graphic is **not** a spatial heat map. A NASA POWER grid-point sample is **not** an official city-level observation or a polygon average.
 
@@ -58,7 +58,7 @@ The [NASA POWER case-study notebook](notebooks/nasa_power_case_study.ipynb) retr
 - [Live NASA browser validation workflow](.github/workflows/live-browser.yml) — tests two points, a second variable, CSV exports, and mobile layout.
 - [Independent NASA/SciPy cross-validation](.github/workflows/scipy-verify.yml) — retrieves NASA observations and recomputes the same annual trends in Python and JavaScript.
 
-**Live review preview:** https://ni-zav.github.io/terra-lens-preview/ (provenance recorded at https://ni-zav.github.io/terra-lens-preview/BUILD-PROVENANCE.txt). The earlier `main` deployment (`https://ni-zav.github.io/terra-lens/`) predates this review branch's Giovanni regional case.
+**Live deployments:** Production `main` at https://ni-zav.github.io/terra-lens/ and the submission review preview at https://ni-zav.github.io/terra-lens-preview/ (provenance recorded at https://ni-zav.github.io/terra-lens-preview/BUILD-PROVENANCE.txt).
 
 ## Project evidence
 
@@ -102,13 +102,13 @@ the scrollable plot regions are keyboard accessible.
 Three.js 0.187.0 is distributed under the MIT license in `vendor/THREE-LICENSE.txt`.
 
 
-## Evidence workflows in main
+## Evidence workflows
 
-This branch introduces a paired A/B trend comparison using **shared complete calendar years**, a direct B−A slope, and an exploratory **Bartlett Newey–West HAC** uncertainty estimate. It does not confuse separate individual t-tests with a test of their difference. Download an auditable Evidence JSON alongside the existing original monthly CSV.
+Terra-Lens provides a paired A/B trend comparison using **shared complete calendar years**, a direct B−A slope, and an exploratory **Bartlett Newey–West HAC** uncertainty estimate. It does not confuse separate individual t-tests with a test of their difference. Download an auditable Evidence JSON alongside the existing original monthly CSV.
 
-The NASA POWER selector includes nine meteorological parameters rather than three, with explicit units and meanings; see [data catalog](docs/DATA_CATALOG.md). A local **NASA Giovanni monthly CSV** workspace can analyze a second source with product ID, DOI, original URL, file checksum, complete-year means and classical OLS; see [Giovanni evidence guide](docs/GIOVANNI_EVIDENCE.md).
+The NASA POWER selector includes nine meteorological parameters, with explicit units and meanings; see [data catalog](docs/DATA_CATALOG.md). A local **NASA Giovanni monthly CSV** workspace analyzes a regional MERRA-2 series with product ID, DOI, original URL, file checksum, complete-year means and classical OLS; see [Giovanni evidence guide](docs/GIOVANNI_EVIDENCE.md).
 
-**Release caution:** The branch analyzes a [Giovanni regional MERRA-2 series](docs/NASA_QUALIFYING_SOURCE_HANDOFF.md), with the original output, source links, checksums and independent verification. The Giovanni output has no quality-flag variable, and its input-granule quality was not independently audited. NASA determines award eligibility; neither this work nor a GitHub PR constitutes an official submission. The separate [NASA tutorial table](docs/GIOVANNI_TUTORIAL_CASE.md) has incomplete job lineage and is labeled accordingly.
+**Release caution:** Terra-Lens analyzes a [Giovanni regional MERRA-2 series](docs/NASA_QUALIFYING_SOURCE_HANDOFF.md), with the original output, source links, checksums, 6-cell weighted intermediates, byte-preserved OPeNDAP `.dap.nc4` reprocessed-month subsets, and independent verification. The Giovanni output has no quality-flag variable, and its aggregate NetCDF does not embed a native `GranuleID` manifest. NASA determines award eligibility. The separate [NASA tutorial table](docs/GIOVANNI_TUTORIAL_CASE.md) has incomplete job lineage and is labeled accordingly.
 
 
 ## Multi-source NASA context & regional sentinel screening
@@ -120,7 +120,7 @@ In addition to the 4-point (A/B/C/D) NASA POWER workspace, Terra-Lens connects t
 3. **8-Point Indonesian Sentinel Contrast Finder:** Screens a predeclared 8-coordinate Indonesian frame (`2001–2024` `T2M`), ranking fitted slopes from Surabaya (`+0.140 °C/decade`) to Medan (`+0.291 °C/decade`) and reporting the post-selected paired HAC interval as exploratory only. See [discovery limitations](docs/DISCOVERY_METHOD.md) and [verified sentinel case study](docs/DISCOVERY_CASE_STUDY.md).
 4. **Source Catalog Transparency:** Planned connectors (`GPM IMERG`, `GLDAS`, `MODIS MOD11C3`, `FIRMS`) are explicitly marked `planned` in the UI catalog table so planned roadmap items are never confused with active browser integrations.
 
-The official challenge Resources tab lists Giovanni, Hydrology Time Series, and AppEEARS as NASA resources. The branch uses actual Giovanni output; see [provenance and eligibility](docs/NASA_RESOURCES_PROVENANCE.md).
+The official challenge Resources tab lists Giovanni, Hydrology Time Series, and AppEEARS as NASA resources. Terra-Lens uses actual Giovanni output; see [provenance and eligibility](docs/NASA_RESOURCES_PROVENANCE.md).
 
 ## Final source-eligibility and release checks (15 November 2026)
 
@@ -129,8 +129,8 @@ The selected challenge's official **NASA Data & Resources** section lists
 [Hydrology Time Series](https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Time%20Series),
 and [AppEEARS](https://appeears.earthdatacloud.nasa.gov/).
 The existing NASA POWER, SWOT and GISS analyses are real scientific examples,
-but do not by themselves demonstrate use of a listed NASA source. The branch now
-also analyzes an authenticated Giovanni MERRA-2 area-average export. The original
+but do not by themselves demonstrate use of a listed NASA source. Terra-Lens also
+analyzes an authenticated Giovanni MERRA-2 area-average export. The original
 CSV and NetCDF, job URLs, product DOI, missing-value handling and independent
 SciPy cross-check are recorded in [the source handoff](docs/NASA_QUALIFYING_SOURCE_HANDOFF.md).
 No quality-flag variable is present in the output; input-granule QA and model
@@ -156,8 +156,7 @@ requests and records cache hits and original retrieval time. The main workspace
 does not currently cache requests; this is not an archive download or an
 offline-data promise.
 
-To run the logged-out public production acceptance audit (which tests
-**deployed main, not the current unmerged branch**):
+To run the logged-out public hosted acceptance audit (defaults to `https://ni-zav.github.io/terra-lens-preview/`, or set `TERRA_HOSTED_URL=https://ni-zav.github.io/terra-lens/` for production):
 
 ```bash
 npm ci
