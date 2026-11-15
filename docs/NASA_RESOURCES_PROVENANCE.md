@@ -18,21 +18,21 @@ NASA Global Organizing (GO) Team publicly states that Global Awards require **at
 | **NASA SWOT** mission via PO.DAAC Hydrocron | Actual `SWOT_L2_HR_RiverSP_D` reach 74267300251 downloaded, QA screened, analyzed in conjunction with NASA POWER; [real-data run](https://github.com/Ni-zav/terra-lens/actions/runs/43610222429). NASA official API documentation: https://podaac.github.io/hydrocron/timeseries/ | **Real NASA-led mission dataset analyzed. The official page places SWOT under SPACE AGENCY PARTNER resources, not the NASA-resources group. Do not count as meeting mandatory NASA-source eligibility without organizer confirmation.** |
 | NASA POWER | Real model-derived T2M, PRECTOTCORR already verified; no direct evidence POWER itself is named in official Resources. | **Live and validated, but not assumed qualifying** |
 | NASA GISS GISTEMP v4 | Authentic original NASA table snapshot (2001–2024) independently processed alongside live NASA POWER. [NASA original table](https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.txt). | **Analyzed additional NASA data; NOT assumed officially listed** |
-| NASA Giovanni | Local CSV importer exists on `main`; not authenticated to Earthdata or supplied a verifiable NASA product download in this project yet. | **Software-only support, not evidence of qualifying dataset analysis** |
+| NASA Giovanni | [NASA-published tutorial CSV](GIOVANNI_TUTORIAL_CASE.md) is attributed by its NASA notebook to Giovanni and is analyzed in the branch; original job lineage, exact weighting and quality flags are unavailable. | **Authentic NASA-published candidate; strict source-quality gate and eligibility interpretation remain unverified.** |
 | AppEEARS, GLDAS, GPM, MODIS | Product-specific actual raw data and QA not yet integrated. | **Planned only** |
 
 **Important:** NASA SWOT is a joint NASA/CNES mission. The official challenge Resources tab places the **SWOT Mission information entry under Space Agency Partner resources**, *separately* from the NASA entries Giovanni, Hydrology Time Series and AppEEARS. The secondary resource index points to a Canadian Space Agency SWOT informational page, while the actual science dataset here is NASA PO.DAAC RiverSP. This is a scientifically valid NASA SWOT dataset, but **we cannot prove it meets the GO Team's selected challenge tab requirement without organizer confirmation that this partner entry qualifies**. Do not tell judges the gate is definitively cleared on this evidence alone.
 
 ## Current conservative eligibility decision: NOT SATISFIED
 
-The resource list is directly verified, but actual analysis of an original dataset obtained from a listed NASA resource has not been demonstrated. This is a project evidence decision, not NASA’s final eligibility determination.
+The resource list is directly verified. A NASA-published tutorial CSV attributed to Giovanni is now analyzed, but its original job and quality metadata are not available. It does not yet satisfy this project's strict source-provenance acceptance contract. This is a project evidence decision, not NASA’s final eligibility determination.
 
 The real SWOT study is valid and useful, but an organizer may treat it as a partner-resource use, not as the required listed **NASA** dataset. NASA POWER and NASA GISS are genuine NASA sources but are not named among the NASA resources on the official tab. We therefore keep a **NO-GO for declaring Global Award source compliance** until one of the following is documented:
 
 1. NASA GO Team explicitly confirms that PO.DAAC SWOT RiverSP used through the listed partner SWOT entry satisfies the mandatory NASA-source requirement; **or**
 2. The team obtains and **actually analyzes** an authentic dataset exported through challenge-listed NASA Giovanni/Hydrology Time Series or AppEEARS (with the original NASA dataset ID/version/DOI and retained records), and records the original data and provenance.
 
-The Giovanni importer and new source-file verifier are software capabilities only until an authentic participant-supplied source CSV is processed. No anonymous workflow has silently substituted a Giovanni dataset.
+The importer and source-file verifier do not by themselves establish source use. The separate NASA tutorial table and its unresolved lineage are documented in [the candidate case](GIOVANNI_TUTORIAL_CASE.md).
 
 ## One-minute participant verification
 

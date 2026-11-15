@@ -102,7 +102,7 @@ This branch introduces a paired A/B trend comparison using **shared complete cal
 
 The NASA POWER selector includes nine meteorological parameters rather than three, with explicit units and meanings; see [data catalog](docs/DATA_CATALOG.md). A local **NASA Giovanni monthly CSV** workspace can analyze a second source with product ID, DOI, original URL, file checksum, complete-year means and classical OLS; see [Giovanni evidence guide](docs/GIOVANNI_EVIDENCE.md).
 
-**Release caution:** The Giovanni pathway is software capability only; this repository has not confirmed a genuinely downloaded Giovanni dataset or the competition's challenge-listed-source eligibility. Neither these changes nor a GitHub PR constitute a completed NASA team submission. Do not claim statistical significance of the B−A difference without inspecting paired/HAC results and assumptions.
+**Release caution:** The branch also analyzes a [NASA-published Giovanni tutorial table](docs/GIOVANNI_TUTORIAL_CASE.md). Its source job, weighting and quality flags are not available in the published file, so the strict source gate and award eligibility remain unverified. Neither these changes nor a GitHub PR constitute a completed NASA team submission. Do not claim statistical significance of the B−A difference without inspecting paired/HAC results and assumptions.
 
 
 ## Multi-source NASA context & regional sentinel screening
@@ -123,9 +123,10 @@ The selected challenge's official **NASA Data & Resources** section lists
 [Hydrology Time Series](https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Time%20Series),
 and [AppEEARS](https://appeears.earthdatacloud.nasa.gov/).
 The existing NASA POWER, SWOT and GISS analyses are real scientific examples,
-but **do not by themselves demonstrate the mandatory use of an authentic
-dataset obtained from a qualifying listed NASA resource**. This mandatory
-Global Award source criterion remains **NOT SATISFIED** as of this branch.
+but do not by themselves demonstrate the mandatory use of a qualifying
+listed NASA source. A NASA-published Giovanni tutorial table is now analyzed;
+its missing original job lineage and quality metadata leave the strict project
+source gate **UNVERIFIED**. NASA determines Global Award eligibility.
 See [source-evidence requirements](docs/NASA_RESOURCES_PROVENANCE.md).
 
 For an Earthdata-authorized participant, the new

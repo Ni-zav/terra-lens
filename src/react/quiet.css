@@ -148,6 +148,11 @@
 }
 .giovanni-note:last-child { margin-bottom: 0; }
 .giovanni-note strong { color: var(--text); font-weight: 600; }
+.giovanni-tutorial p { margin: 0 0 8px; font: 400 13px/1.45 var(--body); }
+.giovanni-tutorial p.giovanni-note { font-size: 12px; }
+.giovanni-tutorial a { color: var(--cyan); text-decoration: underline; text-underline-offset: 2px; }
+.giovanni-tutorial button { padding: 6px 10px; color: var(--text); background: var(--panel); border: 1px solid var(--cyan); border-radius: 2px; cursor: pointer; }
+.giovanni-tutorial summary { margin-top: 8px; cursor: pointer; }
 .giovanni-workspace label {
   display: block;
   margin: 0 0 3px;

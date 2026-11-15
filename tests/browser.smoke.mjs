@@ -101,6 +101,15 @@ try{
   await page.screenshot({path:join(ROOT,'artifacts','react-fixture-cases.png')});
   await page.locator('#tab-giovanni').click();
   await page.locator('#giovanni-heading').waitFor({timeout:20000});
+  assert.match(await page.locator('#giovanni-example-heading').textContent(),/NASA Giovanni tutorial/);
+  assert.match(await page.locator('.giovanni-card').first().textContent(),/original Giovanni job URL and quality flags are not documented/);
+  assert.equal(await page.locator('.giovanni-card details tbody tr').count(),44);
+  const tutorialDownload=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Download tutorial evidence JSON'}).click();
+  const tutorialEvidence=JSON.parse(await readFile(await (await tutorialDownload).path(),'utf8'));
+  assert.equal(tutorialEvidence.rows.length,44);
+  assert.equal(tutorialEvidence.sha256,'34193c502c6417eb1163967a33dc2b19a87ea8be5518142f6196cb77b0a2b8fd');
+  assert.match(tutorialEvidence.limitations,/quality flags are unavailable/);
   await page.screenshot({path:join(ROOT,'artifacts','react-fixture-giovanni.png')});
   for(const [width,height] of [[1440,900],[1366,768],[1280,720],[1024,768],[1000,660],[900,700],[900,660],[820,700],[800,660]]){
     await page.setViewportSize({width,height});

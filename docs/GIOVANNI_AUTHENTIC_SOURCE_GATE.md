@@ -2,6 +2,8 @@
 
 **Status 15 Nov 2026: NOT COMPLETE.** Real NASA SWOT, GISS and POWER data exist, but multiple resource reproductions place the SWOT information link under a **Space Agency Partner** category; NASA GO Team says Global Awards require actual use of a **NASA data source included in the selected challenge Resources**. Those reproductions instead name NASA **Giovanni**, **Hydrology Time Series**, and **AppEEARS** as NASA-resources group. The official challenge page response was inspected on 15 November 2026 and lists these three services under NASA Data & Resources. Do NOT declare NASA Global Award eligibility solved by just citing a NASA URL.
 
+The branch also analyzes a [NASA-published tutorial CSV attributed to Giovanni](GIOVANNI_TUTORIAL_CASE.md). Its original job URL, precise weighting and quality flags are not available, so it is a useful candidate but does not close this project's strict source-verification gate.
+
 NASA source: https://giovanni.gsfc.nasa.gov/giovanni/
 Official GO Team guidance: https://github.com/nasa/spaceapps/discussions/1827
 Original NASA Giovanni in the Cloud tutorial: https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GiC_Time_Series_Service.ipynb
