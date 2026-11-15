@@ -1,6 +1,6 @@
 # Unresolved required NASA Resources-tab source — secure authenticated Giovanni evidence path
 
-**Status 14 Nov 2026: NOT COMPLETE.** Real NASA SWOT, GISS and POWER data exist, but multiple resource reproductions place the SWOT information link under a **Space Agency Partner** category; NASA GO Team says Global Awards require actual use of a **NASA data source included in the selected challenge Resources**. Those reproductions instead name NASA **Giovanni**, **Hydrology Time Series**, and **AppEEARS** as NASA-resources group. The official challenge tab itself could not be opened from our tools. Do NOT declare NASA Global Award eligibility solved by just citing a NASA URL.
+**Status 15 Nov 2026: NOT COMPLETE.** Real NASA SWOT, GISS and POWER data exist, but multiple resource reproductions place the SWOT information link under a **Space Agency Partner** category; NASA GO Team says Global Awards require actual use of a **NASA data source included in the selected challenge Resources**. Those reproductions instead name NASA **Giovanni**, **Hydrology Time Series**, and **AppEEARS** as NASA-resources group. The official challenge page response was inspected on 15 November 2026 and lists these three services under NASA Data & Resources. Do NOT declare NASA Global Award eligibility solved by just citing a NASA URL.
 
 NASA source: https://giovanni.gsfc.nasa.gov/giovanni/
 Official GO Team guidance: https://github.com/nasa/spaceapps/discussions/1827
@@ -9,7 +9,7 @@ Authenticated NASA Earthdata credentials must NEVER be pasted in chat, committed
 
 ## Participant-dependent action (requires an actual NASA Earthdata login)
 
-1. Open your official challenge [Resources tab](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/?tab=resources) while signed in as a registered participant. Capture the exact NASA Giovanni/Hydrology Time Series/AppEEARS resource name and link (a screenshot is ideal).
+1. Open your official challenge [Resources tab](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/?tab=resources) and capture the exact NASA Giovanni/Hydrology Time Series/AppEEARS resource name and link (a screenshot is ideal).
 2. Open NASA Giovanni and sign in via Earthdata Login as required. Select a **genuine monthly NASA mission/model product** with ≥10 years of monthly data; preferred candidate: MERRA-2 monthly near-surface meteorology, but confirm the actual collection and variables in the portal rather than guessing.
 3. Export **the unedited original monthly time-series CSV** and separately record the NASA product's confirmed short name/version, DOI, original download/job URL, variable, unit, geographic support, retrieved timestamp. A tool/service citation by itself is NOT proof of source use.
 4. Keep the original CSV in a private local folder outside Git; the CLI runs entirely from disk, does not log Earthdata tokens and writes a generated **analysis JSON only** under `artifacts/`.

@@ -114,4 +114,4 @@ In addition to the 4-point (A/B/C/D) NASA POWER workspace, Terra-Lens connects t
 3. **8-Point Indonesian Sentinel Contrast Finder:** Screens a predeclared 8-coordinate Indonesian frame (`2001–2024` `T2M`), ranking fitted slopes from Surabaya (`+0.140 °C/decade`) to Medan (`+0.291 °C/decade`) and reporting the post-selected paired HAC interval as exploratory only. See [discovery limitations](docs/DISCOVERY_METHOD.md) and [verified sentinel case study](docs/DISCOVERY_CASE_STUDY.md).
 4. **Source Catalog Transparency:** Planned connectors (`GPM IMERG`, `GLDAS`, `MODIS MOD11C3`, `FIRMS`) are explicitly marked `planned` in the UI catalog table so planned roadmap items are never confused with active browser integrations.
 
-The official NASA Space Apps Challenge Resources-tab mandatory dataset enumeration remains a separate organizer-portal verification item.
+The official challenge Resources tab lists Giovanni, Hydrology Time Series, and AppEEARS as NASA resources. Actual analysis of a qualifying listed NASA source remains unverified; see [provenance and eligibility](docs/NASA_RESOURCES_PROVENANCE.md).

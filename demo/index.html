@@ -843,9 +843,9 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
         <div>
           <div class="stage-num">STAGE 01 · SOURCE &amp; SUPPORT</div>
           <h3>NASA POWER / MERRA-2</h3>
-          <p>Queries the NASA Langley POWER monthly point API (<span class="num">community=RE</span>). Each coordinate resolves to a <span class="num">0.5° × 0.625°</span> (~55 × 69 km) atmospheric reanalysis grid cell.</p>
+          <p>Queries the NASA Langley POWER monthly point API (<span class="num">community=AG</span>). Each coordinate resolves to a <span class="num">0.5° × 0.625°</span> (~55 × 69 km) atmospheric reanalysis grid cell.</p>
           <ul class="stage-list">
-            <li>Direct NASA API fetch + Cloudflare Pages cache</li>
+            <li>GitHub Pages requests NASA POWER directly</li>
             <li>Explicit model-grid vs. thermometer distinction</li>
           </ul>
         </div>
@@ -902,7 +902,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
         </div>
         <div class="stage-spec">
           scripts/verify-scipy.py: PASS<br>
-          41 / 41 Node unit tests: PASS<br>
+          Deterministic Node tests in repository<br>
           CSV + Evidence JSON export
         </div>
       </div>
@@ -926,7 +926,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
         <p class="kicker">Primary Empirical Evidence · 2001–2024</p>
         <span class="kicker-tag">NASA POWER T2M · 24 Complete Years · 576 Valid Monthly Records</span>
       </div>
-      <h2>Both Indonesian model-grid points warmed significantly over 2001–2024.</h2>
+      <h2>Both model-grid estimates show an increase over 2001–2024.</h2>
       <p class="lead">Day-weighted annual mean 2 m air temperatures (<span class="num">°C</span>) show consistent upward trajectories at both the Yogyakarta and Jakarta MERRA-2 grid locations.</p>
     </div>
 
@@ -946,7 +946,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
           <div class="stat-val">+0.1791 °C / decade</div>
           <p class="stat-sub">
             Classical 95% CI: <span class="num">+0.0348 to +0.3235 °C/dec</span> (<span class="num">p = 0.0173</span>, <span class="num">R² = 0.232</span>)<br>
-            Robust Theil–Sen: <span class="num">+0.1426 °C/dec</span> (Mann–Kendall <span class="num">p = 0.0189</span>)<br>
+            Robust Theil–Sen: <span class="num">+0.1409 °C/dec</span> (Mann–Kendall <span class="num">p = 0.0240</span>)<br>
             24-yr mean: <span class="num">25.88 °C</span> · Net fitted change: <span class="num">+0.41 °C</span> · <span class="num">r₁ = 0.064</span>
           </p>
         </div>
@@ -956,7 +956,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
           <div class="stat-val">+0.2238 °C / decade</div>
           <p class="stat-sub">
             Classical 95% CI: <span class="num">+0.0962 to +0.3515 °C/dec</span> (<span class="num">p = 0.00145</span>, <span class="num">R² = 0.375</span>)<br>
-            Robust Theil–Sen: <span class="num">+0.1947 °C/dec</span> (Mann–Kendall <span class="num">p = 0.0028</span>)<br>
+            Robust Theil–Sen: <span class="num">+0.1926 °C/dec</span> (Mann–Kendall <span class="num">p = 0.0010</span>)<br>
             24-yr mean: <span class="num">27.39 °C</span> · Net fitted change: <span class="num">+0.51 °C</span> · <span class="num">r₁ = 0.145</span>
           </p>
         </div>
@@ -984,7 +984,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
         <span class="kicker-tag">Aligned-Year Difference Series D_y = B_y − A_y (n = 24 Complete Years)</span>
       </div>
       <h2>Individual slopes are positive, but the paired B − A difference is inconclusive.</h2>
-      <p class="lead">Testing the year-by-year temperature difference removes shared regional anomalies and directly evaluates whether the two warming rates diverge.</p>
+      <p class="lead">Testing the year-by-year temperature difference accounts for shared variation through aligned differences and directly evaluates whether the two warming rates diverge.</p>
     </div>
 
     <div class="evidence-layout">
@@ -1089,7 +1089,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
           Catalog: GPM/GLDAS/MODIS/FIRMS = planned
         </div>
         <div class="limit-note">
-          <strong>Verify Next:</strong> Compare against BMKG thermometer stations, USGS/local stream gauges, and confirm official Space Apps Resources-tab dataset eligibility.
+          <strong>Verify Next:</strong> Compare against BMKG thermometer stations, USGS/local stream gauges, and analyze an original dataset from a NASA-listed challenge resource.
         </div>
       </div>
     </div>
@@ -1150,7 +1150,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
           <h3>TRANSPARENT AI &amp; ELIGIBILITY DISCLOSURE</h3>
           <p class="disclosure">
             <strong>AI Disclosure:</strong> AI tools assisted with software engineering, UI/slide layout refinement, and documentation drafting. No scientific values are AI-generated: all climate metrics are computed deterministically from NASA records and verified against SciPy.<br>
-            <strong>Eligibility Note:</strong> Uses authentic NASA APIs/archives; official challenge Resources-tab mandatory dataset enumeration requires final organizer-portal verification.
+            <strong>Eligibility Note:</strong> The official challenge lists Giovanni, Hydrology Time Series and AppEEARS. An original dataset from a listed NASA resource has not yet been analyzed here.
           </p>
         </div>
       </div>
