@@ -15,8 +15,8 @@ import './react.css';
 import './quiet.css';
 
 const POINT_IDS=['A','B','C','D'];
-const COLORS=['#1a4be0','#b84314','#0d6e66','#1f6b3b'];
-const COLOR_MAP={A:'#1a4be0',B:'#b84314',C:'#0d6e66',D:'#1f6b3b'};
+const COLORS=['#2563eb','#ea580c','#0d9488','#16a34a'];
+const COLOR_MAP={A:'#2563eb',B:'#ea580c',C:'#0d9488',D:'#16a34a'};
 const number=(v,d=2)=>Number.isFinite(v)?new Intl.NumberFormat('en-US',{maximumFractionDigits:d}).format(v):'—';
 const signed=(v,d=2)=>(v>0?'+':'')+number(v,d);
 const pValue=p=>p<.0001?'< 0.0001':number(p,4);

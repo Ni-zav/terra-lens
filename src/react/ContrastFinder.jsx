@@ -44,7 +44,7 @@ function CoordinatePlot({records}) {
       {[-10,-5,0,5].map(v=><g key={v}><line y1={y(v)} y2={y(v)} x1="52" x2="748" stroke="#e5e4e0"/><text x="44" y={y(v)+4} fill="#4a4a48" textAnchor="end" fontSize="12" fontFamily="DM Mono, ui-monospace, monospace">{v}°</text></g>)}
       {SENTINEL_POINTS.map((p,i)=>{
         const r=byId.get(p.id),status=r?.status||'waiting';
-        const color=status==='error'?'#b91c1c':status==='insufficient-years'?'#b84314':status==='ok'?'#1a4be0':'#6e6e6a';
+        const color=status==='error'?'#dc2626':status==='insufficient-years'?'#ea580c':status==='ok'?'#2563eb':'#6e6e6a';
         return <g key={p.id}><circle cx={x(p.lon)} cy={y(p.lat)} r="12" fill={color} stroke="#ffffff" strokeWidth="2"/><text x={x(p.lon)} y={y(p.lat)+4} textAnchor="middle" fontSize="11" fontWeight="700" fontFamily="DM Mono, ui-monospace, monospace" fill="#ffffff">{i+1}</text><title>{p.label}: {status}</title></g>;
       })}
       <text x="400" y="21" textAnchor="middle" fill="#4a4a48" fontWeight="600" fontSize="13" fontFamily="DM Mono, ui-monospace, monospace">Sampling coordinates · Not a climate raster</text>
