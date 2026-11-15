@@ -17,9 +17,12 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
     setError('');
     try {
       if (file.size > 12_000_000) throw new Error('File is too large (12 MB maximum).');
-      const data=await file.text();
+      // Hash the ORIGINAL file bytes. Re-encoding a decoded string can change
+      // the checksum (for example a UTF-8 BOM or malformed bytes).
+      const originalBytes=await file.arrayBuffer();
+      const data=new TextDecoder('utf-8',{fatal:true}).decode(originalBytes);
       const parsed=parseGiovanniMonthlyCSV(data);
-      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(data));
+      const digest=await crypto.subtle.digest('SHA-256',originalBytes);
       const sha256=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
       onImport(giovanniSeries(parsed,{fileName:file.name,sha256,product:product.trim(),doi:doi.trim(),sourceURL:sourceURL.trim()}));
     } catch (cause) {setError(cause.message);}
