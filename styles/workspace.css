@@ -430,7 +430,7 @@
   border-bottom: 1px solid #132332;
 }
 .telemetry-row:last-child { border-bottom: 0; }
-.telemetry-row.is-off { opacity: 0.48; }
+.telemetry-row.is-off { opacity: 1; }
 .telemetry-city {
   color: var(--text);
   font-weight: 600;

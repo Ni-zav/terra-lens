@@ -149,7 +149,7 @@ function Globe({inputs,onPick}){
       const active=pointEnabled(inputs,id);
       return <button type="button" key={id} id={'globe-'+id.toLowerCase()} className={'globe-target-btn pt-'+id.toLowerCase()+(active?' is-enabled':' is-optional')} aria-pressed={target===id} onClick={()=>{setTarget(id);setStatus(`Target ${id} · ${name} (${Number(inputs['lat'+id]).toFixed(2)}°, ${Number(inputs['lon'+id]).toFixed(2)}°) · Click globe to set`)}}><span>Point {id}</span><small>{name}</small></button>;
     })}</div><p id="globe-status" className="globe-status" role="status">{status}</p></div>
-    <div ref={host} id="earth-globe" className="earth-globe" aria-label="Interactive Earth globe"/>
+    <div ref={host} id="earth-globe" className="earth-globe" role="img" aria-label="Earth globe showing selected points. Use the coordinate fields to select locations without a mouse."/>
     <p className="globe-credit">Historical <a href="https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/" target="_blank" rel="noreferrer">NASA Blue Marble</a> imagery (2001) · Context only, not live data.</p></section>;
 }
 function Verdict({verdict}){
