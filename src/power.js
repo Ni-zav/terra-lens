@@ -225,18 +225,32 @@ export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
   const isStaticGithubPages = typeof location !== 'undefined' &&
     typeof location.hostname === 'string' &&
     location.hostname.endsWith('.github.io');
+  const callNasaDirect = async () => {
+    const maxAttempts = fetcher === fetch ? 6 : 1;
+    let lastErr;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await fetcher(nasaUrl, {signal});
+      } catch (err) {
+        if (err?.name === 'AbortError' || signal?.aborted || attempt === maxAttempts) throw err;
+        lastErr = err;
+        await new Promise((r) => setTimeout(r, 350));
+      }
+    }
+    throw lastErr;
+  };
   let response;
   if (isStaticGithubPages) {
-    response = await fetcher(nasaUrl, {signal});
+    response = await callNasaDirect();
   } else {
     try {
       response = await fetcher(proxyUrl, {signal});
       if (!response.ok || !response.headers.get('content-type')?.includes('json')) {
-        response = await fetcher(nasaUrl, {signal});
+        response = await callNasaDirect();
       }
     } catch (error) {
       if (error?.name === 'AbortError') throw error;
-      response = await fetcher(nasaUrl, {signal});
+      response = await callNasaDirect();
     }
   }
   if (!response.ok) throw new Error('NASA POWER request failed (HTTP ' + response.status + '). Please try again.');
