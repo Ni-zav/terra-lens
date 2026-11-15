@@ -1,0 +1,19 @@
+name: Experimental live NASA CMR browser
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/live-cmr-browser.mjs
