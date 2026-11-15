@@ -1,0 +1,30 @@
+name: Hosted Production Acceptance (read-only)
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/hosted-acceptance.mjs'
+      - '.github/workflows/hosted-acceptance.yml'
+permissions:
+  contents: read
+jobs:
+  hosted-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Test hosted GitHub Pages MAIN (not branch preview) against real NASA data
+        run: node scripts/hosted-acceptance.mjs
+      - name: Upload screenshots even when checks fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosted-production-acceptance
+          path: artifacts/hosted-*.png
+          if-no-files-found: ignore
