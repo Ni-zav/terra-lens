@@ -18,7 +18,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
-  background: var(--bg);
+  background: var(--panel);
 }
 .discovery * { box-sizing: border-box; }
 .discovery-intro {
@@ -77,7 +77,7 @@
 }
 .discovery-box,
 .discovery-plot {
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 6px 8px;
@@ -202,7 +202,7 @@
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: 4px;
-  background: var(--panel);
+  background: var(--bg);
 }
 .discovery-table {
   border-collapse: collapse;
@@ -299,7 +299,7 @@
 }
 .discovery-output article {
   min-width: 0;
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 6px 8px;

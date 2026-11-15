@@ -319,7 +319,7 @@
   max-width: 100%;
   padding: 6px 10px;
   margin: 0;
-  background: var(--bg);
+  background: var(--panel);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -374,7 +374,7 @@
   text-align: left;
   gap: 2px;
   padding: 6px 10px;
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--muted);
@@ -385,7 +385,7 @@
   color: var(--text);
 }
 .sc-case-btn.is-selected {
-  background: var(--panel-alt);
+  background: rgba(37, 99, 235, 0.05);
   border-color: var(--cyan);
   color: var(--text);
 }
@@ -415,7 +415,7 @@
   align-items: stretch;
 }
 .sc-card {
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 7px 10px;
@@ -490,7 +490,7 @@
 }
 .sc-figure {
   margin: 0;
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 8px 10px;
@@ -501,6 +501,21 @@
   height: auto;
   max-height: 215px;
 }
+.sc-provenance-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: 400 9.5px/1.35 var(--mono);
+  color: var(--muted);
+  flex: none;
+}
+.sc-provenance-bar strong { color: var(--text); font-weight: 600; }
+.sc-provenance-bar code { color: var(--cyan); font-weight: 500; }
 .sc-figure figcaption {
   font: 400 9.5px/1.3 var(--body);
   color: var(--dim);

@@ -407,6 +407,12 @@ export default function ScienceCases({onLoadWorkspace}) {
           )}
         </div>
       )}
+
+      <footer className="sc-provenance-bar" aria-label="Snapshot audit metadata">
+        <span><strong>Snapshot ID:</strong> <code>{activeMeta.id}</code></span>
+        <span><strong>Generated:</strong> {activeMeta.generatedAt}</span>
+        <span><strong>Contract:</strong> Explicit spatial/temporal support boundaries · No hidden gap filling or cross-support interpolation</span>
+      </footer>
     </div>
   );
 }

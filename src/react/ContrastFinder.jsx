@@ -201,10 +201,17 @@ export default function ContrastFinder({onInspect}) {
             <p><strong>Verify:</strong> {brief.validation}</p>
             <p className="discovery-warning">{brief.uncertainty}</p>
           </article>
-        </div>:<div className="discovery-placeholder">
-          <h3>3. Inspect the evidence, not just a ranking</h3>
-          <p>Run the 8-point NASA screen to retrieve monthly records for all eight declared coordinates, compare complete-year OLS slopes, and select any two locations (A and B) for a paired HAC contrast in the main workspace.</p>
-          <p className="discovery-small">Fixed sample: eight documented coordinates selected in advance, not a full grid or population-weighted study. Source: <a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER monthly API</a>.</p>
+        </div>:<div className="discovery-output discovery-output-idle">
+          <article>
+            <h3>3. Inspect the evidence, not just a ranking</h3>
+            <p>Run the 8-point NASA screen to retrieve monthly records for all eight declared coordinates, compare complete-year OLS slopes, and select any two locations (A and B) for a paired HAC contrast in the main workspace.</p>
+            <p className="discovery-small">Fixed sample: eight documented coordinates selected in advance, not a full grid or population-weighted study.</p>
+          </article>
+          <article>
+            <h3>4. Turn evidence into a responsible next step</h3>
+            <p><strong>Limit:</strong> Screening 8 points creates 28 candidate pairs; post-selected p-values are exploratory only, not confirmatory.</p>
+            <p><strong>Verify:</strong> Open any A/B pair in the main workspace to inspect residual lag-1 autocorrelation, seasonal breakdowns, and <a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER monthly API</a> provenance.</p>
+          </article>
         </div>}
       </div>
     </div>
