@@ -56,6 +56,13 @@ test('makeSeries sorts, de-duplicates and freezes raw records',()=>{
   assert.ok(Object.isFrozen(s)&&Object.isFrozen(s.monthly));
   assert.equal(coverageOf(s).missingMonths,10);
 });
+test('coverage reports a fully absent internal year as incomplete',()=>{
+  const monthly=[...years(1,()=>1,2001),...years(1,()=>2,2003)];
+  const coverage=coverageOf(makeSeries({id:'A',variable:v,monthly}));
+  assert.equal(coverage.completeYears,2);
+  assert.equal(coverage.missingMonths,12);
+  assert.deepEqual(coverage.incompleteYears,[2002]);
+});
 test('derivations are memoized per series',()=>{
   const s=makeSeries({id:'A',variable:v,monthly:years(12,y=>y)});
   assert.equal(annualOf(s),annualOf(s));assert.equal(analyzeSeries(s),analyzeSeries(s));

@@ -71,8 +71,9 @@ export function coverageOf(s) {
     if (!x.monthly.length) return {firstYear: null, lastYear: null, months: 0, expectedMonths: 0, completeYears: 0, incompleteYears: [], missingMonths: 0};
     const first = x.monthly[0].year, last = x.monthly.at(-1).year;
     const complete = new Set(annualOf(x).map(r => r.year));
-    const years = [...new Set(x.monthly.map(r => r.year))];
-    const expected = (last - first + 1) * 12;
+    // Include fully absent years between the first and last observation.
+    const years = Array.from({length: last - first + 1}, (_, i) => first + i);
+    const expected = years.length * 12;
     return {firstYear: first, lastYear: last, months: x.monthly.length, expectedMonths: expected,
       completeYears: complete.size, incompleteYears: years.filter(y => !complete.has(y)),
       missingMonths: expected - x.monthly.length};
