@@ -19,3 +19,7 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: node scripts/live-cmr-browser.mjs
+      - name: Test isolated public experiment
+        run: node scripts/live-cmr-browser.mjs
+        env:
+          CMR_TEST_URL: https://ni-zav.github.io/terra-lens-preview/experiments/cmr/
