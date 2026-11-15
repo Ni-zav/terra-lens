@@ -85,6 +85,8 @@ export function dependenceOf(s) {
     const trend = trendOf(x);
     if (!trend) return null;
     const annual = annualOf(x);
+    if (annual.some((row, i) => i > 0 && row.year !== annual[i - 1].year + 1))
+      return {r1: null, bound: null, flagged: false, reason: 'Missing calendar years; lag-1 diagnostic unavailable.'};
     const r1 = lag1Autocorrelation(annual.map((row, i) => row.value - trend.fitted[i].value));
     const bound = 1.96 / Math.sqrt(annual.length);
     return {r1, bound, flagged: r1 !== null && Math.abs(r1) > bound};
@@ -169,6 +171,7 @@ export function describeComparison(cmp, byId) {
   if (!cmp.paired) return `${other.id} vs ${ref.id}: no paired test — ${cmp.reasons.join('; ')}.`;
   if (!cmp.contrast) return `${other.id} vs ${ref.id}: fewer than 10 shared complete years.`;
   const h = cmp.contrast.hac;
+  if (!h) return `${other.id} − ${ref.id}: ${fmt(cmp.contrast.classical.slopePerDecade)} ${ref.variable.unit}/decade fitted trend difference; HAC inference unavailable because shared complete years have gaps.`;
   const excludesZero = h.ciLowPerDecade > 0 || h.ciHighPerDecade < 0;
   return `${other.id} − ${ref.id}: ${fmt(h.slopePerDecade)} ${ref.variable.unit}/decade difference in trend ` +
     (excludesZero ? '(approximate HAC 95% interval excludes zero).' : '(approximate HAC 95% interval includes zero — no evidence of a different trend).');

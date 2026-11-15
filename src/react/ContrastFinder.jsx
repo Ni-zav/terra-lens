@@ -179,7 +179,7 @@ export default function ContrastFinder({onInspect}) {
             <p><strong>Scope:</strong> {brief.scope} ({summary.candidatePairs} candidate pairs; post-selected).</p>
             {canInspect&&<div className="discovery-paired">
               <p><strong>Selected test:</strong> B = {b.label} minus A = {a.label} on matched full years.</p>
-              {aligned?<p>Fitted difference: <strong>{signed(aligned.classical.slopePerDecade)} {unit}/dec</strong> · HAC 95% CI: {signed(aligned.hac.ciLowPerDecade)} to {signed(aligned.hac.ciHighPerDecade)} ({aligned.n}y). <strong>Exploratory only</strong>: post-selection invalidates confirmatory p-values.</p>
+              {aligned?<p>Fitted difference: <strong>{signed(aligned.classical.slopePerDecade)} {unit}/dec</strong> · {aligned.hac?`HAC 95% CI: ${signed(aligned.hac.ciLowPerDecade)} to ${signed(aligned.hac.ciHighPerDecade)}`:'HAC unavailable: gaps in shared years'} ({aligned.n}y). <strong>Exploratory only</strong>: post-selection invalidates confirmatory p-values.</p>
                 :<p>Insufficient common full years to test a paired slope difference.</p>}
               <a className="discovery-inspect" href={investigateUrl(a,b,variable,Number(start),Number(end))} onClick={e=>{
                 if(onInspect&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){

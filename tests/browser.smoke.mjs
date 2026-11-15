@@ -130,6 +130,23 @@ try{
   const noWebGL=await browser.newPage({viewport:{width:390,height:844}});
   await noWebGL.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args)}});
   await noWebGL.goto(`http://127.0.0.1:${port}/`);await noWebGL.locator('#earth-globe').scrollIntoViewIfNeeded();await noWebGL.locator('#earth-globe[data-error]').waitFor({timeout:20000});assert.equal(await noWebGL.locator('#lat-a').isEnabled(),true);await noWebGL.close();
+  // A missing month makes an internal year incomplete in both fixture series.
+  // The UI must retain the calendar-year estimate but not report gap-blind HAC.
+  const gaps=await browser.newPage({viewport:{width:1280,height:720}});
+  const gapErrors=[];gaps.on('pageerror',e=>gapErrors.push(e.message));
+  await gaps.route('**/api/power?**',async route=>{
+    const response=await route.fetch(), json=await response.json();
+    const records=Object.values(json.properties.parameter)[0];
+    records['201001']=-999;
+    await route.fulfill({response,json});
+  });
+  await gaps.goto(`http://127.0.0.1:${port}/`);
+  await gaps.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
+  assert.match(await gaps.locator('#metric-significance-detail').textContent(),/HAC unavailable: gaps/);
+  await gaps.locator('#tab-comparison').click();
+  assert.match(await gaps.locator('.paired-contrast').textContent(),/HAC and Durbin–Watson require consecutive/);
+  assert.match(await gaps.locator('#finding-text').textContent(),/HAC inference unavailable/);
+  assert.deepEqual(gapErrors,[]);await gaps.close();
   const offline=await browser.newPage({viewport:{width:1280,height:720}});
   await offline.route('**/api/power?**',route=>route.fulfill({status:503,body:'unavailable'}));
   await offline.route('**/power.larc.nasa.gov/**',route=>route.fulfill({status:503,body:'unavailable'}));

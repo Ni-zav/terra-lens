@@ -79,6 +79,18 @@ test('paired contrast only for same variable, unit and support',()=>{
   assert.equal(f.comparisons.length,2);assert.equal(f.lines.length,5);
   assert.match(f.lines.at(-1),/no paired test/);
 });
+test('gaps suppress lag diagnostics and surface the limitation in findings',()=>{
+  const all=years(16,(y,m)=>y*.03+Math.sin(y)+m);
+  const missing=all.filter(p=>p.year!==2008);
+  const a=makeSeries({id:'A',variable:v,support:SUPPORT.GRID_POINT,monthly:all});
+  const b=makeSeries({id:'B',variable:v,support:SUPPORT.GRID_POINT,monthly:missing});
+  const analysis=analyzeSeries(b);
+  assert.equal(analysis.dependence.r1,null);
+  assert.match(analysis.dependence.reason,/Missing calendar years/);
+  const findings=buildFindings([a,b]);
+  assert.equal(findings.comparisons[0].contrast.hac,null);
+  assert.match(findings.lines.at(-1),/HAC inference unavailable/);
+});
 test('POWER adapter produces a grid-point series with provenance',()=>{
   const s=powerSeries({monthly:years(1,()=>1),url:'https://power.larc.nasa.gov/x',fetchedAt:'2026-11-14T00:00:00Z',source:'NASA POWER',metadata:{}},{id:'A',label:'Yogyakarta',color:'#62d6e4',lat:-7.8,lon:110.4,variable:'T2M'});
   assert.equal(s.support,SUPPORT.GRID_POINT);assert.equal(s.variable.unit,'°C');assert.equal(s.provenance.url,'https://power.larc.nasa.gov/x');
