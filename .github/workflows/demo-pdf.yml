@@ -13,7 +13,7 @@ concurrency:
   group: terra-lens-pdf-main
   cancel-in-progress: true
 permissions:
-  contents: write
+  contents: read
 jobs:
   create-pdf:
     runs-on: ubuntu-latest
@@ -33,6 +33,12 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           python -m pip install pypdf
+      - name: Check committed PDF page count
+        run: |
+          python - <<'PY'
+          from pypdf import PdfReader
+          assert len(PdfReader('demo/Terra-Lens_Seven_Slide_Demo.pdf').pages)==7
+          PY
       - name: Render evidence-backed HTML as PDF
         run: node scripts/build-demo.mjs
       - name: Enforce the official 7 slide limit
@@ -44,20 +50,6 @@ jobs:
           print(f"Demo PDF pages: {count}")
           assert count==7, f"Official demo limit: 7 slides; generated {count}"
           PY
-      - name: Commit regenerated PDF on review branches only
-        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add demo/Terra-Lens_Seven_Slide_Demo.pdf
-          if ! git diff --cached --quiet; then
-            git commit -m 'docs(demo): sync generated verified seven-slide PDF'
-            # Other development may land on the PR branch while Chromium runs.
-            # Rebase our generated binary only on the current remote branch.
-            git fetch origin "$GITHUB_REF_NAME"
-            git rebase "origin/$GITHUB_REF_NAME"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
       - name: Upload verified demo PDF
         uses: actions/upload-artifact@v4
         with:

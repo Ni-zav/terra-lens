@@ -904,7 +904,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
           <h3>SciPy Parity &amp; Evidence JSON</h3>
           <p>Reproduces calculations in independent Python/SciPy checks; exports original observations, source requests, and derived results.</p>
           <ul class="stage-list">
-            <li>4 Python verification scripts (POWER, SWOT, GISS)</li>
+            <li>Python checks for POWER, SWOT, GISS and Giovanni</li>
             <li>One-click CSV &amp; Evidence JSON download</li>
           </ul>
         </div>
@@ -945,7 +945,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
           <span>Solid: Day-weighted annual mean · Dashed: OLS trend</span>
         </div>
         <img class="plot" src="annual-temperature.png" alt="Annual mean temperature at the Yogyakarta and Jakarta NASA POWER grid points with linear trend lines, 2001 through 2024">
-        <div class="plot-caption">Source: NASA POWER / MERRA-2 (`T2M`, 0.5° × 0.625° grid). Shared 2016 El Niño and 2023–2024 peaks appear at both points.</div>
+        <div class="plot-caption">Source: NASA POWER / MERRA-2 (`T2M`, 0.5° × 0.625° grid). Both series vary year to year; these data do not establish a cause.</div>
       </div>
 
       <div class="stats-col">
@@ -972,7 +972,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
         <div class="stat-box">
           <div class="stat-label">COVARIATION &amp; INTERPRETATION GUARDRAIL</div>
           <p class="stat-sub">
-            Because both locations share regional ENSO/monsoon interannual variance, comparing their individual p-values (<span class="num">0.0173</span> vs <span class="num">0.00145</span>) cannot answer whether Jakarta warmed faster. Slide 5 tests the paired difference directly.
+            Comparing individual p-values (<span class="num">0.0173</span> vs <span class="num">0.00145</span>) cannot answer whether Jakarta warmed faster. Slide 5 tests the paired difference directly, allowing for approximate temporal dependence.
           </p>
         </div>
       </div>
@@ -1043,7 +1043,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
     <div class="slide-head">
       <div class="kicker-row">
         <p class="kicker">Multi-Source NASA Context &amp; Methodological Boundaries</p>
-        <span class="kicker-tag">Connected in `#tab-cases` (`Multi-source`) &amp; `#tab-finder` (`Finder`)</span>
+        <span class="kicker-tag">Connected in `Multi-source` &amp; `Giovanni` views</span>
       </div>
       <h2>Different NASA sources answer different questions.</h2>
       <p class="lead">A satellite river overpass, a global temperature index, and a model grid cannot be treated as interchangeable observations.</p>
