@@ -5,6 +5,7 @@ import {analyzeSeries} from '../series.js';
 import GiovanniTutorial from './GiovanniTutorial.jsx';
 import {giovanniAreaSeries} from '../science/giovanni-case.js';
 import {giovanniTemperatureQuery} from '../science/giovanni-query.js';
+import Catalog from './Catalog.jsx';
 
 const fmt = value => Number.isFinite(value) ? (value > 0 ? '+' : '') + Number(value).toFixed(3) : '—';
 
@@ -56,6 +57,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
       {queryError?<p role="status">{queryError}</p>:<p><a id="giovanni-region-query" href={queryURL} target="_blank" rel="noreferrer">Open this region in NASA Giovanni</a></p>}
       <p className="giovanni-note">Supported here: M2TMNXSLV v5.12.4 monthly mean T2M, non-antimeridian boxes and years 1980–2025. Other products and automated Giovanni acquisition are not implemented. Keep source metadata and check quality before drawing conclusions.</p>
     </section>
+    <Catalog region={region}/>
     <div className="giovanni-grid">
       <div className="giovanni-copy">
         <div className="giovanni-card">

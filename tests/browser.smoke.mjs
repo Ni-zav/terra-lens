@@ -203,6 +203,14 @@ try{
   await area.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
   await area.locator('#tab-giovanni').click();
   await area.getByRole('heading',{name:'Explore NASA Giovanni cases'}).waitFor();
+  let catalogCalls=0;
+  await area.route('https://cmr.earthdata.nasa.gov/search/collections.json?*',route=>{catalogCalls++;return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({feed:{entry:[{id:'C123-TEST',title:'Synthetic catalog test collection',short_name:'TEST',version_id:'1'}]}})})});
+  await area.locator('#catalog-term').fill('soil moisture');
+  await area.locator('#catalog-search').click();
+  await area.getByText('Synthetic catalog test collection').waitFor();
+  await area.locator('#catalog-search').click();
+  await area.getByText(/collection records returned \(cached\)/).waitFor();
+  assert.equal(catalogCalls,1,'repeat catalog request should use bounded memory cache');
   assert.match(await area.locator('#panel-giovanni').textContent(),/no upload needed/i);
   assert.match(await area.locator('#panel-giovanni').textContent(),/separate NASA POWER point investigation/i);
   assert.match(await area.locator('#panel-giovanni').textContent(),/cannot be confidently translated into extra heatwave days per summer/i);
