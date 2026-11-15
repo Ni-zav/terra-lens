@@ -74,6 +74,16 @@ try{
  const buffer=await pdf.body();
  assert.ok(buffer.length>100000&&buffer.subarray(0,5).toString()==='%PDF-','Hosted demo must be a real PDF');
  mark('Hosted seven-slide HTML, real NASA screenshot and linked PDF');
+ // Explicitly labeled outage simulation: verify no synthetic observations
+ // are displayed if the ACTUAL production site cannot reach the NASA API.
+ const outage=await context.newPage();
+ await outage.route('**/power.larc.nasa.gov/api/temporal/monthly/point**',route=>route.abort('failed'));
+ await outage.goto(url,{waitUntil:'domcontentloaded'});
+ await outage.waitForFunction(()=>document.getElementById('data-label')?.textContent==='Request failed',null,{timeout:45000});
+ assert.match(await outage.locator('#status').textContent(),/Could not retrieve NASA data/);
+ assert.equal((await outage.locator('#metric-slope').textContent()).trim(),'—');
+ await outage.close();
+ mark('Hosted failure-state: simulated NASA transport failure gives honest error, no invented data');
  assert.deepEqual(pageErrors,[]);
  console.log('HOSTED ACCEPTANCE SUMMARY: '+JSON.stringify(findings));
 }finally{await browser.close()}
