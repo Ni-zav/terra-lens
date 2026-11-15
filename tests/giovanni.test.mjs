@@ -21,9 +21,29 @@ test('Giovanni parser rejects unlabelled or empty data, excludes fill values',()
 });
 import {giovanniSeries} from '../src/giovanni.js';
 import {SUPPORT} from '../src/series.js';
-test('Giovanni adapter yields an unauthenticated area-average series',()=>{
+test('Giovanni point-service metadata yields an unauthenticated point series',()=>{
  const data=Array.from({length:24},(_,i)=>String(2000+Math.floor(i/12))+'-'+String(i%12+1).padStart(2,'0')+'-01,'+(280+i)+'\n').join('');
  const s=giovanniSeries(parseGiovanniMonthlyCSV(header+data),{sha256:'abc'});
- assert.equal(s.id,'G');assert.equal(s.support,SUPPORT.AREA_AVERAGE);assert.equal(s.variable.unit,'K');
+ assert.equal(s.id,'G');assert.equal(s.support,SUPPORT.GRID_POINT);assert.equal(s.variable.unit,'K');
  assert.equal(s.provenance.authenticated,false);assert.deepEqual(s.geo,{lat:45.125,lon:-98.125});
+});
+
+test('NASA Giovanni in the Cloud timestamp with a space is recognized as an actual monthly observation',()=>{
+ const data=Array.from({length:12*10},(_,i)=>{
+   const y=2001+Math.floor(i/12),m=String(i%12+1).padStart(2,'0');
+   return y+'-'+m+'-01 00:30:00,'+(275+i*.01)+'\n';
+ }).join('');
+ const parsed=parseGiovanniMonthlyCSV(header+'time,Tair_f_inst\n'+data);
+ assert.equal(parsed.monthly.length,120);
+ assert.equal(annualMeans(parsed.monthly).length,10);
+ assert.equal(parsed.monthly[0].date,'200101');
+});
+test('Giovanni rejects impossible dates rather than silently accepting their year/month',()=>{
+ assert.throws(()=>parseGiovanniMonthlyCSV(header+'2001-02-31 00:00:00,280'),/Invalid calendar date/);
+});
+test('Giovanni does not guess area support where a source has no point coordinates',()=>{
+ const parsed=parseGiovanniMonthlyCSV('param_name,T2M\nunit,K\n2001-01-01 00:00:00,290');
+ const series=giovanniSeries(parsed);
+ assert.equal(series.support,SUPPORT.UNKNOWN);
+ assert.equal(series.geo,null);
 });
