@@ -132,13 +132,16 @@ export function analyzeSeries(s) {
 
 /**
  * Are two series directly comparable by paired difference? Same physical
- * variable, unit and spatial support are required; otherwise only
+ * variable, unit and known matching spatial support are required; otherwise only
  * standardized-anomaly shape comparison is offered.
  */
 export function compatibility(a, b) {
   const reasons = [];
   if (a.variable.unit !== b.variable.unit) reasons.push(`units differ (${a.variable.unit} vs ${b.variable.unit})`);
   if (!a.variable.code || a.variable.code !== b.variable.code) reasons.push('different source variables');
+  if (a.support === SUPPORT.UNKNOWN || b.support === SUPPORT.UNKNOWN ||
+      !Object.values(SUPPORT).includes(a.support) || !Object.values(SUPPORT).includes(b.support))
+    reasons.push('spatial support is not established for both series');
   if (a.support !== b.support) reasons.push(`spatial support differs (${supportLabel(a.support)} vs ${supportLabel(b.support)})`);
   return {paired: reasons.length === 0, reasons};
 }

@@ -79,6 +79,15 @@ test('paired contrast only for same variable, unit and support',()=>{
   assert.equal(f.comparisons.length,2);assert.equal(f.lines.length,5);
   assert.match(f.lines.at(-1),/no paired test/);
 });
+test('unknown spatial support never establishes paired compatibility',()=>{
+  const a=makeSeries({id:'A',variable:v,monthly:years(12,y=>y*.02)});
+  const b=makeSeries({id:'B',variable:v,monthly:years(12,y=>y*.04+Math.cos(y))});
+  const result=compareSeries(a,b);
+  assert.equal(result.paired,false);
+  assert.equal(result.contrast,null);
+  assert.ok(result.reasons.some(reason=>/spatial support is not established/.test(reason)));
+  assert.match(buildFindings([a,b]).lines.at(-1),/no paired test/);
+});
 test('gaps suppress lag diagnostics and surface the limitation in findings',()=>{
   const all=years(16,(y,m)=>y*.03+Math.sin(y)+m);
   const missing=all.filter(p=>p.year!==2008);
