@@ -404,7 +404,7 @@
 .sc-body {
   display: flex;
   flex-direction: column;
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   gap: 8px;
   min-width: 0;
 }
@@ -494,19 +494,12 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 8px 10px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 175px;
 }
 .sc-figure svg {
   display: block;
   width: 100%;
-  flex: 1;
   height: auto;
-  min-height: 135px;
-  max-height: 310px;
+  max-height: 215px;
 }
 .sc-figure figcaption {
   font: 400 9.5px/1.3 var(--body);

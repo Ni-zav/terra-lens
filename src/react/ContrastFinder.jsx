@@ -160,8 +160,8 @@ export default function ContrastFinder({onInspect}) {
                 <th scope="row"><span className="discovery-num">{i+1}</span> {p.label}<small>{p.lat.toFixed(2)}°, {p.lon.toFixed(2)}°</small></th>
                 <td>{r?.status==='ok'?(r.cacheHit?'NASA data · cached':'NASA data loaded'):
                   r?.status==='error'?'Request failed: '+r.error:
-                  r?.status==='insufficient-years'?'Fewer than 10 complete years':
-                  'Not yet requested / pending'}</td>
+                  r?.status==='insufficient-years'?'< 10 complete years':
+                  'Not requested'}</td>
                 <td>{r?.annual?.length??'—'}</td>
                 <td>{trend?signed(trend.slopePerDecade):'—'}</td>
                 <td>{trend?<div className="discovery-select">
@@ -201,7 +201,11 @@ export default function ContrastFinder({onInspect}) {
             <p><strong>Verify:</strong> {brief.validation}</p>
             <p className="discovery-warning">{brief.uncertainty}</p>
           </article>
-        </div>:<p className="discovery-small">Fixed sample: eight documented coordinates selected in advance, not a full grid or population-weighted study. Source: <a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER monthly API</a>.</p>}
+        </div>:<div className="discovery-placeholder">
+          <h3>3. Inspect the evidence, not just a ranking</h3>
+          <p>Run the 8-point NASA screen to retrieve monthly records for all eight declared coordinates, compare complete-year OLS slopes, and select any two locations (A and B) for a paired HAC contrast in the main workspace.</p>
+          <p className="discovery-small">Fixed sample: eight documented coordinates selected in advance, not a full grid or population-weighted study. Source: <a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER monthly API</a>.</p>
+        </div>}
       </div>
     </div>
   </div>;
