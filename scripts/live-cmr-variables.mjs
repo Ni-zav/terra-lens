@@ -28,7 +28,7 @@ try{
  assert.equal(q.get('bounding_box'),'110,-8,111,-7');assert.equal(q.get('page_size'),'10');
  const before=responses.length;await page.locator('#catalog-search').click();
  await page.getByText(/collection records returned \(cached\)/).waitFor();assert.equal(responses.length,before);
- await page.getByRole('button',{name:'View catalog variables for M2TMNXSLV'}).click();
+ await page.getByRole('button',{name:'View variables for M2TMNXSLV'}).click();
  await page.getByRole('link',{name:'T2M',exact:true}).waitFor({timeout:70000});
  const text=await page.getByRole('region',{name:'Catalog variable results'}).innerText();
  assert.match(text,/T2M.*unit K/);

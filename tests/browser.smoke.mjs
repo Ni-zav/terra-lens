@@ -212,9 +212,13 @@ try{
   await area.locator('#catalog-search').click();
   await area.getByText(/collection records returned \(cached\)/).waitFor();
   assert.equal(catalogCalls,1,'repeat catalog request should use bounded memory cache');
-  await area.getByRole('button',{name:'View catalog variables for TEST'}).click();
+  await area.getByRole('button',{name:'View variables for TEST'}).click();
   await area.getByRole('link',{name:'TESTVAR'}).waitFor();
   assert.match(await area.getByRole('region',{name:'Catalog variable results'}).innerText(),/unit K.*declared fill 9999/);
+  await area.locator('#catalog-variable-filter').fill('not-present');
+  assert.equal(await area.getByRole('link',{name:'TESTVAR'}).count(),0);
+  await area.locator('#catalog-variable-filter').fill('testvar');
+  await area.getByRole('link',{name:'TESTVAR'}).waitFor();
   assert.match(await area.locator('#panel-giovanni').textContent(),/no upload needed/i);
   assert.match(await area.locator('#panel-giovanni').textContent(),/separate NASA POWER point investigation/i);
   assert.match(await area.locator('#panel-giovanni').textContent(),/cannot be confidently translated into extra heatwave days per summer/i);
