@@ -1,6 +1,8 @@
 name: Experimental live NASA CMR browser
 on:
   workflow_dispatch:
+  push:
+    branches: [experiment/nasa-cmr-discovery-20261115]
 permissions:
   contents: read
 jobs:
