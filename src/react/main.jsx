@@ -15,8 +15,8 @@ import './react.css';
 import './quiet.css';
 
 const POINT_IDS=['A','B','C','D'];
-const COLORS=['#1a4be0','#b84314','#0d6e66','#1f6b3b'];
-const COLOR_MAP={A:'#1a4be0',B:'#b84314',C:'#0d6e66',D:'#1f6b3b'};
+const COLORS=['#2563eb','#ea580c','#0d9488','#16a34a'];
+const COLOR_MAP={A:'#2563eb',B:'#ea580c',C:'#0d9488',D:'#16a34a'};
 const number=(v,d=2)=>Number.isFinite(v)?new Intl.NumberFormat('en-US',{maximumFractionDigits:d}).format(v):'—';
 const signed=(v,d=2)=>(v>0?'+':'')+number(v,d);
 const pValue=p=>p<.0001?'< 0.0001':number(p,4);
@@ -297,6 +297,7 @@ function App(){
     : <div className="metric"><div className="metric-label">Evidence (Point A)</div><strong id="metric-significance" className={'verdict-text verdict-'+(primary?.verdict.level||'none')}>{primary?primary.verdict.headline:'—'}</strong><p id="metric-significance-detail">{primary?(primary.verdict.level==='insufficient'?primary.verdict.detail:`${primary.verdict.testsAgreeing}/2 tests p < 0.05${primary.verdict.dependenceFlag?' · autocorrelated ⚠':''}`):'OLS t-test + Mann–Kendall'}</p></div>}
     <div className="metric"><div className="metric-label">Complete years analyzed</div><strong id="metric-years">{primary?primary.coverage.completeYears:'—'}</strong><p id="metric-years-detail">{primary?.annual.length?`${primary.annual[0].year}–${primary.annual.at(-1).year} · ${results.length} grid pt${results.length>1?'s':''}${primary.coverage.missingMonths?` · ${primary.coverage.missingMonths} gaps`:''}`:'Complete calendar years'}</p></div>
   </div>
+  {results.length>2&&<div className="metrics-extra" aria-label="Additional active grid points">{results.slice(2).map(s=>{const a=analyzeSeries(s),t=a.trend;return <div className="metrics-extra-item" key={s.id} style={{'--series-color':s.color}}><span className="metrics-extra-label">{s.id==='C'?'▲':'■'} {s.id} · {s.label}</span><strong>{t?`${signed(t.slopePerDecade)} ${info.unit}/dec`:'—'}</strong><span>{t?`95% CI ${signed(t.ciLowPerDecade)}..${signed(t.ciHighPerDecade)} · p ${pValue(t.pValue)}`:'Insufficient complete years'}</span></div>;})}</div>}
   <div className="chart-shell"><div className="chart-tabs" role="tablist" aria-label="Analysis views">{tabItems.map(([id,label],i)=><button key={id} role="tab" id={'tab-'+id} aria-selected={activeTab===id} aria-controls={'panel-'+id} tabIndex={activeTab===id?0:-1} onClick={()=>setActiveTab(id)} onKeyDown={e=>keyboardTab(e,i)}>{label}</button>)}<span className="chip" id="unit-chip">{results.length?`${info.unit} / ${info.label}`:'NASA POWER'}</span></div><div className="chart-views">
   {activeTab==='comparison'?<section id="panel-comparison" role="tabpanel" aria-labelledby="tab-comparison">{series.length?<Comparison series={series} findings={findings}/>:<p className="comparison-empty">Run an analysis to compare slope estimates.</p>}</section>
   :activeTab==='finder'?<section id="panel-finder" role="tabpanel" aria-labelledby="tab-finder"><React.Suspense fallback={<p className="comparison-empty">Loading regional evidence finder…</p>}><ContrastFinder onInspect={patch=>{const next={...inputs,...patch};setInputs(next);run(next);setActiveTab('annual');}}/></React.Suspense></section>

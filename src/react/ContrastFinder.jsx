@@ -44,7 +44,7 @@ function CoordinatePlot({records}) {
       {[-10,-5,0,5].map(v=><g key={v}><line y1={y(v)} y2={y(v)} x1="52" x2="748" stroke="#e5e4e0"/><text x="44" y={y(v)+4} fill="#4a4a48" textAnchor="end" fontSize="12" fontFamily="DM Mono, ui-monospace, monospace">{v}°</text></g>)}
       {SENTINEL_POINTS.map((p,i)=>{
         const r=byId.get(p.id),status=r?.status||'waiting';
-        const color=status==='error'?'#b91c1c':status==='insufficient-years'?'#b84314':status==='ok'?'#1a4be0':'#6e6e6a';
+        const color=status==='error'?'#dc2626':status==='insufficient-years'?'#ea580c':status==='ok'?'#2563eb':'#6e6e6a';
         return <g key={p.id}><circle cx={x(p.lon)} cy={y(p.lat)} r="12" fill={color} stroke="#ffffff" strokeWidth="2"/><text x={x(p.lon)} y={y(p.lat)+4} textAnchor="middle" fontSize="11" fontWeight="700" fontFamily="DM Mono, ui-monospace, monospace" fill="#ffffff">{i+1}</text><title>{p.label}: {status}</title></g>;
       })}
       <text x="400" y="21" textAnchor="middle" fill="#4a4a48" fontWeight="600" fontSize="13" fontFamily="DM Mono, ui-monospace, monospace">Sampling coordinates · Not a climate raster</text>
@@ -160,8 +160,8 @@ export default function ContrastFinder({onInspect}) {
                 <th scope="row"><span className="discovery-num">{i+1}</span> {p.label}<small>{p.lat.toFixed(2)}°, {p.lon.toFixed(2)}°</small></th>
                 <td>{r?.status==='ok'?(r.cacheHit?'NASA data · cached':'NASA data loaded'):
                   r?.status==='error'?'Request failed: '+r.error:
-                  r?.status==='insufficient-years'?'Fewer than 10 complete years':
-                  'Not yet requested / pending'}</td>
+                  r?.status==='insufficient-years'?'< 10 complete years':
+                  'Not requested'}</td>
                 <td>{r?.annual?.length??'—'}</td>
                 <td>{trend?signed(trend.slopePerDecade):'—'}</td>
                 <td>{trend?<div className="discovery-select">
@@ -172,7 +172,9 @@ export default function ContrastFinder({onInspect}) {
             })}</tbody>
           </table>
         </div>
-        {run.phase==='complete'?<div className="discovery-output" aria-live="polite">
+      </div>
+    </div>
+    {run.phase==='complete'?<div className="discovery-output" aria-live="polite">
           <article className="discovery-findings">
             <h3>3. Inspect the evidence, not just a ranking</h3>
             <p>{brief.finding}</p>
@@ -201,8 +203,17 @@ export default function ContrastFinder({onInspect}) {
             <p><strong>Verify:</strong> {brief.validation}</p>
             <p className="discovery-warning">{brief.uncertainty}</p>
           </article>
-        </div>:<p className="discovery-small">Fixed sample: eight documented coordinates selected in advance, not a full grid or population-weighted study. Source: <a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER monthly API</a>.</p>}
-      </div>
-    </div>
+        </div>:<div className="discovery-output discovery-output-idle">
+          <article>
+            <h3>3. Inspect the evidence, not just a ranking</h3>
+            <p>Run the 8-point NASA screen to retrieve monthly records for all eight declared coordinates, compare complete-year OLS slopes, and select any two locations (A and B) for a paired HAC contrast in the main workspace.</p>
+            <p className="discovery-small">Fixed sample: eight documented coordinates selected in advance, not a full grid or population-weighted study.</p>
+          </article>
+          <article>
+            <h3>4. Turn evidence into a responsible next step</h3>
+            <p><strong>Limit:</strong> Screening 8 points creates 28 candidate pairs; post-selected p-values are exploratory only, not confirmatory.</p>
+            <p><strong>Verify:</strong> Open any A/B pair in the main workspace to inspect residual lag-1 autocorrelation, seasonal breakdowns, and <a href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/" target="_blank" rel="noreferrer">NASA POWER monthly API</a> provenance.</p>
+          </article>
+        </div>}
   </div>;
 }

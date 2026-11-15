@@ -45,7 +45,7 @@ function SwotWaterFigure({data}) {
     <figure className="sc-figure">
       <svg viewBox="0 0 784 240" role="img" aria-label="Top panel: 12 irregular SWOT satellite pass water surface elevations in meters on Ohio River reach 74267300251, colored by quality flag. Bottom panel: 3 overlapping monthly NASA POWER precipitation rates in millimeters per day.">
         <rect x="68" y="22" width="692" height="110" fill="#ffffff" stroke="#dfdeda" rx="4"/>
-        <text x="76" y="36" fill="#1a4be0" fontSize="10.5" fontWeight="600" fontFamily="DM Mono, ui-monospace, monospace">
+        <text x="76" y="36" fill="#2563eb" fontSize="10.5" fontWeight="600" fontFamily="DM Mono, ui-monospace, monospace">
           A · NASA SWOT RiverSP WSE (m above geoid) · Irregular satellite overpasses (NOT a continuous gauge)
         </text>
         {[120, 125, 130].map(v => (
@@ -59,13 +59,13 @@ function SwotWaterFigure({data}) {
           const degraded = p.quality >= 2;
           return (
             <g key={p.time}>
-              <line x1={cx} x2={cx} y1={cy} y2="132" stroke={degraded ? '#b84314' : '#1a4be0'} strokeWidth="1" strokeDasharray="2 2" opacity="0.55"/>
+              <line x1={cx} x2={cx} y1={cy} y2="132" stroke={degraded ? '#ea580c' : '#2563eb'} strokeWidth="1" strokeDasharray="2 2" opacity="0.55"/>
               {degraded ? (
-                <path d={`M${cx} ${cy - 5.5} L${cx + 5.5} ${cy} L${cx} ${cy + 5.5} L${cx - 5.5} ${cy} Z`} fill="#b84314" stroke="#ffffff" strokeWidth="1.2">
+                <path d={`M${cx} ${cy - 5.5} L${cx + 5.5} ${cy} L${cx} ${cy + 5.5} L${cx - 5.5} ${cy} Z`} fill="#ea580c" stroke="#ffffff" strokeWidth="1.2">
                   <title>{`Pass ${idx + 1}: ${p.time.slice(0, 16)}Z · WSE ${p.value.toFixed(2)} m · Quality ${p.quality} (degraded)`}</title>
                 </path>
               ) : (
-                <circle cx={cx} cy={cy} r="4.5" fill="#1a4be0" stroke="#ffffff" strokeWidth="1.2">
+                <circle cx={cx} cy={cy} r="4.5" fill="#2563eb" stroke="#ffffff" strokeWidth="1.2">
                   <title>{`Pass ${idx + 1}: ${p.time.slice(0, 16)}Z · WSE ${p.value.toFixed(2)} m · Quality ${p.quality} (suspect)`}</title>
                 </circle>
               )}
@@ -74,7 +74,7 @@ function SwotWaterFigure({data}) {
         })}
 
         <rect x="68" y="148" width="692" height="68" fill="#ffffff" stroke="#dfdeda" rx="4"/>
-        <text x="76" y="162" fill="#b84314" fontSize="10.5" fontWeight="600" fontFamily="DM Mono, ui-monospace, monospace">
+        <text x="76" y="162" fill="#ea580c" fontSize="10.5" fontWeight="600" fontFamily="DM Mono, ui-monospace, monospace">
           B · NASA POWER PRECTOTCORR (mm/day) · Monthly grid-point mean rate at 38.2527°N, 85.7585°W
         </text>
         {[0, 5, 10].map(v => (
@@ -89,7 +89,7 @@ function SwotWaterFigure({data}) {
           const h = Math.max(2, 214 - top);
           return (
             <g key={row.month}>
-              <rect x={cx - 48} y={top} width="96" height={h} fill="rgba(184, 67, 20, 0.16)" stroke="#b84314" strokeWidth="1.2" rx="2">
+              <rect x={cx - 48} y={top} width="96" height={h} fill="rgba(184, 67, 20, 0.16)" stroke="#ea580c" strokeWidth="1.2" rx="2">
                 <title>{`${row.month}: POWER ${row.powerValue.toFixed(2)} mm/day · ${row.swotPasses} SWOT passes (${row.swotMinObservedM.toFixed(2)}–${row.swotMaxObservedM.toFixed(2)} m)`}</title>
               </rect>
               <text x={cx} y={top - 4} fill="#111111" fontSize="10" textAnchor="middle" fontFamily="DM Mono, ui-monospace, monospace">
@@ -148,27 +148,27 @@ function LocalGlobalFigure({comparison}) {
             <text x={xYear(y)} y="208" fill="#4a4a48" fontSize="10.5" textAnchor="middle" fontFamily="DM Mono, ui-monospace, monospace">{y}</text>
           </g>
         ))}
-        <line {...localFit} stroke="#1a4be0" strokeWidth="1.5" strokeDasharray="5 4" opacity="0.85"/>
-        <line {...globalFit} stroke="#b84314" strokeWidth="1.5" strokeDasharray="2 3" opacity="0.85"/>
-        <polyline fill="none" stroke="#1a4be0" strokeWidth="2" points={polyline(localAnn)}/>
-        <polyline fill="none" stroke="#b84314" strokeWidth="2" points={polyline(globalAnn)}/>
+        <line {...localFit} stroke="#2563eb" strokeWidth="1.5" strokeDasharray="5 4" opacity="0.85"/>
+        <line {...globalFit} stroke="#ea580c" strokeWidth="1.5" strokeDasharray="2 3" opacity="0.85"/>
+        <polyline fill="none" stroke="#2563eb" strokeWidth="2" points={polyline(localAnn)}/>
+        <polyline fill="none" stroke="#ea580c" strokeWidth="2" points={polyline(globalAnn)}/>
         {localAnn.map(r => (
-          <circle key={'loc-' + r.year} cx={xYear(r.year)} cy={yVal(r.value)} r="3.2" fill="#1a4be0" stroke="#ffffff" strokeWidth="1">
+          <circle key={'loc-' + r.year} cx={xYear(r.year)} cy={yVal(r.value)} r="3.2" fill="#2563eb" stroke="#ffffff" strokeWidth="1">
             <title>{`${r.year} Yogyakarta POWER point anomaly: ${signed(r.value, 3)} °C`}</title>
           </circle>
         ))}
         {globalAnn.map(r => {
           const cx = xYear(r.year), cy = yVal(r.value);
           return (
-            <path key={'glb-' + r.year} d={`M${cx} ${cy - 4} L${cx + 4} ${cy} L${cx} ${cy + 4} L${cx - 4} ${cy} Z`} fill="#b84314" stroke="#ffffff" strokeWidth="1">
+            <path key={'glb-' + r.year} d={`M${cx} ${cy - 4} L${cx + 4} ${cy} L${cx} ${cy + 4} L${cx - 4} ${cy} Z`} fill="#ea580c" stroke="#ffffff" strokeWidth="1">
               <title>{`${r.year} NASA GISS Global anomaly: ${signed(r.value, 3)} °C`}</title>
             </path>
           );
         })}
-        <text x="74" y="40" fill="#1a4be0" fontSize="10.5" fontWeight="600" fontFamily="DM Mono, ui-monospace, monospace">
+        <text x="74" y="40" fill="#2563eb" fontSize="10.5" fontWeight="600" fontFamily="DM Mono, ui-monospace, monospace">
           ● Local POWER grid point (−7.7956°, 110.3695°): {signed(localSrc.trend.slopePerDecade, 3)} °C/dec
         </text>
-        <text x="430" y="40" fill="#b84314" fontSize="10.5" fontWeight="600" fontFamily="DM Mono, ui-monospace, monospace">
+        <text x="430" y="40" fill="#ea580c" fontSize="10.5" fontWeight="600" fontFamily="DM Mono, ui-monospace, monospace">
           ◆ Global GISTEMP v4 index: {signed(globalSrc.trend.slopePerDecade, 3)} °C/dec
         </text>
       </svg>
@@ -407,6 +407,12 @@ export default function ScienceCases({onLoadWorkspace}) {
           )}
         </div>
       )}
+
+      <footer className="sc-provenance-bar" aria-label="Snapshot audit metadata">
+        <span><strong>Snapshot ID:</strong> <code>{activeMeta.id}</code></span>
+        <span><strong>Generated:</strong> {activeMeta.generatedAt}</span>
+        <span><strong>Contract:</strong> Explicit spatial/temporal support boundaries · No hidden gap filling or cross-support interpolation</span>
+      </footer>
     </div>
   );
 }

@@ -26,9 +26,9 @@ export default function GiovanniCase() {
   <p>MERRA-2 monthly 2 m air temperature, averaged over grid cells near Yogyakarta. The fitted annual trend is <strong>+{trend.slopePerDecade.toFixed(3)} K per decade</strong> (classical 95% interval {trend.ciLowPerDecade.toFixed(3)} to {trend.ciHighPerDecade.toFixed(3)}; p = {trend.pValue.toFixed(3)}).</p>
   <figure><svg style={{width:"100%",height:"auto"}} viewBox="0 0 760 220" role="img" aria-label="Annual area-averaged MERRA-2 temperature in kelvin, 2001 to 2024, with linear fit">
    {[298,298.5,299,299.5].map(v=><g key={v}><line x1="50" x2="730" y1={y(v)} y2={y(v)} stroke="#dfdeda"/><text x="44" y={y(v)+4} textAnchor="end" fill="#4a4a48" fontSize="12" fontFamily="DM Mono, ui-monospace, monospace">{v}</text></g>)}
-   <polyline fill="none" stroke="#1a4be0" strokeWidth="2" points={annual.map(r=>`${x(r.year)},${y(r.value)}`).join(' ')}/>
-   <line x1={x(2001)} y1={y(trend.fitted[0].value)} x2={x(2024)} y2={y(trend.fitted.at(-1).value)} stroke="#b84314" strokeWidth="1.6" strokeDasharray="5 4"/>
-   {annual.map(r=><circle key={r.year} cx={x(r.year)} cy={y(r.value)} r="3.2" fill="#1a4be0" stroke="#ffffff" strokeWidth="1"><title>{r.year}: {r.value.toFixed(3)} K</title></circle>)}
+   <polyline fill="none" stroke="#2563eb" strokeWidth="2" points={annual.map(r=>`${x(r.year)},${y(r.value)}`).join(' ')}/>
+   <line x1={x(2001)} y1={y(trend.fitted[0].value)} x2={x(2024)} y2={y(trend.fitted.at(-1).value)} stroke="#ea580c" strokeWidth="1.6" strokeDasharray="5 4"/>
+   {annual.map(r=><circle key={r.year} cx={x(r.year)} cy={y(r.value)} r="3.2" fill="#2563eb" stroke="#ffffff" strokeWidth="1"><title>{r.year}: {r.value.toFixed(3)} K</title></circle>)}
    <text x="50" y="210" fill="#4a4a48" fontSize="12" fontFamily="DM Mono, ui-monospace, monospace">2001</text><text x="700" y="210" fill="#4a4a48" fontSize="12" fontFamily="DM Mono, ui-monospace, monospace">2024</text><text x="50" y="17" fill="#4a4a48" fontSize="12" fontFamily="DM Mono, ui-monospace, monospace">Annual mean (K) · cobalt: data · dashed terracotta: fit</text>
   </svg><figcaption>Complete years only; monthly means weighted by days. Hover a point for its value.</figcaption></figure>
   <p>Model reanalysis, not a thermometer or city-wide observation. The inference assumes independent, homoscedastic residuals; serial correlation, selection, multiple testing and model uncertainty can make it optimistic. It does not establish cause. The output contains no quality-flag variable; input-granule quality was not independently audited.</p>
