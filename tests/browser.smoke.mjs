@@ -156,6 +156,37 @@ try{
   assert.match(await gaps.locator('.paired-contrast').textContent(),/HAC and Durbin–Watson require consecutive/);
   assert.match(await gaps.locator('#finding-text').textContent(),/HAC inference unavailable/);
   assert.deepEqual(gapErrors,[]);await gaps.close();
+  // Simulate a superseded request whose transport ignores cancellation and
+  // completes after its accelerated timeout. It must not overwrite a new result.
+  const race=await browser.newPage({viewport:{width:1280,height:720}});
+  await race.addInitScript(()=>{
+    const originalFetch=window.fetch.bind(window), originalTimer=window.setTimeout.bind(window);
+    window.__testInitialCalls=0; window.__testTimeouts=0;
+    window.fetch=(input,options)=>{
+      if(String(input).startsWith('/api/power?') && ++window.__testInitialCalls<=2)
+        return originalFetch(input,{...options,signal:undefined});
+      return originalFetch(input,options);
+    };
+    window.setTimeout=(fn,ms,...args)=>ms===30000
+      ? originalTimer(()=>{window.__testTimeouts++;fn();},1000,...args)
+      : originalTimer(fn,ms,...args);
+  });
+  let raceRequests=0;
+  await race.route('**/api/power?**',async route=>{
+    if(++raceRequests<=2)await new Promise(resolve=>setTimeout(resolve,1800));
+    await route.continue().catch(()=>{});
+  });
+  await race.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
+  await race.waitForFunction(()=>window.__testInitialCalls>=2);
+  await race.locator('#lat-a').fill('-8.1');
+  await race.locator('#analyze').click();
+  await race.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
+  await race.waitForTimeout(2200);
+  assert.equal(await race.evaluate(()=>window.__testTimeouts),1,'The superseded request must actually reach its timeout');
+  assert.equal((await race.locator('#data-label').textContent()).trim(),'NASA data loaded');
+  assert.match(await race.locator('#status').textContent(),/Loaded 2 NASA points/);
+  assert.equal(await race.locator('#lat-a').inputValue(),'-8.1');
+  await race.close();
   const offline=await browser.newPage({viewport:{width:1280,height:720}});
   await offline.route('**/api/power?**',route=>route.fulfill({status:503,body:'unavailable'}));
   await offline.route('**/power.larc.nasa.gov/**',route=>route.fulfill({status:503,body:'unavailable'}));

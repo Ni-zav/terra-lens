@@ -43,7 +43,7 @@ const evidence={
     sha256:createHash('sha256').update(bytes).digest('hex'),
     sizeBytes:bytes.byteLength,
     nasaExportURL:sourceUrl.href,
-    exactFilePreservedOutsideGit:true
+    storageLocationNotVerified:true
   },
   declaredProduct:{
     collectionId:GIOVANNI_PRODUCT_ID,

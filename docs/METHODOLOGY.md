@@ -88,6 +88,8 @@ An independent [NASA Giovanni monthly CSV workflow](GIOVANNI_EVIDENCE.md) accept
 
 Alongside classical OLS, Terra-Lens computes a non-parametric **Mann–Kendall monotonic trend test** (with tie-corrected variance and continuity correction) and the **Theil–Sen median pairwise slope** (`10 × median((A[j] - A[i]) / (y[j] - y[i]))` for all `i < j`) with its rank-based 95% interval (Sen 1968; Gilbert 1987, matching `scipy.stats.theilslopes`).
 
+These methods are complementary checks on the **same observations**, not statistically independent tests or independent confirmation from a second dataset. Agreement between them does not remove shared sampling, source, or temporal-dependence errors.
+
 - **Evidence grading:** Rather than treating a single `p < 0.05` as a binary pass/fail, each series receives an evidence verdict based on agreement between the parametric OLS t-test and the rank-based Mann–Kendall test (*Consistent increase/decrease* when both reach `p < 0.05` with the same sign; *Mixed evidence* when only one reaches `p < 0.05`; *No trend detected* when neither does).
 - **Residual dependence diagnostic:** We compute the lag-1 autocorrelation `r₁` of the OLS annual residuals and flag when `|r₁| > 1.96 / √n`, warning that serial correlation may make both classical OLS and standard Mann–Kendall p-values optimistic.
 - **Seasonal & monthly anomalies:** Complete-year monthly climatologies (`mean` and `sd` per calendar month `m=1…12`) allow viewing monthly anomalies (`v[y,m] - mean[m]`) or standardized anomalies (`(v[y,m] - mean[m]) / sd[m]`) when comparing series with different physical units or spatial supports, as well as descriptive per-calendar-month OLS slopes (`12` parallel fits, descriptive only without multiple-testing correction).

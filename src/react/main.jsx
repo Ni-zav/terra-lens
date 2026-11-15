@@ -163,7 +163,7 @@ function Comparison({series,findings}){
   let min=Math.min(0,...lows),max=Math.max(0,...highs);const padding=(max-min||.5)*.13;min-=padding;max+=padding;
   const x=v=>256+(v-min)/(max-min)*640, rowGap=valid.length===1?0:Math.min(44,120/(valid.length-1)), top=valid.length===1?96:58;
   const height=Math.max(194,top+rowGap*(valid.length-1)+70);
-  return <div className="comparison-panel" id="comparison-panel"><div className="comparison-topline"><div className="pane-title-group"><h3>Trend evidence, two independent tests</h3><p>Classical OLS (filled circle, thick bar) and rank-based Theil–Sen / Mann–Kendall (diamond, thin bar) · 95% intervals</p></div></div>
+  return <div className="comparison-panel" id="comparison-panel"><div className="comparison-topline"><div className="pane-title-group"><h3>Trend evidence, complementary tests</h3><p>Classical OLS (filled circle, thick bar) and rank-based Theil–Sen / Mann–Kendall (diamond, thin bar) use the same observations · 95% intervals</p></div></div>
     <div className="confidence-wrap" tabIndex="0" role="region" aria-label="Slope intervals"><svg id="confidence-chart" viewBox={`0 0 960 ${height}`} role="img" aria-label="Classical and Theil–Sen 95 percent slope intervals for each series">
     {[0,1,2,3,4].map(i=>{const value=min+(max-min)*i/4;return <g key={i}><line x1={x(value)} y1="38" x2={x(value)} y2={height-26} stroke="#1e3446"/><text x={x(value)} y={height-9} fill="#95b0be" textAnchor="middle" fontSize="16" fontFamily="ui-monospace, monospace">{number(value,2)}</text></g>})}
     <line x1={x(0)} y1="38" x2={x(0)} y2={height-26} stroke="#8cb4c2" strokeDasharray="4 4"/>
@@ -214,13 +214,14 @@ function App(){
         const fetched=await fetchNASA({...point,variable:cfg.variable,start:cfg.start,end:cfg.end},{signal:controller.signal});
         return powerSeries(fetched,{...point,variable:cfg.variable,color:point.color||COLORS[index%COLORS.length]});
       }));
+      if(request.current!==controller)return;
       if(timedOut)throw Error('NASA POWER did not respond within 30 seconds. Please retry.');
       if(controller.signal.aborted)return;
       if(settled[0].status==='rejected')throw settled[0].reason;
       const loaded=settled.filter(s=>s.status==='fulfilled').map(s=>s.value);
       const warnings=settled.flatMap((s,i)=>s.status==='rejected'?[`Point ${cfg.points[i].id} could not load: ${s.reason.message}`]:[]);
       setResults(loaded);setQuery(cfg);setState('success');setStatus(`Loaded ${loaded.length} NASA point${loaded.length===1?'':'s'} · ${loaded.reduce((n,r)=>n+r.monthly.length,0)} valid monthly records.${warnings.length?' '+warnings.join(' '):''}`);
-    }catch(error){if(controller.signal.aborted&&!timedOut)return;setState('error');setStatus('Could not retrieve NASA data: '+error.message);}
+    }catch(error){if(request.current!==controller||(controller.signal.aborted&&!timedOut))return;setState('error');setStatus('Could not retrieve NASA data: '+error.message);}
     finally{clearTimeout(timer);if(request.current===controller)request.current=null;}
   },[]);
   useEffect(()=>{run(latestInputs.current);return ()=>request.current?.abort()},[run]);

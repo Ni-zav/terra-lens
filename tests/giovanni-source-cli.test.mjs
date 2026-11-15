@@ -35,6 +35,8 @@ test('authentic-source evidence CLI refuses absent credentials and returns local
    assert.equal(report.originalMonthlyRecords.length,14*12);
    assert.equal(report.derivedDayWeightedCompleteYears.length,14);
    assert.equal(report.sourceClaimsRequireManualNASAReview,true);
+   assert.equal(report.originalCSV.storageLocationNotVerified,true);
+   assert.equal(Object.hasOwn(report.originalCSV,'exactFilePreservedOutsideGit'),false);
    assert.ok(report.originalCSV.sha256.length===64);
    assert.ok(Math.abs(report.classicalOLS.slopePerDecade-1)<1e-8);
    assert.match(run.stdout,/NASA-provenance-pending-independent-review/);
