@@ -431,6 +431,9 @@ try {
   await mobile.setViewportSize({width:390,height:844});
   await snapshot(mobile,'understand-mobile-id');
   assert.ok((await mobile.locator('.research-limit').boundingBox()).y<844);
+  const nextStep = await mobile.locator('.research-next').boundingBox();
+  const chart = await mobile.locator('.research-chart').boundingBox();
+  assert.ok(nextStep.y + nextStep.height < Math.min(chart.y, 844), 'Local next step must fit above the chart on mobile');
   await mobile.getByRole('link',{name:'Buka ringkasan riset'}).click();
   await snapshot(mobile,'brief-mobile-id',true);
   assert.ok(await mobile.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

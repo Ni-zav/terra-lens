@@ -34,23 +34,27 @@ function TrendFigure({series, locale}) {
   const t = messages[locale];
   const {annual, trend} = analyzeSeries(series);
   const number = (n, d) => n.toLocaleString(locale, {maximumFractionDigits: d, useGrouping: false});
-  const [width, height] = [480, 248];
+  const [width, height] = [480, 223];
   const [first, last] = [annual[0].year, annual.at(-1).year];
   const [low, high] = [Math.floor(Math.min(...annual.map(row => row.value)) * 2) / 2,
     Math.ceil(Math.max(...annual.map(row => row.value)) * 2) / 2];
   const x = year => 66 + (year - first) * (width - 95) / (last - first);
-  const y = value => 200 - (value - low) * 161 / (high - low || 1);
+  const y = value => 181 - (value - low) * 143 / (high - low || 1);
   const points = rows => rows.map(row => `${x(row.year)},${y(row.value)}`).join(' ');
   return <figure className="research-chart">
+    <div className="research-chart-heading">
+      <span>{t.fittedTrend} · {first}–{last}</span>
+      <strong>{signedNumber(trend.slopePerDecade, locale)} <small>{series.variable.unit} {t.perDecade}</small></strong>
+    </div>
     <div className="research-chart-key"><span>{t.annual} · {series.variable.unit}</span><span>{t.fit}</span></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={t.chartSummary}>
       {[low, (low + high) / 2, high].map(value => <g key={value}>
         <line x1="65" x2={width - 22} y1={y(value)} y2={y(value)} stroke="var(--research-border)"/>
         <text x="55" y={y(value) + 4} textAnchor="end">{number(value, 2)}</text>
       </g>)}
-      {[first, 2012, last].map(year => <text key={year} textAnchor="middle" x={x(year)} y="227">{year}</text>)}
-      <polyline points={points(annual)} fill="none" stroke="var(--research-accent)" strokeWidth="2"/>
-      {annual.map(row => <circle key={row.year} cx={x(row.year)} cy={y(row.value)} r="2.4" fill="var(--research-accent)"/>)}
+      {[first, 2012, last].map(year => <text key={year} textAnchor="middle" x={x(year)} y="208">{year}</text>)}
+      <polyline points={points(annual)} fill="none" stroke="currentColor" strokeWidth="2.5"/>
+      {annual.map(row => <circle key={row.year} cx={x(row.year)} cy={y(row.value)} r="2.4" fill="currentColor"/>)}
       <polyline points={points(trend.fitted)} fill="none" stroke="var(--research-trend)" strokeDasharray="7 5" strokeWidth="2"/>
     </svg>
   </figure>;
@@ -77,8 +81,8 @@ export function Understand({archive, series, current, locale, state, dirty, part
   const finding = primary ? seriesFinding(primary) : null;
   const status = evidenceState({state: current ? state : 'success', dirty: current && dirty, finding});
   const showFinding = finding && !['request-failed','stale-query','loading'].includes(status);
-  return <main id="understand" tabIndex={-1} className="research-page">
-    <section className="research-hero" aria-labelledby="research-question">
+  return <main id="understand" tabIndex={-1} className="research-page research-overview">
+    <section className={current ? "research-hero research-hero-current" : "research-hero"} aria-labelledby="research-question">
       <div className="research-answer">
         <p className="research-kicker">{current ? 'NASA POWER' : t.caseLabel}</p>
         <h1 id="research-question">{current ? t.currentQuestion : t.caseQuestion}</h1>
@@ -86,7 +90,7 @@ export function Understand({archive, series, current, locale, state, dirty, part
           {showFinding ? <>
             <p className="research-meta"><LocationLine finding={finding} t={t}/> · {finding.period.start}–{finding.period.end}</p>
             <p className="research-result">{trendSentence(finding, primary.variable.label, locale)}</p>
-            {finding.value !== null && <p>{t.statuses[finding.findingStatus]}</p>}
+            {current && finding.value !== null && <p>{t.statuses[finding.findingStatus]}</p>}
             <p className="research-limit">{t.caseScope}</p>
             <p className="research-meta">{current ? t.fresh : t.archive} · {utcLabel(finding.retrievedAt ?? finding.capturedAt)}</p>
           </> : <p className="research-result">{t.statuses[status]} {inputError && t.inputError}</p>}
@@ -100,14 +104,14 @@ export function Understand({archive, series, current, locale, state, dirty, part
           {current && <a href="#understand">{t.archiveView}</a>}
         </div>
       </div>
+      {showFinding && <section className="research-next"><h2>{t.next}</h2>{current
+        ? <p>{t.localVerification}</p>
+        : <NextStep t={t}/>}</section>}
       {!current && <TrendFigure series={archive[0]} locale={locale}/>}
     </section>
     {showFinding && <div className="research-details">
       <section><h2>{t.strength}</h2><Strength finding={finding} locale={locale}/></section>
-      <section><h2>{t.next}</h2>{current
-        ? <p>{t.localVerification}</p>
-        : <NextStep t={t} detailed/>}</section>
-      {(current ? series : archive).length > 1 && <section className="research-wide">
+      {(current ? series : archive).length > 1 && <section>
         <h2>{t.compare}</h2><PairFinding series={current ? series : archive} locale={locale} postSelected={current&&postSelected}/>
         <a className="research-inline-action" href="#tab-comparison">{t.exploreChart}</a>
       </section>}
