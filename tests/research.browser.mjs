@@ -4,11 +4,12 @@
  */
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {execFileSync, spawn} from 'node:child_process';
+import {execFileSync} from 'node:child_process';
 import {readFile, mkdir, writeFile} from 'node:fs/promises';
-import {resolve, join} from 'node:path';
+import {join} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {chromium} from 'playwright';
+import {preview} from 'vite';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = join(root, 'artifacts', '2.0');
@@ -17,16 +18,8 @@ const local = [
   await readFile(join(root,'data/source-snapshots/power-2001-2024/power-yogyakarta.json'),'utf8'),
   await readFile(join(root,'data/source-snapshots/power-2001-2024/power-jakarta.json'),'utf8')
 ].map(JSON.parse);
-const vite = spawn(process.execPath, [resolve(root,'node_modules/vite/bin/vite.js'), 'preview',
-  '--host', '127.0.0.1', '--port', '0'], {cwd:root});
-const base = await new Promise((resolveURL, reject) => {
-  vite.once('error', reject);
-  vite.once('exit', code => reject(new Error('Preview exited '+code)));
-  vite.stdout.on('data', buffer => {
-    const match = String(buffer).match(/http:\/\/127\.0\.0\.1:\d+\//);
-    if (match) resolveURL(match[0]);
-  });
-});
+const vite = await preview({root, logLevel:'error', preview:{host:'127.0.0.1',port:0}});
+const base = `http://127.0.0.1:${vite.httpServer.address().port}/`;
 const checks = {};
 const pageErrors = [];
 const manifest = {};
@@ -67,11 +60,16 @@ function annualFromMonths(months, year) {
 async function waitStatus(page, pattern) {
   await page.waitForFunction(str=>new RegExp(str).test(document.querySelector('#data-label')?.textContent||''),pattern.source);
 }
-const browser = await chromium.launch();
+let browser;
 try {
+  browser = await chromium.launch();
   const context = await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true, reducedMotion:'reduce',
     permissions:['clipboard-read','clipboard-write']});
+  context.setDefaultTimeout(20000);
   context.on('page', page=>page.on('pageerror',error=>pageErrors.push(error.message)));
+  // Built-in fallback fonts keep this functional suite independent of Google's font CDN.
+  await context.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//,route=>route.abort());
+  console.log('Built preview and Chromium are ready.');
   let requests = 0;
   let mode = 'archive';
   await context.route(/(?:\/api\/power|power\.larc\.nasa\.gov\/api\/temporal\/monthly\/point)\?/, async route => {
@@ -93,6 +91,7 @@ try {
   });
 
   const page = await context.newPage();
+  page.setDefaultNavigationTimeout(20000);
   await page.goto(base);
   const visible = await page.locator('#understand .research-result').innerText();
   assert.match(visible,/2001–2024.*\+0,179 °C per dekade.*titik grid model/);
@@ -173,6 +172,7 @@ try {
     assert.equal(await report.locator('h1').count(),1);
     const pdf=await report.pdf({path:join(output,`research-brief-${lang}.pdf`), preferCSSPageSize:true, tagged:true});
     assert.equal((pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length,1);
+    console.log(`Verified ${lang} brief download and both print paths.`);
     manifest[file].embeddedMonths=evidence.evidence.series.map(s=>s.monthly.length);
     await report.close();
   }
@@ -196,6 +196,8 @@ try {
   await waitStatus(reopened,/NASA data loaded/);
   assert.ok(requests>before);
   await reopened.close();
+
+  console.log('Verified archived and investigation CSV/JSON and shared input replay.');
 
   // The imported label is user-controlled. CSV text is neutralized while negative numbers stay numeric.
   await page.locator('#tab-giovanni').click();
@@ -333,6 +335,7 @@ try {
   assert.equal(finder.selectionInference,'exploratory-selected');
   assert.ok(finder.records.every(r=>r.sourceMode==='cached'&&Number.isFinite(Date.parse(r.retrievedAt))));
   assert.match(await page.locator('.discovery-paired').innerText(),/Exploratory only/);
+  console.log('Verified Giovanni, SWOT, GISTEMP, and Finder downloads.');
   const link=await page.locator('.discovery-inspect').getAttribute('href');
   assert.equal(new URL(link).searchParams.get('screen'),'1');
   await page.locator('.discovery-inspect').click();
@@ -445,7 +448,7 @@ try {
   assert.deepEqual(pageErrors,[]);
 } finally {
   await writeFile(join(output,'download-manifest.json'),JSON.stringify({checks, files:manifest},null,2)+'\n');
-  await browser.close();
-  vite.kill();
+  await browser?.close();
+  await vite.close();
 }
 console.log('Terra-Lens 2.0 browser acceptance passed. Download paths and hashes: '+join(output,'download-manifest.json'));
