@@ -19,6 +19,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Browser smoke with mock fixture
         run: node tests/browser.smoke.mjs
+      - name: Terra-Lens 2.0 browser and download acceptance
+        run: node tests/research.browser.mjs
       - name: Responsive seven-slide story with real screenshot asset
         run: node tests/demo.responsive.mjs
       - name: Upload visual test snapshots

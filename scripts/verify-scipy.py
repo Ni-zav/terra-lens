@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Independently reproduce NASA POWER annual OLS using SciPy and compare with JS.
 
-This script downloads actual NASA data at runtime. It does NOT use synthetic fixtures.
+By default, download NASA data. With --snapshot, verify the original archived pair.
 Requires: Python 3, SciPy, Node 20+. Run from the repository root.
 """
+import argparse
 import calendar
 import datetime as dt
 import json
@@ -163,11 +164,21 @@ def annual_series(payload):
     return count, series
 
 def main():
-    artifacts = Path("artifacts")
+    parser = argparse.ArgumentParser(description=__doc__)
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--snapshot", action="store_true", help="Use the checked-in NASA archive without network access.")
+    selection.add_argument("--responses-dir", type=Path, help="Use POWER response bodies saved by live-browser.mjs.")
+    options = parser.parse_args()
+    input_dir = Path("data/source-snapshots/power-2001-2024") if options.snapshot else options.responses_dir
+    mode = "archived-power-verification" if options.snapshot else "captured-power-verification" if input_dir else ""
+    artifacts = Path("artifacts") / mode
+    source = ("NASA POWER archive from Actions run 43579062738" if options.snapshot
+              else "NASA POWER response files supplied by the operator" if input_dir
+              else "NASA POWER monthly point API, requested at runtime")
     artifacts.mkdir(exist_ok=True)
     records = {
         "generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "source": "NASA POWER monthly point API; real observations, not test fixtures",
+        "source": source,
         "period": "2001–2024",
         "variable": "T2M",
         "results": {},
@@ -177,10 +188,15 @@ def main():
             "parameters": "T2M", "community": "AG", "longitude": longitude,
             "latitude": latitude, "start": 2001, "end": 2024, "format": "JSON",
         })
-        payload = download(url)
         # Local artifact used for same-response JavaScript comparison.
         path = artifacts / f"power-{name.lower()}.json"
-        path.write_text(json.dumps(payload), encoding="utf-8")
+        if input_dir:
+            raw = (input_dir / path.name).read_bytes()
+            payload = json.loads(raw)
+            path.write_bytes(raw)
+        else:
+            payload = download(url)
+            path.write_text(json.dumps(payload), encoding="utf-8")
         month_count, rows = annual_series(payload)
         assert month_count == 288 and len(rows) == 24, (
             f"{name}: expected 288 valid months and 24 complete years, got {month_count}, {len(rows)}"
@@ -215,7 +231,7 @@ def main():
     verify_paired_slope(records, artifacts)
     (artifacts / "scipy-verification.json").write_text(
         json.dumps(records, indent=2) + "\n", encoding="utf-8")
-    print("Independent SciPy and JavaScript computations agree on the SAME live NASA responses.")
+    print(f"Independent SciPy and JavaScript computations agree on the same {source}.")
 
 if __name__ == "__main__":
     main()

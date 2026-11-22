@@ -1,9 +1,13 @@
 import React from 'react';
+import {downloadJSON} from '../presentation/download.js';
 import raw from '../../data/source-snapshots/g4.areaAvgTimeSeries.M2TMNXSLV_5_12_4_T2M.20010101-20241231.110E_8S_111E_7S.csv?raw';
 import {analyzeGiovanniArea} from '../science/index.js';
 const data=analyzeGiovanniArea(raw);
+const retrievedAt='2026-11-15T01:42:21Z';
 function exportCase() {
  const evidence={schema:'terra-lens-giovanni-area-v1',dataset:'M2TMNXSLV 5.12.4',variable:'T2M',unit:'K',
+  sourceMode:'snapshot', authenticated:true, retrievedAt, netCDFRetrievedAt:'2026-11-15T01:42:29Z',
+  spatialSupport:'latitude-weighted area average',
   doi:'10.5067/AP1B0BA5PD2K',requestedBounds:[110,-8,111,-7],dataBounds:[110,-8,110.625,-7],
   temporalSupport:'Monthly means, 2001–2024; annual means weighted by calendar days',
   sourceCSV_SHA256:'ff7cd37fd010ae16015ce22400c2cb583c975c6d9277e0235cbd674d774e54dc',
@@ -15,14 +19,14 @@ function exportCase() {
   originalNetCDF:'https://giovanni.gsfc.nasa.gov/session/343566EA-E094-11F1-A1CF-4CF1FED1C619/6BED9890-E095-11F1-9112-2588FFD1C619/6BEDAC4A-E095-11F1-9112-2588FFD1C619/g4.areaAvgTimeSeries.M2TMNXSLV_5_12_4_T2M.20010101-20241231.110E_8S_111E_7S.nc',
   source:'https://giovanni.gsfc.nasa.gov/giovanni/#service=ArAvTs&starttime=2001-01-01T00:00:00Z&endtime=2024-12-31T23:59:59Z&bbox=110,-8,111,-7&data=M2TMNXSLV_5_12_4_T2M',
   limitations:'Model reanalysis; exploratory classical OLS; serial correlation, selection, model and processing uncertainty are not quantified. No quality-flag variable is present in the Giovanni output or native M2TMNXSLV 5.12.4 monthly granules. NASA reprocessed September 2020 and June–September 2021 (MERRA2_401); byte-preserved NASA OPeNDAP .dap.nc4 subsets for all five reprocessed months match the Giovanni 6-cell intermediate bit-for-bit in IEEE 754 float32 (0.0 K difference), though the Giovanni aggregate file itself does not embed native GranuleID strings.',...data};
- const url=URL.createObjectURL(new Blob([JSON.stringify(evidence,null,2)+'\n'],{type:'application/json'}));
- const a=document.createElement('a'); a.href=url; a.download='giovanni-regional-evidence.json'; a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ downloadJSON('giovanni-regional-evidence.json',evidence);
 }
 export default function GiovanniCase() {
  const {annual,trend}=data;
  const x=y=>50+(y-2001)*680/23, y=v=>185-(v-297.8)*120/1.8;
  return <section className="giovanni-card giovanni-tutorial" aria-labelledby="nasa-source-case">
   <h3 id="nasa-source-case">NASA Giovanni · Regional temperature, 2001–2024</h3>
+  <p className="giovanni-note">Dated NASA export · {retrievedAt} · region 110° to 111° E, 8° to 7° S</p>
   <p>MERRA-2 monthly 2 m air temperature, averaged over grid cells near Yogyakarta. The fitted annual trend is <strong>+{trend.slopePerDecade.toFixed(3)} K per decade</strong> (classical 95% interval {trend.ciLowPerDecade.toFixed(3)} to {trend.ciHighPerDecade.toFixed(3)}; p = {trend.pValue.toFixed(3)}).</p>
   <figure><svg style={{width:"100%",height:"auto"}} viewBox="0 0 760 220" role="img" aria-label="Annual area-averaged MERRA-2 temperature in kelvin, 2001 to 2024, with linear fit">
    {[298,298.5,299,299.5].map(v=><g key={v}><line x1="50" x2="730" y1={y(v)} y2={y(v)} stroke="#dfdeda"/><text x="44" y={y(v)+4} textAnchor="end" fill="#4a4a48" fontSize="12" fontFamily="DM Mono, ui-monospace, monospace">{v}</text></g>)}

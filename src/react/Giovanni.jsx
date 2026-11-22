@@ -6,15 +6,15 @@ import GiovanniTutorial from './GiovanniTutorial.jsx';
 import {giovanniAreaSeries} from '../science/giovanni-case.js';
 import {giovanniTemperatureQuery} from '../science/giovanni-query.js';
 import Catalog from './Catalog.jsx';
+import {messages} from '../presentation/locale.js';
 
 const fmt = value => Number.isFinite(value) ? (value > 0 ? '+' : '') + Number(value).toFixed(3) : '—';
 
 /**
  * Importer only: turns a Giovanni CSV into the same canonical Series as live
- * NASA POWER, then hands it to the workspace, where it appears in every chart,
- * the verdicts and the evidence export through the shared derivations.
+ * NASA POWER, then hands it to the workspace for separate charts and the shared evidence export.
  */
-export default function GiovanniEvidence({imported, onImport, onRemove}) {
+export default function GiovanniEvidence({imported, onImport, onRemove, locale='en'}) {
   const [error,setError]=useState('');
   const [product,setProduct]=useState(''), [sourceURL,setSourceURL]=useState(''), [doi,setDoi]=useState('');
   const [region,setRegion]=useState({west:'110',south:'-8',east:'111',north:'-7',start:'2001',end:'2024'});
@@ -66,7 +66,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
           <p className="giovanni-note">Giovanni point-service CSVs contain a <strong>single grid-point series</strong> when valid latitude and longitude metadata are present; area-averaged exports are different products. Do not infer a direct physical difference between unlike sources. Files are processed locally, and source authenticity is not certified by this browser.</p>
         </div>
         {analysis ? <div aria-live="polite" className="giovanni-summary">
-          <h3>Active Imported Series (G)</h3>
+          <h3>Active Imported Series (G)</h3><p lang={locale}>{messages[locale].imported}. {locale==='id'?'SHA-256 hanya mengidentifikasi isi berkas.':'The SHA-256 identifies the file bytes.'}</p>
           <p><strong>{imported.label}</strong> · {imported.monthly.length} monthly records, {analysis.coverage.completeYears} complete years · unit {imported.variable.unit}. <em>{analysis.verdict.headline}.</em></p>
           {analysis.trend && <p className="giovanni-note">OLS {fmt(analysis.trend.slopePerDecade)} {imported.variable.unit}/decade (p {analysis.trend.pValue.toFixed(4)}) · Sen {fmt(analysis.robust.senSlopePerDecade)} (Mann–Kendall p {analysis.robust.pValue.toFixed(4)})</p>}
           {imported.provenance.warning?.includes('temporal aggregation')&&<p className="giovanni-note">Annual values are day-weighted averages of monthly values, not annual totals or annual extremes. Verify that averaging is meaningful for this product.</p>}
@@ -74,7 +74,7 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
           <button type="button" id="giovanni-remove" onClick={onRemove}>Remove series G</button>
         </div> : <div className="giovanni-summary is-empty">
           <h3>Series G Status</h3>
-          <p className="giovanni-note">No Giovanni CSV currently imported. Upload a NASA Giovanni monthly time-series CSV on the right to overlay Series G across Annual, Monthly, Seasonal, and Compare views.</p>
+          <p className="giovanni-note">No Giovanni CSV currently imported. Upload a Giovanni monthly CSV to inspect series G in its own Annual, Monthly and Seasonal charts. Compare shows separate fits and why a paired test is unavailable.</p>
         </div>}
       </div>
       <div className="giovanni-form">
@@ -88,7 +88,10 @@ export default function GiovanniEvidence({imported, onImport, onRemove}) {
         <input id="giovanni-source" type="url" value={sourceURL} onChange={e=>setSourceURL(e.target.value)} placeholder="https://...nasa.gov/..."/>
         <label htmlFor="giovanni-file">Giovanni monthly time-series CSV (max 12 MB)</label>
         <input id="giovanni-file" type="file" accept=".csv,text/csv" onChange={importCSV} />
-        {error&&<p role="alert" className="status error">{error}</p>}
+        {error&&<div role="alert" className="status error">
+          {locale==='id'&&<p lang="id">CSV gagal dimuat. Periksa format bulanan, metadata, ukuran (maksimal 12 MB), tanggal dan bulan ganda.</p>}
+          <p>{error}</p>
+        </div>}
       </div>
     </div>
   </div>;

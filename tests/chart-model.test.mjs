@@ -25,13 +25,13 @@ test('anomaly mode removes the seasonal cycle and shares a unit axis',()=>{
   assert.equal(model.unit,'°C');assert.equal(model.standardized,false);
   assert.ok(model.series[0].values.every(x=>Math.abs(x)<1e-9));
 });
-test('mixed units: values hide the odd series, anomaly falls back to σ',()=>{
+test('mixed supports or units are separate in value and anomaly charts',()=>{
   const a=makeSeries({id:'A',variable:v,monthly:fullYears(2001,12,(y,m)=>20+m+y*.1)});
   const g=makeSeries({id:'G',variable:{code:'GIOVANNI:T',unit:'K'},support:SUPPORT.AREA_AVERAGE,monthly:fullYears(2001,12,(y,m)=>290+m+y*.1)});
   const values=axisPlan([a,g],'monthly');
   assert.deepEqual(values.drawn.map(s=>s.id),['A']);assert.deepEqual(values.excluded.map(s=>s.id),['G']);
   const anomaly=buildChartModel([a,g],{mode:'anomaly'});
-  assert.equal(anomaly.unit,'σ');assert.equal(anomaly.series.length,2);
+  assert.equal(anomaly.unit,'°C');assert.equal(anomaly.series.length,1);
 });
 test('seasonal model reports one slope per calendar month',()=>{
   const a=makeSeries({id:'A',variable:v,monthly:fullYears(2001,12,(y,m)=>m===6?y*0.5:10)});

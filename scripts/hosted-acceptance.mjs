@@ -54,6 +54,7 @@ try{
  }});
  const first=await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
  assert.equal(first.status(),200,'Hosted application must be reachable without login');
+ if(await page.locator('#understand').count())await page.locator('nav a[href="#explore"]').click();
  await page.waitForFunction(()=>document.getElementById('data-label')?.textContent==='NASA data loaded',
   null,{timeout:125000});
  assert.equal((await page.locator('#metric-years').textContent()).trim(),'24');
@@ -140,6 +141,7 @@ try{
  const outage=await context.newPage();
  await outage.route('**/power.larc.nasa.gov/api/temporal/monthly/point**',route=>route.abort('failed'));
  await outage.goto(url,{waitUntil:'domcontentloaded'});
+ if(await outage.locator('#understand').count())await outage.locator('nav a[href="#explore"]').click();
  await outage.waitForFunction(()=>document.getElementById('data-label')?.textContent==='Request failed',null,{timeout:45000});
  assert.match(await outage.locator('#status').textContent(),/Could not retrieve NASA data/);
  assert.equal((await outage.locator('#metric-slope').textContent()).trim(),'—');

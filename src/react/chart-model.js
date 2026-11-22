@@ -3,26 +3,24 @@
  * display options (window, mode) only change what is drawn, never the
  * statistics, which always come from the full-period derivations in series.js.
  */
-import {annualOf, trendOf, anomaliesOf, climatologyOf, seasonalOf, sharedUnit} from '../series.js';
+import {annualOf, trendOf, anomaliesOf, climatologyOf, seasonalOf, compatibility} from '../series.js';
 
 export const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const pad = m => String(m).padStart(2, '0');
 
 /**
- * Pick which series can share a value axis. Values and annual modes draw only
- * series in the reference (first) series' unit; anomaly mode falls back to
- * standardized anomalies (σ) when units differ so every series stays visible.
+ * Pick which series can share an axis. Standardizing units cannot harmonize
+ * physical quantities or spatial support. Inspect excluded series on its own.
  */
 export function axisPlan(seriesList, mode) {
   if (!seriesList.length) return {unit: '', standardized: false, drawn: [], excluded: []};
-  const unit = seriesList[0].variable.unit;
-  if (mode === 'anomaly') {
-    const shared = sharedUnit(seriesList);
-    return {unit: shared ?? 'σ', standardized: shared === null, drawn: seriesList, excluded: []};
+  const [reference, ...others] = seriesList;
+  const drawn = [reference];
+  const excluded = [];
+  for (const series of others) {
+    (compatibility(reference, series).paired ? drawn : excluded).push(series);
   }
-  return {unit, standardized: false,
-    drawn: seriesList.filter(s => s.variable.unit === unit),
-    excluded: seriesList.filter(s => s.variable.unit !== unit)};
+  return {unit: reference.variable.unit, standardized: false, drawn, excluded};
 }
 
 /** A continuous calendar domain; missing records are null, never zero-filled. */

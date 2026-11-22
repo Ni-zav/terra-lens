@@ -31,6 +31,10 @@ export function parseGiovanniMonthlyCSV(text) {
       const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
       if(day<1 || day>daysInMonth) throw new Error('Invalid calendar date in monthly CSV.');
     }
+    if (key.length>10) {
+      const hour=Number(key.slice(11,13)), minute=Number(key.slice(14,16)), second=Number(key.slice(17,19));
+      if(hour>23 || minute>59 || second>59) throw new Error('Invalid time of day in monthly CSV.');
+    }
     const date=key.slice(0,4)+key.slice(5,7);
     if (seen.has(date)) throw new Error('Multiple samples per month: use a monthly Giovanni time series, not daily or 3-hourly data.');
     seen.add(date);
@@ -48,6 +52,9 @@ export function parseGiovanniMonthlyCSV(text) {
     rows.push({year,month,value,date});
   }
   if (!metadata.param_name || !metadata.unit) throw new Error('Giovanni CSV metadata must include param_name and unit. This importer does not accept unlabeled CSV.');
+  const interval = metadata.temporal_resolution || metadata.frequency || metadata.cadence;
+  if (interval && /day|daily|hour|minute|second|P1D|PT[0-9]/i.test(interval))
+    throw new Error('The declared cadence is not monthly. Use a monthly Giovanni time series.');
   rows.sort((a,b)=>a.year-b.year||a.month-b.month);
   if (!rows.length) throw new Error('No valid monthly measurements found in source CSV.');
   return {metadata,monthly:rows};
@@ -74,7 +81,7 @@ export function giovanniSeries(parsed, {id = 'G', color = '#8f2d56', fileName, s
     label: product ? `${product} (Giovanni)` : `${md.param_name} (Giovanni)`,
     geo: isPoint ? {lat, lon} : null,
     variable: {code: 'GIOVANNI:' + md.param_name, label: md.param_name, unit: md.unit},
-    provenance: {kind: 'giovanni-import', fileName, sha256, product: product || null, doi: doi || null,
+    provenance: {kind: 'giovanni-import', sourceMode: 'user-imported', fileName, sha256, product: product || null, doi: doi || null,
       url: sourceURL || null, metadata: md, authenticated: false,
       warning: 'User-supplied file; provenance, source quality and temporal aggregation are not independently authenticated. Annual values are day-weighted averages of monthly values, not annual totals or annual extremes; verify that averaging is meaningful for this product. Check product-specific missing-value markers; declared numeric fill/missing values are excluded, or -999 when none is declared.'}
   });

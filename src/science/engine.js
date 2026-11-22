@@ -43,7 +43,7 @@ export async function analyzeLocalGlobal({
   from=2001,to=2024,baselineStart=2001,baselineEnd=2020,
   // For reliable offline/hosted demo pass the exact NASA official table text.
   // Supported: CSV (direct GISS format) or TXT (hundredths of °C table).
-  gistempSourceText=null,gistempSourceFormat='txt'
+  gistempSourceText=null,gistempSourceFormat='txt',gistempSnapshot=null
 }={},{
   powerFetcher=fetch,gistempFetcher=fetch,signal
 }={}){
@@ -58,7 +58,14 @@ export async function analyzeLocalGlobal({
     global.sourceURL=gistempSourceFormat==='csv'
       ?'https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.csv'
       :'https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.txt';
-    global.note+=' Caller-supplied text: verify original NASA source and download date independently.';
+    global.sourceMode='user-imported';
+    if (gistempSnapshot) {
+      global.sourceMode='snapshot';
+      global.snapshotDate=gistempSnapshot.snapshotDate;
+      global.retrievedAt=gistempSnapshot.retrievedAt;
+    } else {
+      global.note+=' Caller-supplied text: verify original NASA source and download date independently.';
+    }
   }else{
     try {global=await fetchGISTEMP({fetcher:gistempFetcher,signal});}
     catch(error){
@@ -71,6 +78,10 @@ export async function analyzeLocalGlobal({
   const result=compareLocalGlobal({
     localPowerMonthly:power.monthly,globalGISTEMP:global,from,to,
     baselineStart,baselineEnd
+  });
+  Object.assign(result.advanced.sources[0], {
+    source:power.source, sourceMode:power.sourceMode, sourceURL:power.url, retrievedAt:power.fetchedAt,
+    coordinates:point, metadata:power.metadata, parameterMetadata:power.parameterMetadata, unit:'°C anomaly', originalUnit:'°C', originalMonthly:power.monthly
   });
   return {...result,context:{point,globalAcquisition:global.note||'Direct GISS request',
     localSourceURL:power.url,localRetrievedAt:power.fetchedAt,

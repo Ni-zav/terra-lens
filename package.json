@@ -1,6 +1,6 @@
 {
   "name": "terra-lens",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "description": "Earth system trend explorer for NASA Space Apps 2026",
