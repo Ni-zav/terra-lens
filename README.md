@@ -1,13 +1,15 @@
-# Terra-Lens 🌍
+# Terra-Lens 2.0
 
-**Follow the evidence.** An interactive Earth-system trend explorer for the **NASA Space Apps Challenge 2026**, responding to **[Be An Earth System Trend Detective!](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/)**.
+Understand what a NASA climate record supports, decide what local evidence to seek, and download the exact inputs and calculations. The opening Indonesian / English case asks whether a modeled grid point near Yogyakarta showed historical warming in 2001–2024 and whether to request station observations for further study.
 
-Terra-Lens lets users select an environmental variable, choose geographic points, inspect NASA monthly observations over time, estimate linear trends per decade, and understand the difference between an observed change and statistical evidence for a trend.
+- **Understand** opens a dated NASA POWER archive with the finding, its geographic limits, an independent verification step and a one-page research brief.
+- **Explore** requests current NASA POWER responses and opens the expert charts, point comparison, Finder, cross-source cases and Giovanni tools.
+- **Verify** traces each result to its source query, dates, coverage, methods, monthly and annual values, and downloadable CSV and JSON evidence.
 
-**The application uses real NASA POWER data. It does not silently generate, substitute, or claim AI-predicted observations as measured data.**
+This is a post-hackathon iteration of the NASA Space Apps Challenge 2026 submission, [Be An Earth System Trend Detective!](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/). The [75-second walkthrough](demo/terra-lens-2-walkthrough.md), [source register](docs/TERRA_LENS_2_SOURCES.md) and [maintainer runbook](docs/MAINTAINER_RUNBOOK.md) cover the new workflow.
 
 ![Terra-Lens desktop workspace displaying live 2001–2024 NASA POWER T2M data for Yogyakarta and Jakarta](docs/screenshots/nasa-real-desktop.png)
-*Desktop workspace (`1440×900`, real Chromium capture against live NASA POWER `T2M` data) showing Point A Yogyakarta (`+0.18 °C/dec`), Point B Jakarta (`+0.22 °C/dec`), paired HAC contrast, interactive 3D Blue Marble coordinate picker, and provenance exports.*
+*Historical desktop workspace (`1440×900`, real Chromium capture against live NASA POWER `T2M` data) showing Point A Yogyakarta (`+0.18 °C/dec`), Point B Jakarta (`+0.22 °C/dec`), paired HAC contrast, interactive 3D Blue Marble coordinate picker, and provenance exports.*
 
 ## Capabilities
 
@@ -33,7 +35,7 @@ npm run dev
 # open the local URL printed by Vite
 ```
 
-The default Yogyakarta/Jakarta investigation loads from NASA on entry. Select a variable, 10+ calendar years, and one or two locations, then press **Analyze NASA data** to request a new investigation. The application requests the NASA API through `/api/power` when a Cloudflare Pages Function is available, otherwise tries NASA POWER directly.
+Understand opens the bundled 2001–2024 case without requiring the NASA API. Open Explore to fetch the default Yogyakarta/Jakarta points. Select a variable, at least 10 calendar years and up to four locations, then press **Analyze NASA data**. Investigation links reopen the selected inputs and request NASA again. The application requests the NASA API through `/api/power` when a Cloudflare Pages Function is available, otherwise tries NASA POWER directly.
 
 **Production hosting:** GitHub Pages deploys the built `dist/` directory through GitHub Actions. It calls NASA POWER directly. For Cloudflare Pages, use `npm ci && npm run build` and output directory `dist`; the repository also includes an optional Pages Function proxy, which must be tested on that host.
 
@@ -41,11 +43,14 @@ The default Yogyakarta/Jakarta investigation loads from NASA on entry. Select a 
 
 ```bash
 npm run check
+npx playwright install chromium
+node tests/browser.smoke.mjs
+node tests/research.browser.mjs
 ```
 
-Node 20.19+ is required. The workspace uses React, Vite, Apache ECharts, and Three.js; exact versions are pinned in `package-lock.json`. The browser smoke test is separate; its deterministic fixture is only for tests and never used in the shipped app.
+Node 20.19+ is required. The workspace uses React, Vite, Apache ECharts, and Three.js; exact versions are pinned in `package-lock.json`. The browser smoke test uses synthetic inputs. The 2.0 acceptance suite uses dated NASA responses and test-only adverse replies, exercises the built app in Chromium, and saves actual downloads and a hash manifest under `artifacts/2.0/`. Python 3 is required for the independent CSV parser. [Acceptance evidence](docs/TERRA_LENS_2_VALIDATION.md)
 
-## Seven-slide project demonstration
+## Historical seven-slide project demonstration
 
 The [NASA POWER case-study notebook](notebooks/nasa_power_case_study.ipynb) retrieves the two real series, reproduces the annual trends with SciPy, compares them with the application on the same responses, and generates the deck's scientific figures. Install `notebooks/requirements.txt` and run it from a local Jupyter session; NASA access and Node.js are required. Results can change if NASA revises its data.
 
@@ -69,7 +74,7 @@ The [NASA POWER case-study notebook](notebooks/nasa_power_case_study.ipynb) retr
 
 Annual values use day-weighted monthly means, retaining only years with all 12 valid months. The trend is simple OLS on annual means. The reported p-value and confidence interval assume independent, roughly homoskedastic residuals; autocorrelation, nonlinear behavior, reanalysis changes, and exploratory multiple comparisons can make significance claims unreliable. **A p-value is not a causal explanation or a statement about the future.** Detailed caveats appear in the methodology.
 
-NASA POWER's meteorological parameters are derived from NASA GMAO **MERRA-2** assimilation/reanalysis. They are model-derived, not direct measurements at street level.
+NASA POWER meteorology uses NASA GMAO MERRA-2 reanalysis and GEOS-IT for the near-real-time extension. Preserve the source list and API version declared in each response. The archived Yogyakarta/Jakarta study declares MERRA2. [NASA POWER meteorology documentation](https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/)
 
 ## Authorship and acknowledgments
 

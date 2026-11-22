@@ -1,6 +1,6 @@
 # NASA dataset registry and integration policy
 
-Date: 14 November 2026. **Catalog entries are not observations or proof of hackathon eligibility.**
+Updated 22 November 2026. **Catalog entries are not observations or proof of hackathon eligibility.**
 
 ## NASA Earthdata collection discovery
 
@@ -8,7 +8,7 @@ An experimental Giovanni-workspace search queries NASA's [Common Metadata Reposi
 
 ## Live data: NASA POWER monthly point API
 
-NASA POWER is implemented and queried live. Its meteorological parameters derive from NASA MERRA-2 reanalysis and select model grid-point estimates, not whole-city measurements.
+NASA POWER is implemented and queried live. Its meteorology uses MERRA-2 and GEOS-IT for near-real-time coverage. The service returns model-grid estimates. See the response metadata for the exact request, and see the [2.0 source register](TERRA_LENS_2_SOURCES.md) for archived and planned paths.
 
 | Code | Parameter | Unit | Interpretation |
 |---|---|---|---|
@@ -34,7 +34,7 @@ The [published independent resource-list reproduction](https://hackathlone.com/c
 | GES DISC Hydrology Time Series | GLDAS and related hydrology datasets | Research only, requires retrieval and units validation |
 | NASA AppEEARS | MODIS vegetation indices / land surface temperature, with QA masks | Research only, requires authenticated subset, calendar and quality methods |
 | NASA FIRMS | MODIS and VIIRS fire detections / radiative power | Research only; detection ≠ burnt area or fire cause |
-| NASA POWER | MERRA-2-derived meteorological estimates | Live integrated; POWER not explicitly present in reproduced challenge resource list |
+| NASA POWER | MERRA-2 / GEOS-IT modeled meteorology | Live workspace and dated POWER case; POWER not explicitly present in reproduced challenge resource list |
 
 No universal "all NASA data" connector is claimed. Valid integration requires authentic dataset/version, unit semantics, time steps, geographic support, missingness, quality control, and reproducible calculations.
 
