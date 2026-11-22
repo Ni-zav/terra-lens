@@ -28,7 +28,7 @@ try{
   browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   const page=await browser.newPage({viewport:{width:1440,height:900},acceptDownloads:true});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
+  await page.goto(`http://127.0.0.1:${port}/#explore`,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded',null,{timeout:20000});
   // POWER monthly extremes are not means of daily extremes or annual extremes.
   await page.locator('#variable').selectOption('T2M_MAX');
@@ -153,7 +153,7 @@ try{
   await mkdir(join(ROOT,'artifacts'),{recursive:true});await page.screenshot({path:join(ROOT,'artifacts','react-fixture-mobile.png'),fullPage:true});
   const noWebGL=await browser.newPage({viewport:{width:390,height:844}});
   await noWebGL.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args)}});
-  await noWebGL.goto(`http://127.0.0.1:${port}/`);await noWebGL.locator('#earth-globe').scrollIntoViewIfNeeded();await noWebGL.locator('#earth-globe[data-error]').waitFor({timeout:20000});assert.equal(await noWebGL.locator('#lat-a').isEnabled(),true);await noWebGL.close();
+  await noWebGL.goto(`http://127.0.0.1:${port}/#explore`);await noWebGL.locator('#earth-globe').scrollIntoViewIfNeeded();await noWebGL.locator('#earth-globe[data-error]').waitFor({timeout:20000});assert.equal(await noWebGL.locator('#lat-a').isEnabled(),true);await noWebGL.close();
   // A missing month makes an internal year incomplete in both fixture series.
   // The UI must retain the calendar-year estimate but not report gap-blind HAC.
   const gaps=await browser.newPage({viewport:{width:1280,height:720}});
@@ -164,7 +164,7 @@ try{
     records['201001']=-999;
     await route.fulfill({response,json});
   });
-  await gaps.goto(`http://127.0.0.1:${port}/`);
+  await gaps.goto(`http://127.0.0.1:${port}/#explore`);
   await gaps.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
   assert.match(await gaps.locator('#metric-significance-detail').textContent(),/HAC unavailable: gaps/);
   await gaps.locator('#tab-comparison').click();
@@ -191,7 +191,7 @@ try{
     if(++raceRequests<=2)await new Promise(resolve=>setTimeout(resolve,4500));
     await route.continue().catch(()=>{});
   });
-  await race.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
+  await race.goto(`http://127.0.0.1:${port}/#explore`,{waitUntil:'domcontentloaded'});
   await race.waitForFunction(()=>window.__testInitialCalls>=2);
   await race.locator('#lat-a').fill('-8.1');
   await race.locator('#analyze').click();
@@ -205,7 +205,7 @@ try{
   // The checked-in NASA area export is used here as a real-source integration
   // fixture; the synthetic POWER responses remain limited to this test server.
   const area=await browser.newPage({viewport:{width:1280,height:720},acceptDownloads:true});
-  await area.goto(`http://127.0.0.1:${port}/`);
+  await area.goto(`http://127.0.0.1:${port}/#explore`);
   await area.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='NASA data loaded');
   await area.locator('#tab-giovanni').click();
   await area.getByRole('heading',{name:'Explore NASA Giovanni cases'}).waitFor();
@@ -262,12 +262,12 @@ try{
   const offline=await browser.newPage({viewport:{width:1280,height:720}});
   await offline.route('**/api/power?**',route=>route.fulfill({status:503,body:'unavailable'}));
   await offline.route('**/power.larc.nasa.gov/**',route=>route.fulfill({status:503,body:'unavailable'}));
-  await offline.goto(`http://127.0.0.1:${port}/`);await offline.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='Request failed');
+  await offline.goto(`http://127.0.0.1:${port}/#explore`);await offline.waitForFunction(()=>document.querySelector('#data-label')?.textContent==='Request failed');
   assert.equal((await offline.locator('#metric-slope').textContent()).trim(),'—');assert.equal(await offline.locator('#download').isDisabled(),true);await offline.close();
   // Experimental regional finder: synthetic fixture is allowed for UI tests ONLY.
   const finderPage=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});
   const finderErrors=[];finderPage.on('pageerror',e=>finderErrors.push(e.message));
-  await finderPage.goto(`http://127.0.0.1:${port}/`,{waitUntil:'domcontentloaded'});
+  await finderPage.goto(`http://127.0.0.1:${port}/#explore`,{waitUntil:'domcontentloaded'});
   await finderPage.locator('#tab-finder').click();
   await finderPage.locator('#finder-run').waitFor({timeout:25000});
   assert.equal(await finderPage.locator('.discovery-table tbody tr').count(),8,'All eight declared sites must be shown before scanning');

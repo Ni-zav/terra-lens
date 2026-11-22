@@ -3,21 +3,11 @@ import {scienceForAudience, analyzeLocalGlobal} from '../science/index.js';
 import manifest from '../../data/cases/manifest.json';
 import swotSnapshot from '../../data/cases/ohio-river-swot-power.json';
 import gistempSnapshot from '../../data/cases/yogyakarta-global-gistemp-power.json';
+import {downloadJSON} from '../presentation/download.js';
 import gistempRawTxt from '../../data/source-snapshots/nasa-giss-gistemp-global-2001-2024.txt?raw';
 
 const fmt = (n, d = 3) => Number.isFinite(n) ? new Intl.NumberFormat('en-US', {maximumFractionDigits: d, minimumFractionDigits: d}).format(n) : '—';
 const signed = (n, d = 3) => Number.isFinite(n) ? (n > 0 ? '+' : '') + fmt(n, d) : '—';
-
-function downloadJSON(name, payload) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2) + '\n'], {type: 'application/json;charset=utf-8'}));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 /**
  * SVG plot for Case 1: SWOT irregular satellite overpasses (water surface elevation in m, with quality flags)
@@ -179,8 +169,8 @@ function LocalGlobalFigure({comparison}) {
   );
 }
 
-export default function ScienceCases({onLoadWorkspace}) {
-  const [selectedCase, setSelectedCase] = useState('swot-ohio-water-context');
+export default function ScienceCases({onLoadWorkspace,locale='en'}) {
+  const [selectedCase, setSelectedCase] = useState('giss-yogyakarta-temperature-context');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [liveGistempState, setLiveGistempState] = useState({status: 'idle', data: null, error: ''});
 
@@ -188,7 +178,25 @@ export default function ScienceCases({onLoadWorkspace}) {
   const activeMeta = manifest.cases.find(c => c.id === selectedCase) || manifest.cases[0];
   const isSwot = selectedCase === 'swot-ohio-water-context';
 
-  const gistempComparison = liveGistempState.data || gistempSnapshot.comparison;
+  const archivedComparison = gistempSnapshot.comparison;
+  const localPoint = {lat: -7.7956, lon: 110.3695, label: 'Yogyakarta grid point'};
+  const gistempComparison = liveGistempState.data || {
+    ...archivedComparison,
+    advanced: {...archivedComparison.advanced, sources: [
+      {...archivedComparison.advanced.sources[0], sourceMode:'snapshot', sourceURL:gistempSnapshot.local.url,
+        retrievedAt:gistempSnapshot.local.fetchedAt, coordinates:localPoint, metadata:gistempSnapshot.local.metadata,
+        unit:'°C anomaly', originalUnit:'°C', originalMonthly:gistempSnapshot.local.monthly},
+      {...archivedComparison.advanced.sources[1], sourceMode:'snapshot', snapshotDate:gistempSnapshot.global.snapshotDate,
+        unit:'°C anomaly', originalMonthly:gistempSnapshot.global.series}
+    ]}
+  };
+  const swotExport = {...swotSnapshot, sourceMode:'snapshot',
+    notes:'Dated NASA source archive captured via Hydrocron and POWER. Calendar-month context only.',
+    swot:{...swotSnapshot.swot, sourceMode:'snapshot'},
+    power:{...swotSnapshot.power, sourceMode:'snapshot', coordinates:{lat:38.2527,lon:-85.7585},
+      variable:'PRECTOTCORR', unit:'mm/day', spatialSupport:'model grid point'}};
+  const indonesian = locale==='id';
+  const localSource = gistempComparison.advanced.sources[0];
   const swotObs = swotSnapshot.swot.observations;
   const swotQual = swotSnapshot.swot.qualityCounts;
 
@@ -196,13 +204,14 @@ export default function ScienceCases({onLoadWorkspace}) {
     setLiveGistempState({status: 'loading', data: null, error: ''});
     try {
       const res = await analyzeLocalGlobal({
-        powerPoint: {lat: -7.7956, lon: 110.3695, label: 'Yogyakarta grid point'},
+        powerPoint: localPoint,
         from: 2001,
         to: 2024,
         baselineStart: 2001,
         baselineEnd: 2020,
         gistempSourceText: gistempRawTxt,
-        gistempSourceFormat: 'txt'
+        gistempSourceFormat: 'txt',
+        gistempSnapshot: gistempSnapshot.global
       });
       setLiveGistempState({status: 'live', data: res, error: ''});
     } catch (err) {
@@ -250,6 +259,12 @@ export default function ScienceCases({onLoadWorkspace}) {
         </button>
       </div>
 
+      <p className="sc-context-boundary" lang={locale}>
+        {indonesian ? 'Bukti terkait untuk konteks. Kedua sumber tidak dapat dibandingkan langsung.' : 'Related evidence for context only. The sources are not directly comparable.'}
+        {' '}{isSwot
+          ? (indonesian ? 'SWOT mengukur elevasi muka air pada lintasan satelit. NASA POWER memperkirakan laju hujan di satu titik model. Tiga bulan bersama belum cukup untuk menguji hubungan atau menyatakan risiko banjir.' : 'SWOT samples river elevation on satellite passes. POWER estimates rain rate at a nearby model point. Three shared months are insufficient for association or flood inference.')
+          : (indonesian ? 'GISTEMP adalah indeks anomali global. POWER mewakili satu titik model. Acuan bersama untuk grafik tidak membuat keduanya sepadan untuk uji selisih.' : 'GISTEMP is a global anomaly index. POWER represents one model point. A common display baseline does not make them comparable for a difference test.')}
+      </p>
       {isSwot ? (
         <div className="sc-body" id="case-swot-view">
           <div className="sc-summary-grid">
@@ -258,7 +273,7 @@ export default function ScienceCases({onLoadWorkspace}) {
               <p className="sc-lead">{swotSnapshot.caseStudy.simple.whatChanged}</p>
               <div className="sc-kv-row">
                 <div><span>Observed WSE range</span><strong>120.68 m to 131.25 m (10.56 m spread)</strong></div>
-                <div><span>Retained SWOT passes</span><strong>12 overpasses (2025-03-22 to 2025-05-15)</strong></div>
+                <div><span>Retained SWOT passes</span><strong>{swotObs.length} overpasses ({swotSnapshot.caseStudy.simple.period}) · {swotSnapshot.swot.excluded.length} excluded</strong></div>
                 <div><span>Quality flag breakdown</span><strong>Q0 (good): {swotQual[0]} · Q1 (suspect): {swotQual[1]} · Q2 (degraded): {swotQual[2]}</strong></div>
                 <div><span>Overlapping POWER months</span><strong>3 UTC months (Mar–May 2025) · Association: {swotSnapshot.caseStudy.advanced.association.status} (n=3 &lt; 6 minimum)</strong></div>
               </div>
@@ -285,13 +300,15 @@ export default function ScienceCases({onLoadWorkspace}) {
                 <button type="button" onClick={() => setShowAdvanced(v => !v)} aria-expanded={showAdvanced}>
                   {showAdvanced ? 'Hide pass table & provenance' : 'Inspect all 12 SWOT passes & QA flags'}
                 </button>
-                <button type="button" onClick={() => downloadJSON('terra-lens-swot-ohio-case.json', swotSnapshot)}>
+                <button type="button" onClick={() => downloadJSON('terra-lens-swot-ohio-case.json', swotExport)}>
                   Export Snapshot JSON
                 </button>
               </div>
             </article>
           </div>
 
+          <p className="sc-source-dates"><a href={swotSnapshot.swot.sourceURL}>SWOT source</a> · archive {swotSnapshot.swot.retrievedAt} <br/>
+            <a href={swotSnapshot.power.url}>POWER source</a> · archive {swotSnapshot.power.fetchedAt}</p>
           <SwotWaterFigure data={swotSnapshot}/>
 
           {showAdvanced && (
@@ -338,8 +355,8 @@ export default function ScienceCases({onLoadWorkspace}) {
               <h3>Question &amp; Rebased Anomaly Comparison (2001–2024)</h3>
               <p className="sc-lead">{gistempComparison.simple.meaning}</p>
               <div className="sc-kv-row">
-                <div><span>Yogyakarta POWER Point (−7.7956°, 110.3695°)</span><strong>{signed(gistempComparison.simple.pointFittedTrendCPerDecade, 3)} °C/decade (24 complete years)</strong></div>
-                <div><span>NASA GISS GISTEMP v4 Global Index</span><strong>{signed(gistempComparison.simple.globalFittedTrendCPerDecade, 3)} °C/decade (24 complete years)</strong></div>
+                <div><span>Yogyakarta POWER Point (−7.7956°, 110.3695°)</span><strong>{signed(gistempComparison.simple.pointFittedTrendCPerDecade, 3)} °C/decade ({localSource.annual.length} complete years)</strong></div>
+                <div><span>NASA GISS GISTEMP v4 Global Index</span><strong>{signed(gistempComparison.simple.globalFittedTrendCPerDecade, 3)} °C/decade ({gistempComparison.advanced.sources[1].annual.length} complete years)</strong></div>
                 <div><span>Common anomaly reference baseline</span><strong>{gistempComparison.simple.baseline} calendar-month normals</strong></div>
                 <div><span>Point-vs-Global difference test</span><strong>Not performed (incompatible spatial support)</strong></div>
               </div>
@@ -347,8 +364,8 @@ export default function ScienceCases({onLoadWorkspace}) {
             <article className="sc-card sc-card-warn">
               <h3>Methodological &amp; Provenance Distinctions</h3>
               <ul className="sc-list">
-                <li><strong>Global index ≠ map pin:</strong> GISTEMP v4 is a global land-ocean area-averaged anomaly index (original baseline 1951–1980), whereas NASA POWER is a single MERRA-2 model grid cell.</li>
-                <li><strong>Dated official GISS table excerpt:</strong> Because the NASA GISS server blocks direct unproxied browser CORS/CI connections, the global series uses the checked-in official NASA table excerpt (<code>2001–2024</code>, dated <code>2026-11-14</code>).</li>
+                <li><strong>Global index ≠ map pin:</strong> GISTEMP v4 is a global land-ocean area-averaged anomaly index (original baseline 1951–1980), while NASA POWER represents one model grid point.</li>
+                <li><strong>Dated official GISS table excerpt:</strong> This workflow uses the checked-in official NASA table excerpt (<code>2001–2024</code>, dated <code>2026-11-14</code>).</li>
                 <li><strong>Next step:</strong> {gistempComparison.simple.nextStep}</li>
               </ul>
               <div className="sc-actions">
@@ -367,10 +384,14 @@ export default function ScienceCases({onLoadWorkspace}) {
                   Export Case JSON
                 </button>
               </div>
-              {liveGistempState.error && <p className="status error" role="alert">{liveGistempState.error}</p>}
+              {liveGistempState.error && <p className="status error" role="alert" lang={locale}>{indonesian
+                ? 'Permintaan POWER gagal. Arsip bertanggal masih ditampilkan. Coba lagi untuk meminta data baru.'
+                : 'POWER refresh failed. The dated archive remains visible. Retry to request new data.'}</p>}
             </article>
           </div>
 
+          <p className="sc-source-dates"><a href={localSource.sourceURL}>POWER source</a> · {localSource.sourceMode==='snapshot'?'archive':'fresh request'} {localSource.retrievedAt}<br/>
+            <a href={gistempSnapshot.global.sourceURL}>GISTEMP source</a> · dated excerpt {gistempSnapshot.global.snapshotDate} · original 1951–1980 baseline</p>
           <LocalGlobalFigure comparison={gistempComparison}/>
 
           {showAdvanced && (
@@ -410,7 +431,7 @@ export default function ScienceCases({onLoadWorkspace}) {
 
       <footer className="sc-provenance-bar" aria-label="Snapshot audit metadata">
         <span><strong>Snapshot ID:</strong> <code>{activeMeta.id}</code></span>
-        <span><strong>Generated:</strong> {activeMeta.generatedAt}</span>
+        <span><strong>Archive packaged:</strong> {activeMeta.generatedAt}</span>
         <span><strong>Contract:</strong> Explicit spatial/temporal support boundaries · No hidden gap filling or cross-support interpolation</span>
       </footer>
     </div>

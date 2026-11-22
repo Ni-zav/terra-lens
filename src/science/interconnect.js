@@ -66,7 +66,7 @@ export function buildWaterCase({swot,power,contextLocation,question='How did a r
       limitation:'SWOT observes a river reach intermittently; POWER precipitation is modelled at a nearby grid cell. Neither indicates a forecast, flooding extent, water safety or causation.'
     },
     advanced:{
-      sourceA:{name:swot.source,product:swot.collection,version:'D',
+      sourceA:{name:swot.source,product:swot.collection,version:swot.collection?.split('_').at(-1)||null,
         quantity:swot.quantity,unit:swot.unit,url:swot.sourceURL,retrievedAt:swot.retrievedAt,
         temporalSupport:swot.temporalSupport,spatialSupport:swot.spatialSupport,
         overpasses:swot.observations,excluded:swot.excluded,qualityCounts:swot.qualityCounts},
@@ -74,7 +74,7 @@ export function buildWaterCase({swot,power,contextLocation,question='How did a r
         url:power.url,retrievedAt:power.fetchedAt,
         months:powerMonths},
       harmonization:alignment,association,
-      method:'Observed SWOT pass heights grouped by UTC month (arithmetic sample means only); NASA POWER monthly average daily precipitation rate at nearby cell. Calendar-month overlap only. No shared-pixel or watershed model. No long-term slope/significance on a two-month event.',
+      method:'Observed SWOT pass heights grouped by UTC month (arithmetic sample means only); NASA POWER monthly average daily precipitation rate at nearby cell. Calendar-month overlap only. No shared-pixel or watershed model. No long-term slope or significance assessment for this context display.',
       caveats:['SWOT water surface elevation relative to a geoid is not water depth','Do not infer flood thresholds from water height alone','Quality 1/2 flags and WSE uncertainty require review','POWER is a reanalysis cell, not a catchment rainfall total','Temporal correlation of sparse samples is not causal','Do not extrapolate to entire river basin or location population']
     }
   };

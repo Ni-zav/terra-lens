@@ -230,7 +230,7 @@ export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
     let lastErr;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        return await fetcher(nasaUrl, {signal});
+        return await fetcher(nasaUrl, {signal, cache:'no-store'});
       } catch (err) {
         if (err?.name === 'AbortError' || signal?.aborted || attempt === maxAttempts) throw err;
         lastErr = err;
@@ -244,7 +244,7 @@ export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
     response = await callNasaDirect();
   } else {
     try {
-      response = await fetcher(proxyUrl, {signal});
+      response = await fetcher(proxyUrl, {signal, cache:'no-store'});
       if (!response.ok || !response.headers.get('content-type')?.includes('json')) {
         response = await callNasaDirect();
       }
@@ -259,8 +259,8 @@ export async function fetchNASA(options, {fetcher = fetch, signal} = {}) {
   if (!monthly.length) throw new Error('NASA returned no valid observations for this location and range.');
   return {
     monthly, url: nasaUrl, fetchedAt: new Date().toISOString(),
-    source: 'NASA POWER / MERRA-2-derived meteorological reanalysis',
-    metadata: payload.header || {}, coordinate: payload.geometry?.coordinates,
+    source: 'NASA POWER modeled meteorology', sourceMode: 'freshly-fetched',
+    metadata: payload.header || {}, parameterMetadata: payload.parameters?.[options.variable] ?? null, coordinate: payload.geometry?.coordinates,
     requestedPeriod: {start: options.start, end: options.end}
   };
 }
@@ -272,6 +272,7 @@ export function powerSeries(fetched, {id, label, color, lat, lon, variable}) {
     id, label, color, monthly: fetched.monthly, support: SUPPORT.GRID_POINT, geo: {lat, lon},
     variable: {code: 'POWER:' + variable, label: info.label, unit: info.unit, description: info.description},
     provenance: {kind: 'nasa-power', source: fetched.source, url: fetched.url, retrievedAt: fetched.fetchedAt,
-      metadata: fetched.metadata, coordinate: fetched.coordinate, requestedPeriod: fetched.requestedPeriod || null, authenticated: true}
+      sourceMode: fetched.sourceMode || 'freshly-fetched', capturedAt: fetched.capturedAt ?? null,
+      ...(fetched.archive ? {archive: fetched.archive} : {}), metadata: fetched.metadata, parameterMetadata: fetched.parameterMetadata ?? null, coordinate: fetched.coordinate, requestedPeriod: fetched.requestedPeriod || null, authenticated: true}
   });
 }

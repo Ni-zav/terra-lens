@@ -146,6 +146,13 @@ export function compatibility(a, b) {
   const reasons = [];
   if (a.variable.unit !== b.variable.unit) reasons.push(`units differ (${a.variable.unit} vs ${b.variable.unit})`);
   if (!a.variable.code || a.variable.code !== b.variable.code) reasons.push('different source variables');
+  if (a.provenance.kind !== 'nasa-power' || b.provenance.kind !== 'nasa-power')
+    reasons.push('paired inference is validated only for two NASA POWER series');
+  else {
+    const fromA=a.provenance.metadata?.sources, fromB=b.provenance.metadata?.sources;
+    if (fromA?.length && fromB?.length && [...fromA].sort().join(',') !== [...fromB].sort().join(','))
+      reasons.push('NASA POWER source products differ');
+  }
   if (a.support === SUPPORT.UNKNOWN || b.support === SUPPORT.UNKNOWN ||
       !Object.values(SUPPORT).includes(a.support) || !Object.values(SUPPORT).includes(b.support))
     reasons.push('spatial support is not established for both series');
@@ -184,7 +191,7 @@ export function describeComparison(cmp, byId) {
   if (!h) return `${other.id} − ${ref.id}: ${fmt(cmp.contrast.classical.slopePerDecade)} ${ref.variable.unit}/decade fitted trend difference; HAC inference unavailable because shared complete years have gaps.`;
   const excludesZero = h.ciLowPerDecade > 0 || h.ciHighPerDecade < 0;
   return `${other.id} − ${ref.id}: ${fmt(h.slopePerDecade)} ${ref.variable.unit}/decade difference in trend ` +
-    (excludesZero ? '(approximate HAC 95% interval excludes zero).' : '(approximate HAC 95% interval includes zero — no evidence of a different trend).');
+    (excludesZero ? '(approximate HAC 95% interval excludes zero).' : '(approximate HAC 95% interval includes zero — a difference is not established).');
 }
 
 /** Ordered findings for the inference panel and the Evidence JSON. */

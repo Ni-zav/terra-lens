@@ -87,8 +87,8 @@ test('verdict grades agreement of the two tests',()=>{
   assert.equal(short.verdict.level,'insufficient');
 });
 test('paired contrast only for same variable, unit and support',()=>{
-  const a=makeSeries({id:'A',variable:v,support:SUPPORT.GRID_POINT,monthly:years(12,y=>y*.02)});
-  const b=makeSeries({id:'B',variable:v,support:SUPPORT.GRID_POINT,monthly:years(12,y=>y*.04+Math.cos(y))});
+  const a=makeSeries({id:'A',variable:v,support:SUPPORT.GRID_POINT,provenance:{kind:'nasa-power'},monthly:years(12,y=>y*.02)});
+  const b=makeSeries({id:'B',variable:v,support:SUPPORT.GRID_POINT,provenance:{kind:'nasa-power'},monthly:years(12,y=>y*.04+Math.cos(y))});
   const g=makeSeries({id:'G',variable:{code:'GIOVANNI:T2M',unit:'°C'},support:SUPPORT.AREA_AVERAGE,monthly:years(12,y=>y)});
   const ab=compareSeries(a,b);assert.equal(ab.paired,true);assert.equal(ab.contrast.n,12);
   const ag=compareSeries(a,g);assert.equal(ag.paired,false);assert.equal(ag.contrast,null);
@@ -109,8 +109,8 @@ test('unknown spatial support never establishes paired compatibility',()=>{
 test('gaps suppress lag diagnostics and surface the limitation in findings',()=>{
   const all=years(16,(y,m)=>y*.03+Math.sin(y)+m);
   const missing=all.filter(p=>p.year!==2008);
-  const a=makeSeries({id:'A',variable:v,support:SUPPORT.GRID_POINT,monthly:all});
-  const b=makeSeries({id:'B',variable:v,support:SUPPORT.GRID_POINT,monthly:missing});
+  const a=makeSeries({id:'A',variable:v,support:SUPPORT.GRID_POINT,provenance:{kind:'nasa-power'},monthly:all});
+  const b=makeSeries({id:'B',variable:v,support:SUPPORT.GRID_POINT,provenance:{kind:'nasa-power'},monthly:missing});
   const analysis=analyzeSeries(b);
   assert.equal(analysis.dependence.r1,null);
   assert.match(analysis.dependence.reason,/Missing calendar years/);

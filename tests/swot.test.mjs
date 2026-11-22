@@ -22,7 +22,7 @@ test('SWOT keeps pass-time and QA, discards Hydrocron fill/no_data without zero 
  assert.equal(parsed.rawRows,5);
  assert.equal(parsed.observations.length,4);
  assert.equal(parsed.excluded.length,1);
- assert.equal(parsed.excluded[0].reason,'invalid-time');
+ assert.equal(parsed.excluded[0].reason,'no-observation');
  assert.deepEqual(parsed.observations.map(x=>x.quality),[2,1,1,1]);
  assert.deepEqual(parsed.qualityCounts,{0:0,1:3,2:1,3:0});
  const months=swotMonthlySnapshots(parsed);

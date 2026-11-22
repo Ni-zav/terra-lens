@@ -43,7 +43,7 @@ export function giovanniAreaSeries(text, {fileName, sha256, sourceURL, doi} = {}
   return makeSeries({id:'G',label:'MERRA-2 T2M (Giovanni area)',color:'#8f2d56',
     variable:{code:'GIOVANNI:M2TMNXSLV_5_12_4_T2M',label:'2 m air temperature',unit:'K'},
     support:SUPPORT.AREA_AVERAGE,monthly,
-    provenance:{kind:'giovanni-import',fileName,sha256,url:sourceURL||null,doi:doi||null,
+    provenance:{kind:'giovanni-import',sourceMode:'user-imported',fileName,sha256,url:sourceURL||null,doi:doi||null,
       product:'M2TMNXSLV 5.12.4 T2M',requestedBounds:bounds,authenticated:false,
       warning:'User-supplied CSV; source, spatial weighting, quality and provenance require independent verification.'}});
 }

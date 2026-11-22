@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Independently check the REAL NASA screen evidence emitted by live-discovery.mjs.
+"""Independently check saved real NASA screen evidence.
 
 Uses numpy and scipy, not the browser JS stats implementation.
 Recomputes annual Gregorian-day means, classical regression, and selected-pair
 HAC as a diagnostic. This checks numerical reproduction, not physical truth,
 statistical selection validity, or NASA resource-tab compliance.
 """
+import argparse
 import calendar
 import json
 import math
@@ -13,7 +14,9 @@ from pathlib import Path
 import numpy as np
 from scipy import stats
 
-path = Path(__file__).resolve().parents[1] / "artifacts" / "discovery-nasa-evidence.json"
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("evidence", nargs="?", type=Path, default=Path(__file__).resolve().parents[1] / "artifacts" / "discovery-nasa-evidence.json")
+path = parser.parse_args().evidence
 doc = json.loads(path.read_text())
 assert doc["schema"] == "terra-lens-sentinel-screen-v1"
 records = doc["records"]

@@ -32,7 +32,7 @@ function useEChart() {
 function Legend({series, unit, showSlope, excluded}) {
   const markerGlyph = id => id === 'B' ? '◆' : id === 'C' ? '▲' : id === 'D' ? '■' : id === 'G' ? '○' : '●';
   return <div className="legend">{series.map(s=><span className="legend-item" key={s.id}><span className="legend-glyph" style={{color:s.color}} aria-hidden="true">{markerGlyph(s.id)}</span><strong className="legend-id" style={{color:s.color}}>{s.id}</strong><span>{s.label}</span>{showSlope&&s.slopePerDecade!==null&&<em className="legend-slope">{signed(s.slopePerDecade)} {unit}/dec</em>}</span>)}
-    {excluded?.length>0&&<span className="legend-item legend-excluded" title="Different unit; shown in anomaly (σ) view">{excluded.map(s=>s.id).join(', ')} hidden · different unit</span>}</div>;
+    {excluded?.length>0&&<span className="legend-item legend-excluded" title="Inspect this series separately">{excluded.map(s=>s.id).join(', ')} separate source view</span>}</div>;
 }
 
 const symbolFor = id => id === 'B' ? 'diamond' : id === 'C' ? 'triangle' : id === 'D' ? 'rect' : id === 'G' ? 'emptyCircle' : 'circle';
@@ -110,7 +110,7 @@ export function TimeChart({series, mode, range, setRange, setMode}) {
     <div className="chart-inspector"><label htmlFor={idBase+'-cursor'}>{monthly?'Month':'Year'}</label>
       <input id={idBase+'-cursor'} type="range" min="0" max={Math.max(0,model.dates.length-1)} value={position} disabled={!model.dates.length} aria-valuetext={readout} onChange={e=>setCursor(Number(e.target.value))}/>
       <output id={idBase+'-readout'}>{readout}</output></div>
-    <div className="chart-foot">{anomaly?(model.standardized?'Standardized anomaly: (value − month mean) ÷ month s.d., because units differ':'Anomaly: value − that calendar month’s complete-year mean, removing the seasonal cycle'):monthly?'Missing months break the line':'Solid: annual mean · Dashed: full-period OLS fit'} · 10Y changes display only · Ctrl + scroll to zoom</div>
+    <div className="chart-foot">{anomaly?('Anomaly: value − that calendar month’s complete-year mean, removing the seasonal cycle'):monthly?'Missing months break the line':'Solid: annual mean · Dashed: full-period OLS fit'} · 10Y changes display only · Ctrl + scroll to zoom</div>
   </>;
 }
 

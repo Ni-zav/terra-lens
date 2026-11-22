@@ -45,7 +45,7 @@ test('builds separate plain-language and raw evidence contract',()=>{
 });
 test('catalog exposes honest live vs planned source status',()=>{
  const simple=scienceForAudience();
- assert.ok(simple.sources.some(s=>s.id==='nasa-swot-river'&&s.integration==='live'));
+ assert.ok(simple.sources.some(s=>s.id==='nasa-swot-river'&&s.integration==='dated-official-snapshot'));
  assert.ok(!simple.sources.some(s=>s.id==='gpm-imerg'));
  const advanced=scienceForAudience({advanced:true});
  assert.ok(advanced.sources.some(s=>s.id==='gpm-imerg'&&s.integration==='planned'));

@@ -40,7 +40,7 @@ export async function fetchGISTEMPtext({fetcher=fetch,signal}={}){
  const response=await fetcher(GISTEMP_TXT_URL,{signal});
  if(!response.ok)throw Error('NASA GISS text HTTP '+response.status);
  return {...parseGISTEMPtext(await response.text()),sourceURL:GISTEMP_TXT_URL,
-   retrievedAt:new Date().toISOString()};
+   sourceMode:'freshly-fetched',retrievedAt:new Date().toISOString()};
 }
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 export function parseGISTEMP(csv){
@@ -80,7 +80,7 @@ export async function fetchGISTEMP({fetcher=fetch,signal}={}){
  const response=await fetcher(GISTEMP_CSV_URL,{signal});
  if(!response.ok)throw Error('NASA GISS CSV HTTP '+response.status);
  const parsed=parseGISTEMP(await response.text());
- return {...parsed,sourceURL:GISTEMP_CSV_URL,retrievedAt:new Date().toISOString()};
+ return {...parsed,sourceURL:GISTEMP_CSV_URL,sourceMode:'freshly-fetched',retrievedAt:new Date().toISOString()};
 }
 export function rebaseMonthlyAnomalies(monthly,{baselineStart=2001,baselineEnd=2020}={}){
  if(!Number.isInteger(baselineStart)||!Number.isInteger(baselineEnd)||baselineStart>=baselineEnd)
@@ -125,13 +125,14 @@ export function compareLocalGlobal({localPowerMonthly,globalGISTEMP,from=2001,to
    },
    advanced:{
      sources:[
-       {source:'NASA POWER / MERRA-2-derived',variable:'T2M',spatialSupport:'model grid point',
+       {source:'NASA POWER modeled meteorology',variable:'T2M',spatialSupport:'model grid point',
         baseline:`${baselineStart}–${baselineEnd}`,monthly:local.monthly,annual:annualLocal,trend:trendLocal},
        {source:'NASA GISS GISTEMP v4',variable:'global land-ocean temperature anomaly',
         spatialSupport:'global area-average index, NOT a point',originalBaseline:'1951–1980',
         transformedBaseline:`${baselineStart}–${baselineEnd}`,
         sourceURL:globalGISTEMP.sourceURL||GISTEMP_CSV_URL,
-        retrievedAt:globalGISTEMP.retrievedAt||null,monthly:global.monthly,annual:annualGlobal,trend:trendGlobal}
+        sourceMode:globalGISTEMP.sourceMode||null, snapshotDate:globalGISTEMP.snapshotDate||null, unit:'°C anomaly',
+        retrievedAt:globalGISTEMP.retrievedAt||null, originalMonthly:globalGISTEMP.series,monthly:global.monthly,annual:annualGlobal,trend:trendGlobal}
      ],
      differencesNotTested:true,
      caveat:'Seasonal 2001–2020 rebasing removes separately estimated monthly normal offsets. GISTEMP and POWER have different methodologies, geography and data generation. The derived annual slope comparison is descriptive, not a paired causal or formal statistical difference, and GISTEMP may revise historic records.'

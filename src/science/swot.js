@@ -73,17 +73,19 @@ export function parseSWOTHydrocron(payload,{featureId,maxQuality=2}={}){
     const time=Date.parse(row.time_str);
     const wse=numberOrNull(row.wse),quality=numberOrNull(row.reach_q);
     const id=row.reach_id;
+    const observationTime=Number.isFinite(time)?new Date(time).toISOString():null;
     let reason=null;
     if(featureId&&String(featureId)!==String(id))reason='unexpected-reach';
+    else if(/^no_data$/i.test(row.time_str.trim()))reason='no-observation';
     else if(!Number.isFinite(time))reason='invalid-time';
-    else if(seen.has(row.time_str))reason='duplicate-time';
+    else if(seen.has(observationTime))reason='duplicate-time';
     else if(wse===null)reason='missing-water-height';
     else if(!Number.isInteger(quality)||quality<0||quality>3)reason='invalid-quality';
     else if(quality>maxQuality)reason='quality-filter';
     if(reason){excluded.push({time:row.time_str||null,reason,quality});continue;}
-    seen.add(row.time_str);
+    seen.add(observationTime);
     observations.push({
-      time:new Date(time).toISOString(),
+      time:observationTime,
       year:new Date(time).getUTCFullYear(),month:new Date(time).getUTCMonth()+1,
       value:wse,unit:'m',quality,
       width:numberOrNull(row.width),

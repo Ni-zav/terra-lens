@@ -3,14 +3,14 @@
  * actually implements. planned !== available.
  */
 export const SCIENCE_CATALOG=Object.freeze([
-  {id:'nasa-power',label:'NASA POWER / MERRA-2-derived meteorology',
+  {id:'nasa-power',label:'NASA POWER modeled meteorology (MERRA-2 / GEOS-IT)',
    provider:'NASA POWER',access:'anonymous',integration:'live',
    variables:['T2M','T2M_MAX','T2M_MIN','RH2M','PRECTOTCORR','WS2M','PS','QV2M','T2MDEW'],
    cadence:'monthly',spatialSupport:'model grid point estimate',
    url:'https://power.larc.nasa.gov/docs/services/api/temporal/monthly/',
    challengeResourceStatus:'NASA source, not yet confirmed directly as official Resources-tab-listed item'},
   {id:'nasa-swot-river',label:'NASA SWOT RiverSP surface-water elevation',
-   provider:'NASA PO.DAAC Hydrocron',access:'anonymous',integration:'live',
+   provider:'NASA PO.DAAC Hydrocron',access:'public original service',integration:'dated-official-snapshot',
    variables:['wse','wse_u','width','reach_q'],
    cadence:'irregular satellite overpasses',spatialSupport:'SWORD river reach ID',
    url:'https://podaac.github.io/hydrocron/timeseries/',
@@ -22,7 +22,7 @@ export const SCIENCE_CATALOG=Object.freeze([
    url:'https://data.giss.nasa.gov/gistemp/data_v4.html',
    challengeResourceStatus:'Authentic NASA data; NOT verified to be on the official selected challenge Resources tab. Dated 2001–2024 source snapshot checked against NASA original.'},
   {id:'nasa-giovanni',label:'NASA Giovanni / GES DISC monthly exports',
-   provider:'NASA Giovanni',access:'Earthdata Login for extraction; query opens NASA site',integration:'local-csv-import',
+   provider:'NASA Giovanni',access:'Earthdata Login for extraction; query opens NASA site',integration:'snapshot-and-user-import',
    variables:['M2TMNXSLV v5.12.4 T2M area average','Cloud point CSV: source-dependent'],cadence:'monthly imports only',
    spatialSupport:'area-average for supported classic export; cloud CSV depends on metadata',
    url:'https://giovanni.gsfc.nasa.gov/',
@@ -49,7 +49,7 @@ export const SCIENCE_CATALOG=Object.freeze([
 export const SCIENCE_QUESTIONS=Object.freeze([
   {id:'river-observation',title:'How did this river change across satellite passes?',
     audience:'River science educators and water researchers',sources:['nasa-swot-river','nasa-power'],
-    availability:'live-data-pipeline',scope:'Water surface elevation / nearby modeled rainfall context',
+    availability:'dated-snapshot',scope:'Water surface elevation / nearby modeled rainfall context',
     warning:'Not flood-stage or a warning; no causal rainfall-to-level attribution'},
   {id:'compare-warming',title:'Do two points show different historical fitted warming?',
     audience:'Students and climate communicators',sources:['nasa-power'],
@@ -58,7 +58,7 @@ export const SCIENCE_QUESTIONS=Object.freeze([
   {id:'global-local-temperature',title:'How does one local point compare with global temperature history?',
     audience:'Schools, science communicators and climate educators',
     sources:['nasa-power','nasa-giss-global'],
-    availability:'data-engine-only',scope:'Rebased 2001–2020 monthly anomalies, analyzed 2001–2024',
+    availability:'snapshot-with-power-refresh',scope:'Rebased 2001–2020 monthly anomalies, analyzed 2001–2024',
     warning:'GISS is a global blended observational index; POWER is a reanalysis point. Not statistically or spatially equivalent and no formal difference test.'},
   {id:'farm-water-context',title:'What data could inform water-planning research?',
     audience:'Water research and farmer support groups',sources:['nasa-power','gldas-noah','gpm-imerg'],
@@ -73,6 +73,6 @@ export function scienceForAudience({advanced=false}={}){
   return {schema:'terra-lens-science-catalog-v1',
     mode:advanced?'advanced':'simple',
     questions:SCIENCE_QUESTIONS.filter(q=>q.availability!=='planned'||advanced),
-    sources:SCIENCE_CATALOG.filter(s=>advanced||s.integration==='live'||s.integration==='local-csv-import'||s.integration==='dated-official-snapshot'),
+    sources:SCIENCE_CATALOG.filter(s=>advanced||s.integration==='live'||s.integration==='snapshot-and-user-import'||s.integration==='dated-official-snapshot'),
     truth:'Never treat planned dataset connectors as live or claim verified Global Award eligibility without the official Resources tab.'};
 }

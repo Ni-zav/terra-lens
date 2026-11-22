@@ -2,6 +2,7 @@ import React, {useEffect,useMemo,useRef,useState} from 'react';
 import {VARIABLES,fetchNASA} from '../power.js';
 import {SENTINEL_POINTS,investigationFor,samplePoints,summarizeDiscovery,
   makeResearchBrief,discoveryEvidence} from '../discovery.js';
+import {downloadJSON} from '../presentation/download.js';
 import {pairedContrast} from '../contrast.js';
 import './discovery.css';
 
@@ -10,12 +11,6 @@ const cache=new Map();
 const CACHE_MS=15*60*1000;
 const format=(n,d=3)=>Number.isFinite(n)?new Intl.NumberFormat('en-US',{maximumFractionDigits:d}).format(n):'—';
 const signed=n=>(n>0?'+':'')+format(n);
-function takeFile(name,payload) {
-  const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)+'\n'],{type:'application/json;charset=utf-8'}));
-  const anchor=document.createElement('a');anchor.href=url;anchor.download=name;
-  document.body.appendChild(anchor);anchor.click();anchor.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
 async function cachedNASA(opts,{signal}) {
   const key=[opts.variable,opts.start,opts.end,opts.lat.toFixed(4),opts.lon.toFixed(4)].join(':');
   const saved=cache.get(key);
@@ -29,7 +24,7 @@ function investigateUrl(a,b,variable,start,end) {
   u.search='';
   for(const [key,value] of Object.entries({
     variable,start,end,compare:'1',cityA:'custom',cityB:'custom',
-    latA:a.lat,lonA:a.lon,latB:b.lat,lonB:b.lon,auto:'1'
+    latA:a.lat,lonA:a.lon,latB:b.lat,lonB:b.lon,auto:'1',screen:'1'
   }))u.searchParams.set(key,String(value));
   u.hash='explore';return u.href;
 }
@@ -161,7 +156,7 @@ export default function ContrastFinder({onInspect}) {
                 <td>{r?.status==='ok'?(r.cacheHit?'NASA data · cached':'NASA data loaded'):
                   r?.status==='error'?'Request failed: '+r.error:
                   r?.status==='insufficient-years'?'< 10 complete years':
-                  'Not requested'}</td>
+                  'Not requested'}{r?.retrievedAt&&<small>{r.retrievedAt}</small>}</td>
                 <td>{r?.annual?.length??'—'}</td>
                 <td>{trend?signed(trend.slopePerDecade):'—'}</td>
                 <td>{trend?<div className="discovery-select">
@@ -186,14 +181,14 @@ export default function ContrastFinder({onInspect}) {
               <a className="discovery-inspect" href={investigateUrl(a,b,variable,Number(start),Number(end))} onClick={e=>{
                 if(onInspect&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
                   e.preventDefault();
-                  onInspect({variable,start:String(start),end:String(end),compare:true,cityA:'custom',latA:String(a.lat),lonA:String(a.lon),cityB:'custom',latB:String(b.lat),lonB:String(b.lon)});
+                  onInspect({postSelected:true,variable,start:String(start),end:String(end),compare:true,cityA:'custom',latA:String(a.lat),lonA:String(a.lon),cityB:'custom',latB:String(b.lat),lonB:String(b.lon)});
                 }
               }}>Open full A/B monthly and annual evidence</a>
             </div>}
             {summary.failures.length>0&&<p className="discovery-warning">Incomplete NASA coverage: {summary.failures.map(r=>r.label).join(', ')} failed.</p>}
-            <button type="button" id="finder-download" onClick={()=>takeFile('terra-lens-sentinel-evidence.json',
+            <button type="button" id="finder-download" onClick={()=>downloadJSON('terra-lens-sentinel-evidence.json',
               {...discoveryEvidence({records:run.records,variable,start:Number(start),end:Number(end),selected:{A:pointA,B:pointB}}),
-                selectedPairedContrast:aligned})}>Export full evidence JSON</button>
+                selectedPairedContrast:aligned,selectionInference:'exploratory-selected'})}>Export full evidence JSON</button>
           </article>
           <article className="discovery-impact">
             <h3>4. Turn evidence into a responsible next step</h3>

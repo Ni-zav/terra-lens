@@ -1030,8 +1030,8 @@
 
 /* Desktop One-Screen Lock */
 @media (min-width: 800px) and (min-height: 660px) {
-  html, body { height: 100%; overflow: hidden; }
-  .explorer { height: calc(100dvh - 34px); }
+  html.expert-route, html.expert-route body { height: 100%; overflow: hidden; }
+  .explorer { height: calc(100dvh - 44px); }
   .workspace { height: 100%; grid-template-rows: minmax(0, 1fr); }
   .workspace > * { height: 100%; min-height: 0; }
   .confidence-wrap { overflow: hidden; }

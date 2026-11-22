@@ -1,0 +1,26 @@
+.research-brief {
+  box-sizing: border-box;
+  color: #1a2621;
+  background: white;
+  font: 15px/1.45 system-ui, sans-serif;
+  max-width: 760px;
+  margin: 20px auto 40px;
+  padding: clamp(18px, 5vw, 44px);
+  border: 1px solid #ced9d1;
+}
+.research-brief header { border-bottom: 2px solid #22604a; padding-bottom: 12px; }
+.research-brief h1 { font-size: 2em; margin: 0 0 .3em; line-height: 1.1; }
+.research-brief h2 { font-size: 1.16em; margin: 0 0 .25em; line-height: 1.25; }
+.research-brief p { margin: 0 0 .4em; }
+.research-brief section { margin-top: 1em; break-inside: avoid; }
+.research-brief .brief-label { color: #225c47; font-weight: 700; }
+.research-brief .brief-url { overflow-wrap: anywhere; }
+.research-brief a { color: #225c47; text-decoration: underline; }
+.research-brief footer { border-top: 1px solid #ced9d1; margin-top: 1em; padding-top: .65em; }
+@page { size: A4; margin: 14mm; }
+@media print {
+  body { margin: 0; }
+  body:has(.brief-page) .topbar, .brief-tools, body:has(.brief-page) .skip { display: none !important; }
+  .brief-page { width: auto !important; margin: 0 !important; padding: 0 !important; }
+  .research-brief { margin: 0; max-width: none; padding: 0; border: 0; font-size: 10.5pt; }
+}

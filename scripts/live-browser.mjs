@@ -3,13 +3,14 @@
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile, writeFile, mkdir} from 'node:fs/promises';
-import {join, extname} from 'node:path';
+import {join, extname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
 import {onRequestGet} from '../functions/api/power.js';
 
 const ROOT=fileURLToPath(new URL('../', import.meta.url));
 const DIST=join(ROOT,'dist');
+const SCREENSHOTS=resolve(process.env.TERRA_LIVE_SCREENSHOT_DIR||join(ROOT,'artifacts','live-browser'));
 const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.md':'text/plain'};
 const calls=[];
 const server=createServer(async(req,res)=>{
@@ -45,15 +46,18 @@ try{
   const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
   const page=await context.newPage();
   const errors=[];
-  const nasaResponses=[];
+  const nasaResponses=[],rawCase=new Map();
   page.on('pageerror',e=>errors.push(e.message));
   page.on('response',res=>{
     if(res.ok()&&(res.url().includes('/api/power?')||res.url().includes('power.larc.nasa.gov/api/temporal/monthly/point'))){
       const u=new URL(res.url());
+      const latitude=u.searchParams.get('latitude');
+      if(u.searchParams.get('parameters')==='T2M'&&['-7.7956','-6.2088'].includes(latitude)&&!rawCase.has(latitude))
+        rawCase.set(latitude,res.body());
       nasaResponses.push({parameters:u.searchParams.get('parameters'),latitude:u.searchParams.get('latitude'),longitude:u.searchParams.get('longitude'),url:res.url()});
     }
   });
-  await page.goto('http://127.0.0.1:'+port,{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:'+port+'/#explore',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA data loaded',
     null,{timeout:125000});
   assert.match(await page.locator('#metric-slope').textContent(),/\+0\.18 °C/);
@@ -61,14 +65,18 @@ try{
   assert.match(await page.locator('#finding-text').textContent(),/B · Jakarta:/);
   assert.equal(nasaResponses.filter(c=>c.parameters==='T2M').length>=2,true,'Both points must fetch real NASA T2M');
   assert.equal(errors.length,0,errors.join('; '));
-  await mkdir(join(ROOT,'docs','screenshots'),{recursive:true});
+  await mkdir(SCREENSHOTS,{recursive:true});
+  await Promise.all([['-7.7956','yogyakarta'],['-6.2088','jakarta']].map(async ([lat,name])=>{
+    const source=await rawCase.get(lat);
+    assert.ok(source?.length,`Missing NASA response body for ${name}`);
+    await writeFile(join(SCREENSHOTS,`power-${name}.json`),source);
+  }));
   // Frame the controls and results for the presentation; the full explorer is
   // substantially taller now that the geographic picker precedes it.
   await page.locator('.topbar').evaluate(el => { el.style.visibility='hidden'; });
-  await page.locator('.workspace').screenshot({path:join(ROOT,'docs','screenshots','nasa-real-desktop.png'),animations:'disabled'});
+  await page.locator('.workspace').screenshot({path:join(SCREENSHOTS,'nasa-real-desktop.png'),animations:'disabled'});
   await page.locator('.topbar').evaluate(el => { el.style.visibility=''; });
-  // Changing the SELECT control must not relabel CSV that still represents the old analysis.
-  await page.locator('#variable').selectOption('RH2M');
+  // Export the completed investigation before changing its controls.
   const downloadPromise=page.waitForEvent('download');
   await page.locator('#download').click();
   const download=await downloadPromise;
@@ -77,7 +85,20 @@ try{
   assert.match(csv,/"POWER:T2M"/);
   assert.match(csv,/power\.larc\.nasa\.gov/);
   assert.equal(csv.trimEnd().split('\n').length,577,'Both points, each with 288 monthly rows');
-  // Re-query a distinct NASA variable, not a fixture.
+  await download.saveAs(join(SCREENSHOTS,'live-power-t2m.csv'));
+  const evidenceEvent=page.waitForEvent('download');
+  await page.locator('#evidence-download').click();
+  const evidenceDownload=await evidenceEvent;
+  await evidenceDownload.saveAs(join(SCREENSHOTS,'live-power-evidence.json'));
+  const liveEvidence=JSON.parse(await readFile(join(SCREENSHOTS,'live-power-evidence.json'),'utf8'));
+  assert.equal(liveEvidence.schema,'terra-lens-evidence-v2');
+  assert.equal(liveEvidence.interpretation.comparisons[0].findingStatus,'difference-not-established');
+  assert.deepEqual(liveEvidence.series.map(s=>[s.monthly.length,s.annual.length]),[[288,24],[288,24]]);
+  assert.ok(liveEvidence.series.every(s=>s.provenance.sourceMode==='freshly-fetched'&&Date.parse(s.provenance.retrievedAt)));
+  console.log('Live POWER T2M pair: 576 CSV data rows, Evidence JSON, paired inference',liveEvidence.comparisons[0].contrast.hac);
+  // Edited controls must never relabel an older file. Then request a distinct variable.
+  await page.locator('#variable').selectOption('RH2M');
+  assert.ok(await page.locator('#download').isDisabled());
   await page.locator('#compare').uncheck();
   await page.locator('#analyze').click();
   await page.waitForFunction(()=>document.getElementById('data-label').textContent==='NASA data loaded'
@@ -91,7 +112,7 @@ try{
   await page.setViewportSize({width:390,height:844});
   const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
   assert.ok(overflow.scroll<=overflow.width+2,'Mobile overflow: '+JSON.stringify(overflow));
-  await page.locator('#explore').screenshot({path:join(ROOT,'docs','screenshots','nasa-real-mobile.png'),animations:'disabled'});
+  await page.locator('#explore').screenshot({path:join(SCREENSHOTS,'nasa-real-mobile.png'),animations:'disabled'});
 
   // The new discovery flow is tested AGAINST REAL NASA, not the separate fixture server.
   await page.locator('#tab-finder').click();
@@ -110,6 +131,7 @@ try{
   const downloadEvidence=page.waitForEvent('download');
   await page.locator('#finder-download').click();
   const jsonFile=await downloadEvidence;
+  await jsonFile.saveAs(join(SCREENSHOTS,'live-finder-evidence.json'));
   const evidence=JSON.parse(await readFile(await jsonFile.path(),'utf8'));
   assert.equal(evidence.schema,'terra-lens-sentinel-screen-v1');
   assert.equal(evidence.records.length,8);
@@ -121,12 +143,12 @@ try{
   const finderOverflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
   assert.ok(finderOverflow.scroll<=finderOverflow.width+2,'Mobile discovery overflow: '+JSON.stringify(finderOverflow));
   await page.locator('#contrast-finder').screenshot({
-    path:join(ROOT,'docs','screenshots','nasa-real-finder-mobile.png'),animations:'disabled'});
+    path:join(SCREENSHOTS,'nasa-real-finder-mobile.png'),animations:'disabled'});
   await page.setViewportSize({width:1280,height:900});
   await page.locator('#contrast-finder').screenshot({
-    path:join(ROOT,'docs','screenshots','nasa-real-finder-desktop.png'),animations:'disabled'});
+    path:join(SCREENSHOTS,'nasa-real-finder-desktop.png'),animations:'disabled'});
   console.log('LIVE eight-point NASA discovery passed in Chromium: 8/8 point requests, 24 complete years each, export, A/B link, mobile layout, real screenshots.');
-  await writeFile(join(ROOT,'docs','screenshots','README.md'),[
+  await writeFile(join(SCREENSHOTS,'README.md'),[
     '# Verified LIVE NASA browser screenshots',
     '',
     'Captured: '+new Date().toISOString()+' (UTC).',
